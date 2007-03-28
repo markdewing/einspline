@@ -68,6 +68,7 @@ case $host_cpu in
                   x86_64*) ax_gcc_arch="nocona pentium4 pentiumpro" ;;
                   *) ax_gcc_arch="prescott pentium4 pentiumpro" ;;
                 esac ;;
+            *f4a:*:*:*) ax_gcc_arch="nocona" ;;
             *f??:*:*:*) ax_gcc_arch="pentium4 pentiumpro";;
           esac ;;
        *:68747541:*:*) # AMD

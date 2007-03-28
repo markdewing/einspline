@@ -731,6 +731,12 @@ Speed_3d_z()
 	   (double)(end-start-(rend-rstart))/(double)CLOCKS_PER_SEC);
 }
 
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
 
 int main()
 {

@@ -1,11 +1,11 @@
 check_PROGRAMS =  TestBspline
 
-TestBspline_SOURCES = TestBspline
+TestBspline_SOURCES = TestBspline.c
 
 LDADD = 
 AM_CCFLAGS = -g 
 
-TestBspline_LDADD = libbspline.la 
+TestBspline_LDADD = libbspline.la $(FLIBS)
 
 lib_LTLIBRARIES = libbspline.la
 libbspline_la_SOURCES =                               \
@@ -22,6 +22,7 @@ libbspline_la_SOURCES =                               \
                        bspline_eval_sse_d.h           \
                        bspline_eval_std_z.h           \
                        bspline_eval_sse_z.h           
+libbspline_la_LIBADD = $(FLIBS)
 
 
 includedir=$(prefix)/include/bspline

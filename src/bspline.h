@@ -8,13 +8,13 @@
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
 #ifdef __SSE2__
-#include "bspline_structs_sse.h"
+#include "bspline_structs.h"
 #include "bspline_eval_sse_s.h"
 #include "bspline_eval_sse_c.h"
 #include "bspline_eval_sse_d.h"
 #include "bspline_eval_sse_z.h"
 #else
-#include "bspline_structs_std.h"
+#include "bspline_structs.h"
 #include "bspline_eval_std_s.h"
 #include "bspline_eval_std_c.h"
 #include "bspline_eval_std_d.h"

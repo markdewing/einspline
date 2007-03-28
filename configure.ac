@@ -51,6 +51,8 @@ fi
 
 AC_SUBST(BOOST_LIB)
 AC_F77_WRAPPERS
+AC_F77_LIBRARY_LDFLAGS
+AC_F77_DUMMY_MAIN
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
