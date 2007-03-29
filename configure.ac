@@ -29,6 +29,12 @@ AC_CHECK_HEADERS([stdlib.h sys/time.h unistd.h])
 AC_MSG_CHECKING([optimal compiler flags])
 AC_MSG_RESULT([${CFLAGS}])
 
+AC_ARG_ENABLE(altivec,[  --enable-altivec        enable PowerPC SIMD extensions])
+if test "x$enable_altivec" = "xyes"; then
+   CFLAGS="$CFLAGS -faltivec -DUSE_ALTIVEC"
+   FFLAGS="$FFLAGS -DUSE_ALTIVEC"
+fi
+
 AC_ARG_ENABLE(profile,[  --enable-profile        instrument code with profiling information])
 if test "x$enable_profile" = "xyes"; then
    CFLAGS="-pg $CFLAGS"

@@ -373,9 +373,9 @@ void
 Test_3d_s()
 {
   Ugrid x_grid, y_grid, z_grid;
-  x_grid.start = 1.0;  x_grid.end   = 3.0;  x_grid.num = 30;
-  y_grid.start = 1.0;  y_grid.end   = 3.0;  y_grid.num = 30;
-  z_grid.start = 1.0;  z_grid.end   = 3.0;  z_grid.num = 30;
+  x_grid.start = 1.0;  x_grid.end   = 3.0001;  x_grid.num = 30;
+  y_grid.start = 1.0;  y_grid.end   = 3.0001;  y_grid.num = 30;
+  z_grid.start = 1.0;  z_grid.end   = 3.0001;  z_grid.num = 30;
   
   float *data = malloc (x_grid.num * y_grid.num * z_grid.num * sizeof(float));
   for (int ix=0; ix<x_grid.num; ix++)
@@ -392,8 +392,8 @@ Test_3d_s()
 
   double z = 1.92341;
   FILE *fout = fopen ("3dspline.dat", "w");
-  for (double x=x_grid.start; x<=x_grid.end; x+=0.005) {
-    for (double y=y_grid.start; y<=y_grid.end; y+=0.005) {
+  for (double x=x_grid.start; x<x_grid.end; x+=0.005) {
+    for (double y=y_grid.start; y<y_grid.end; y+=0.005) {
       float val, grad[3], hess[9], lapl;
       eval_UBspline_3d_s_vgh (spline, x, y, z, &val, grad, hess);
       fprintf (fout, "%20.14f ", val);
@@ -748,10 +748,10 @@ int main()
   // Speed_2d_c();
   // Test_2d_d();
   // Speed_2d_d();
-  Test_2d_z();
-  Speed_2d_z();
-  // Test_3d_s();
-  // Speed_3d_s();
+  // Test_2d_z();
+  // Speed_2d_z();
+  Test_3d_s();
+  Speed_3d_s();
   // Test_3d_d();
   // Speed_3d_d();
   // Test_3d_c();
