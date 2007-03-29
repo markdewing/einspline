@@ -310,22 +310,13 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
 #define P(i,j) (spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-//   _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
+//   unsigned int control_word;
+//   float *ptr = (float*)((unsigned int)P(0,0)&0xfffffff0);
+//   control_word = (1<<3) | (4<<8) | ((ys*4) << 16);
+//   vec_dstt (ptr, control_word, 0);
+//   vec_dstt (P(1,0), control_word, 1);
+//   vec_dstt (P(2,0), control_word, 2);
+//   vec_dstt (P(3,0), control_word, 3);
 
 //   // Now compute the vectors:
 //   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -416,7 +407,7 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
   _MM_MATVEC4_PS (d2cP[0], d2cP[1], d2cP[2], d2cP[3],   b, bd2cP);
   _MM_MATVEC4_PS ( dcP[0],  dcP[1],  dcP[2],  dcP[3],  db, dbdcP);
 
-  vector float valgrad;
+  vector float valgrad, hess4;
 //   fprintf (stderr, "a = %vf\n", a);
 //   fprintf (stderr, "bcP = %vf\n", bcP);
   _4DOTS (a, bcP, da, bcP, a, dbcP, a, bdcP, valgrad);
@@ -425,6 +416,14 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
   tmp0 = vec_splat (valgrad, 1);  vec_ste (tmp0, 0, &(grad[0]));
   tmp0 = vec_splat (valgrad, 2);  vec_ste (tmp0, 0, &(grad[1]));
   tmp0 = vec_splat (valgrad, 3);  vec_ste (tmp0, 0, &(grad[2]));
+  _4DOTS (d2a, bcP, a, d2bcP, a, bd2cP, da, dbcP, hess4);
+  tmp0 = vec_splat (hess4, 0);  vec_ste (tmp0, 0, &(hess[0]));
+  tmp0 = vec_splat (hess4, 1);  vec_ste (tmp0, 0, &(hess[4]));
+  tmp0 = vec_splat (hess4, 2);  vec_ste (tmp0, 0, &(hess[8]));
+  tmp0 = vec_splat (hess4, 3);  vec_ste (tmp0, 0, &(hess[1]));
+  _4DOTS (da, bdcP, a, dbdcP, a, a, a, a, hess4);
+  tmp0 = vec_splat (hess4, 0);  vec_ste (tmp0, 0, &(hess[2]));
+  tmp0 = vec_splat (hess4, 1);  vec_ste (tmp0, 0, &(hess[5]));
   // Compute value
 //   _MM_DOT4_PS (a, bcP, val);
 //     // Compute gradient
