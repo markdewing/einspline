@@ -404,9 +404,9 @@ Test_3d_s()
 
   int ix=9;  int iy=19; int iz = 24;
   float exval = data[(ix*y_grid.num+iy)*z_grid.num+iz];
-  double x = x_grid.start + (double)ix * spline->x_grid.delta;
-  double y = y_grid.start + (double)iy * spline->y_grid.delta;
-  z =        z_grid.start + (double)iz * spline->z_grid.delta;
+  double x = x_grid.start + (double)ix * spline->x_grid.delta + 0.000001;
+  double y = y_grid.start + (double)iy * spline->y_grid.delta + 0.000001;
+  z =        z_grid.start + (double)iz * spline->z_grid.delta + 0.000001;
   float spval, grad[3], hess[9], lapl;
   eval_UBspline_3d_s_vgh (spline, x, y, z, &spval, grad, hess);
   fprintf (stderr, "exval = %20.15f   spval = %20.15f\n", exval, spval);
@@ -751,7 +751,7 @@ int main()
   // Test_2d_z();
   // Speed_2d_z();
   Test_3d_s();
-  Speed_3d_s();
+  //Speed_3d_s();
   // Test_3d_d();
   // Speed_3d_d();
   // Test_3d_c();

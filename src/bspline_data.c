@@ -16,18 +16,26 @@ __m128d A0_01, A0_23, A1_01, A1_23, A2_01, A2_23, A3_01, A3_23,
 #endif 
 
 #ifdef USE_ALTIVEC
-vector float A0   = (vector float) ( 1.0/6.0, -3.0/6.0,  3.0/6.0, -1.0/6.0 );
-vector float A1   = (vector float) ( 4.0/6.0,  0.0/6.0, -6.0/6.0,  3.0/6.0 );
-vector float A2   = (vector float) ( 1.0/6.0,  3.0/6.0,  3.0/6.0, -3.0/6.0 );
-vector float A3   = (vector float) ( 0.0/6.0,  0.0/6.0,  0.0/6.0,  1.0/6.0 );
-vector float dA0  = (vector float) ( -0.5,  1.0, -0.5, 0.0  );
-vector float dA1  = (vector float) (  0.0, -2.0,  1.5, 0.0  );
-vector float dA2  = (vector float) (  0.5,  1.0, -1.5, 0.0  );
-vector float dA3  = (vector float) (  0.0,  0.0,  0.5, 0.0  );
-vector float d2A0 = (vector float) (  1.0, -1.0,  0.0, 0.0  );
-vector float d2A1 = (vector float) ( -2.0,  3.0,  0.0, 0.0  );
-vector float d2A2 = (vector float) (  1.0, -3.0,  0.0, 0.0  );
-vector float d2A3 = (vector float) (  0.0,  1.0,  0.0, 0.0  );
+vector float A0   = (vector float) ( -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0);
+vector float A1   = (vector float) (  3.0/6.0, -6.0/6.0,  0.0/6.0, 4.0/6.0);
+vector float A2   = (vector float) ( -3.0/6.0,  3.0/6.0,  3.0/6.0, 1.0/6.0);
+vector float A3   = (vector float) (  1.0/6.0,  0.0/6.0,  0.0/6.0, 0.0/6.0);
+/* vector float A0   = (vector float) ( -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0); */
+/* vector float A1   = (vector float) (  3.0/6.0, -6.0/6.0,  3.0/6.0, 0.0/6.0); */
+/* vector float A2   = (vector float) ( -3.0/6.0,  0.0/6.0,  3.0/6.0, 0.0/6.0); */
+/* vector float A3   = (vector float) (  1.0/6.0,  4.0/6.0,  1.0/6.0, 0.0/6.0); */
+/* vector float A0   = (vector float) ( 1.0/6.0, -3.0/6.0,  3.0/6.0, -1.0/6.0); */
+/* vector float A1   = (vector float) ( 4.0/6.0,  0.0/6.0, -6.0/6.0,  3.0/6.0); */
+/* vector float A2   = (vector float) ( 1.0/6.0,  3.0/6.0,  3.0/6.0, -3.0/6.0); */
+/* vector float A3   = (vector float) ( 0.0/6.0,  0.0/6.0,  0.0/6.0,  1.0/6.0); */
+vector float dA0  = (vector float) ( 0.0, -0.5,  1.0, -0.5 );
+vector float dA1  = (vector float) ( 0.0,  1.5, -2.0,  0.0 );
+vector float dA2  = (vector float) ( 0.0, -1.5,  1.0,  0.5 );
+vector float dA3  = (vector float) ( 0.0,  0.5,  0.0,  0.0 );
+vector float d2A0 = (vector float) ( 0.0,  0.0, -1.0,  1.0 );
+vector float d2A1 = (vector float) ( 0.0,  0.0,  3.0, -2.0 );
+vector float d2A2 = (vector float) ( 0.0,  0.0, -3.0,  1.0 );
+vector float d2A3 = (vector float) ( 0.0,  0.0,  1.0,  0.0 );
 #endif
 
 /*****************/

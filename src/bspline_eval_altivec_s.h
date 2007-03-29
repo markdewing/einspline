@@ -60,7 +60,10 @@ vector float LoadUnaligned(float *target )
   MSQ = vec_ld(0, target);          // most significant quadword
   LSQ = vec_ld(15, target);         // least significant quadword
   mask = vec_lvsl(0, target);       // create the permute mask
-  return vec_perm(MSQ, LSQ, mask);  // align the data
+  result =  vec_perm(MSQ, LSQ, mask);  // align the data
+  //  fprintf (stderr, "result = %vf\n", result);
+  //   fprintf (stderr, "target = %f %f %f %f\n", target[0], target[1], target[2], target[3]);
+  return result;
 }
 
 
@@ -100,6 +103,16 @@ do {                                                                \
   vector float _r    = vec_add (_rlo, _rhi);                        \
   vector float _r2   = vec_splat (_r, 0);                           \
   vec_ste (_r2, 0, (p));                                            \
+} while(0);
+
+#define _4DOTS(_u0, _v0, _u1, _v1, _u2, _v2, _u3, _v3, result)      \
+do {                                                                \
+  vector float _w0   = vec_madd (_u0, _v0, zero);                   \
+  vector float _w1   = vec_madd (_u1, _v1, zero);                   \
+  vector float _w2   = vec_madd (_u2, _v2, zero);                   \
+  vector float _w3   = vec_madd (_u3, _v3, zero);                   \
+  _TRANSPOSE4 (_w0, _w1, _w2, _w3);                                 \
+  result = vec_add (vec_add(_w0, _w1), vec_add(_w2, _w3));         \
 } while(0);
 
 
@@ -319,15 +332,22 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
 //   // tpy = [t_y^3 t_y^2 t_y 1]
 //   // tpz = [t_z^3 t_z^2 t_z 1]
   vector float txtytz = vec_sub (uxuyuz, intpart);
-  vector float one    = (vector float) { 1.0, 1.0, 1.0, 1.0};
+  vector float one    = (vector float) ( 1.0, 1.0, 1.0, 0.0);
   vector float t2     = vec_madd (txtytz, txtytz, zero);
   vector float t3     = vec_madd (t2, txtytz, zero);
+//   vector float tpx    = t3;
+//   vector float tpy    = t2;
+//   vector float tpz    = txtytz;
+//   vector float z2     = one;
+//   _TRANSPOSE4(z2, tpz, tpy, tpx);
   vector float tpx    = t3;
   vector float tpy    = t2;
   vector float tpz    = txtytz;
-  vector float z2   = one;
-  _TRANSPOSE4(z2, tpz, tpy, tpx);
-
+  vector float z2     = one;
+  _TRANSPOSE4(tpx, tpy, tpz, z2);
+//   fprintf (stderr, "txtytz = %vf\n", txtytz);
+//   fprintf (stderr, "tpxyz %vf   %vf   %vf\n", tpx, tpy, tpz);
+//   fprintf (stderr, "ix,iy,iz = %d, %d, %d\n", ix, iy, iz);
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
   // A is 4x4 matrix given by the rows A0, A1, A2, A3
@@ -348,6 +368,10 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
   _MM_MATVEC4_PS ( dA0,  dA1,  dA2,  dA3, tpz,  dc);
   _MM_MATVEC4_PS (d2A0, d2A1, d2A2, d2A3, tpz, d2c);
 
+//   fprintf (stderr, "a = %vf\n", a);
+//   fprintf (stderr, "b = %vf\n", b);
+//   fprintf (stderr, "c = %vf\n", c);
+
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
@@ -356,6 +380,7 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
   tmp2 = LoadUnaligned (P(0,2));
   tmp3 = LoadUnaligned (P(0,3));
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
+  //  fprintf (stderr, "cP[0] = %vf\n", cP[0]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[0]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[0]);
   // 2nd quarter
@@ -390,19 +415,29 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
   _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3], d2b, d2bcP);
   _MM_MATVEC4_PS (d2cP[0], d2cP[1], d2cP[2], d2cP[3],   b, bd2cP);
   _MM_MATVEC4_PS ( dcP[0],  dcP[1],  dcP[2],  dcP[3],  db, dbdcP);
+
+  vector float valgrad;
+//   fprintf (stderr, "a = %vf\n", a);
+//   fprintf (stderr, "bcP = %vf\n", bcP);
+  _4DOTS (a, bcP, da, bcP, a, dbcP, a, bdcP, valgrad);
+//   fprintf (stderr, "valgrad = %vf\n", valgrad);
+  tmp0 = vec_splat (valgrad, 0);  vec_ste (tmp0, 0, val);
+  tmp0 = vec_splat (valgrad, 1);  vec_ste (tmp0, 0, &(grad[0]));
+  tmp0 = vec_splat (valgrad, 2);  vec_ste (tmp0, 0, &(grad[1]));
+  tmp0 = vec_splat (valgrad, 3);  vec_ste (tmp0, 0, &(grad[2]));
   // Compute value
-  _MM_DOT4_PS (a, bcP, val);
-    // Compute gradient
-  _MM_DOT4_PS (da, bcP, &(grad[0]));
-  _MM_DOT4_PS (a, dbcP, &(grad[1]));
-  _MM_DOT4_PS (a, bdcP, &(grad[2]));
-  // Compute hessian
-  _MM_DOT4_PS (d2a, bcP, &(hess[0]));
-  _MM_DOT4_PS (a, d2bcP, &(hess[4]));
-  _MM_DOT4_PS (a, bd2cP, &(hess[8]));
-  _MM_DOT4_PS (da, dbcP, &(hess[1]));
-  _MM_DOT4_PS (da, bdcP, &(hess[2]));
-  _MM_DOT4_PS (a, dbdcP, &(hess[5]));
+//   _MM_DOT4_PS (a, bcP, val);
+//     // Compute gradient
+//   _MM_DOT4_PS (da, bcP, &(grad[0]));
+//   _MM_DOT4_PS (a, dbcP, &(grad[1]));
+//   _MM_DOT4_PS (a, bdcP, &(grad[2]));
+//   // Compute hessian
+//   _MM_DOT4_PS (d2a, bcP, &(hess[0]));
+//   _MM_DOT4_PS (a, d2bcP, &(hess[4]));
+//   _MM_DOT4_PS (a, bd2cP, &(hess[8]));
+//   _MM_DOT4_PS (da, dbcP, &(hess[1]));
+//   _MM_DOT4_PS (da, bdcP, &(hess[2]));
+//   _MM_DOT4_PS (a, dbdcP, &(hess[5]));
 
   // Multiply gradients and hessians by appropriate grid inverses
   float dxInv = spline->x_grid.delta_inv;
