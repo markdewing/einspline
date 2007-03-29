@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <ppc_intrinsics.h>
 
 extern vector float  A0,   A1,   A2,   A3;
 extern vector float  dA0,  dA1,  dA2,  dA3;
@@ -308,15 +309,27 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
   // This macro is used to give the pointer to coefficient data.
   // i and j should be in the range [0,3].  Coefficients are read four
   // at a time, so no k value is needed.
-#define P(i,j) (spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
+#define P(i,j) ((float*)spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  unsigned int control_word;
-  control_word = (1<<3) | (4<<8) | ((ys*4) << 16);
-  vec_dstt (P(0,0), control_word, 0);
-  vec_dstt (P(1,0), control_word, 1);
-  vec_dstt (P(2,0), control_word, 2);
-  vec_dstt (P(3,0), control_word, 3);
+  int control_word;
+  control_word = (2<<3) | (4<<8) | ((4*ys) << 16);
+//   fprintf (stderr, "control word = %x\n", control_word);
+//   fprintf (stderr, "ys = %d P(0,1)-P(0,0) = %d\n", ys,
+//   P(0,1)-P(0,0));
+  void *ptr = P(0,0);
+  __dcbt (P(0,0), 0);  __dcbt (P(0,1), 0); __dcbt (P(0,2), 0); __dcbt (P(0,3), 0);  
+  __dcbt (P(0,0), 12); __dcbt (P(0,1),12); __dcbt (P(0,2),12); __dcbt (P(0,3),12);  
+  __dcbt (P(1,0), 0);  __dcbt (P(1,1), 0); __dcbt (P(1,2), 0); __dcbt (P(1,3), 0);  
+  __dcbt (P(1,0), 12); __dcbt (P(1,1),12); __dcbt (P(1,2),12); __dcbt (P(1,3),12);  
+  __dcbt (P(2,0), 0);  __dcbt (P(2,1), 0); __dcbt (P(2,2), 0); __dcbt (P(2,3), 0);  
+  __dcbt (P(2,0), 12); __dcbt (P(2,1),12); __dcbt (P(2,2),12); __dcbt (P(2,3),12);  
+  __dcbt (P(3,0), 0);  __dcbt (P(3,1), 0); __dcbt (P(3,2), 0); __dcbt (P(3,3), 0);  
+  __dcbt (P(3,0), 12); __dcbt (P(3,1),12); __dcbt (P(3,2),12); __dcbt (P(3,3),12);  
+//   vec_dstt (P(0,0), control_word, 0);
+//   vec_dstt (P(1,0), control_word, 1);
+//   vec_dstt (P(2,0), control_word, 2);
+//   vec_dstt (P(3,0), control_word, 3);
 
 //   // Now compute the vectors:
 //   // tpx = [t_x^3 t_x^2 t_x 1]
