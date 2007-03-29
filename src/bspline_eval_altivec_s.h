@@ -280,6 +280,7 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
 			float* restrict val, float* restrict grad, 
 			float* restrict hess)
 {
+  vec_dst (&A0, (12<<3) | (1<<8), 0);
   /// SSE mesh point determination
   vector float xyz       = MakeVec (x, y, z, 0.0);
   vector float x0y0z0    = MakeVec ( spline->x_grid.start,  spline->y_grid.start, 
@@ -310,13 +311,12 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
 #define P(i,j) (spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-//   unsigned int control_word;
-//   float *ptr = (float*)((unsigned int)P(0,0)&0xfffffff0);
-//   control_word = (1<<3) | (4<<8) | ((ys*4) << 16);
-//   vec_dstt (ptr, control_word, 0);
-//   vec_dstt (P(1,0), control_word, 1);
-//   vec_dstt (P(2,0), control_word, 2);
-//   vec_dstt (P(3,0), control_word, 3);
+  unsigned int control_word;
+  control_word = (1<<3) | (4<<8) | ((ys*4) << 16);
+  vec_dstt (P(0,0), control_word, 0);
+  vec_dstt (P(1,0), control_word, 1);
+  vec_dstt (P(2,0), control_word, 2);
+  vec_dstt (P(3,0), control_word, 3);
 
 //   // Now compute the vectors:
 //   // tpx = [t_x^3 t_x^2 t_x 1]
