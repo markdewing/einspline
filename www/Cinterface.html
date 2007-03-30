@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+  <title>libbspline</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body>
+<center>
+<img src="bspline_logo.png" align="center">
+</center>
+
+<div align=center>
+<TABLE CELLSPACING=20 CELLPADDING=1>
+<TR>
+	<TD><A HREF="download.html">Download</A></TD>
+	<TD><A HREF="http://www.fftw.org/benchfft/">Benchmark</A></TD>
+	<TD><A HREF="#features">Features</A></TD>
+	<TD><A HREF="Cinterface.html">Documentation</A></TD>
+	<TD><A HREF="faq/">FAQ</A></TD>
+	<TD><A HREF="links.html">Links</A></TD>
+</TR>
+</TABLE>
+</div
+
+<center>
+<h1> C interface </h1>
+</center>
+libbspline organizes spline routines into two groups:  those which are
+specified on a uniform grid (or multidimensional mesh), and those on
+nonuniform grids.  The uniform versions of the routines are documented
+below.  The nonuniform versions will be translated from C++ shortly.
+
+<h2> Uniform splines: </h2>
+
+<h3> Spline creation </h3>
+Each B-spline object type has an associated creation routine, to the
+user must pass the dimensions of the data, the boundary conditions to
+use, and a pointer to the mesh data.  
+<h4> Grid dimensions </h4>
+<h4> Boundary conditions </h4>
+<h4> Data to be interpolated </h4>
+
+<h4> Function prototypes: </h4>
+<u>Single-precision real: </u><br>
+<PRE>
+UBspline_1d_s * create_UBspline_1d_s (Ugrid x_grid, BCtype_s xBC, float *data);
+UBspline_2d_s * create_UBspline_2d_s (Ugrid x_grid, Ugrid y_grid,
+                                      BCtype_s xBC, BCtype_s yBC, float *data);
+UBspline_3d_s * create_UBspline_3d_s (Ugrid x_grid,   Ugrid y_grid, Ugrid z_grid,
+                                      BCtype_s  xBC,  BCtype_s   yBC, BCtype_s   zBC, float *data);
+</PRE>
+<u>Single-precision complex: </u><br>
+<PRE>
+UBspline_1d_c * create_UBspline_1d_c (Ugrid x_grid, BCtype_c xBC, complex_float *data);
+UBspline_2d_c * create_UBspline_2d_c (Ugrid x_grid, Ugrid y_grid,
+                                      BCtype_c xBC, BCtype_c yBC, complex_float *data);
+UBspline_3d_c * create_UBspline_3d_c (Ugrid x_grid,   Ugrid y_grid, Ugrid z_grid,
+                                      BCtype_c  xBC,  BCtype_c   yBC, BCtype_c   zBC, 
+                                      complex_float *data);
+</PRE>
+<u>Double-precision real: </u><br>
+<PRE>
+UBspline_1d_d * create_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, double *data);
+UBspline_2d_d * create_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,
+                                      BCtype_d xBC, BCtype_d yBC, double *data);
+UBspline_3d_d * create_UBspline_3d_d (Ugrid x_grid,   Ugrid y_grid, Ugrid z_grid,
+                                      BCtype_d  xBC,  BCtype_d   yBC, BCtype_d   zBC, double *data);
+</PRE>
+<u> Double-precision complex: </u><br>
+<PRE>
+UBspline_1d_z * create_UBspline_1d_z (Ugrid x_grid, BCtype_z xBC, complex_double *data);
+UBspline_2d_z * create_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
+                                      BCtype_z xBC, BCtype_z yBC, complex_double *data);
+UBspline_3d_z * create_UBspline_3d_z (Ugrid x_grid,   Ugrid y_grid, Ugrid z_grid,
+                                      BCtype_z  xBC,  BCtype_z   yBC, BCtype_z   zBC, 
+                                      complex_double *data);
+</PRE>
+
+</PRE>
+</body>
