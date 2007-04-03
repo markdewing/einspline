@@ -143,6 +143,14 @@ eval_UBspline_1d_d_vgl (UBspline_1d_d * restrict spline, double x,
      coefs[i+3]*(d2Ad[14]*tp[2] + d2Ad[15]*tp[3]));
 }
 
+inline void
+eval_UBspline_1d_d_vgh (UBspline_1d_d * restrict spline, double x, 
+			double* restrict val, double* restrict grad,
+			double* restrict hess)
+{
+  eval_UBspline_1d_d_vgl (spline, x, val, grad, hess);
+}
+
 /************************************************************/
 /* 2D single-precision, real evaulation functions           */
 /************************************************************/

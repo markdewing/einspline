@@ -94,6 +94,14 @@ eval_UBspline_1d_z_vgl (UBspline_1d_z * restrict spline, double x,
      coefs[i+3]*(d2Ad[14]*tp[2] + d2Ad[15]*tp[3]));
 }
 
+inline void
+eval_UBspline_1d_z_vgh (UBspline_1d_z * restrict spline, double x, 
+			complex_double* restrict val, 
+			complex_double* restrict grad,
+			complex_double* restrict hess)
+{
+  eval_UBspline_1d_z_vgh (spline, x, val, grad, hess);
+}
 /************************************************************/
 /* 2D double-precision, complex evaulation functions        */
 /************************************************************/
