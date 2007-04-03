@@ -61,7 +61,21 @@ inline void
 eval_UBspline_1d_z (UBspline_1d_z * restrict spline, 
 		    double x, complex_double* restrict val)
 {
+  x -= spline->x_grid.start;
+  double u = x*spline->x_grid.delta_inv;
+  double ipart, t;
+  t = modf (u, &ipart);
+  int i = (int) ipart;
+  
+  double tp[4];
+  tp[0] = t*t*t;  tp[1] = t*t;  tp[2] = t;  tp[3] = 1.0;
+  complex_double* restrict coefs = spline->coefs;
 
+  *val = 
+    (coefs[i+0]*(Af[ 0]*tp[0] + Af[ 1]*tp[1] + Af[ 2]*tp[2] + Af[ 3]*tp[3])+
+     coefs[i+1]*(Af[ 4]*tp[0] + Af[ 5]*tp[1] + Af[ 6]*tp[2] + Af[ 7]*tp[3])+
+     coefs[i+2]*(Af[ 8]*tp[0] + Af[ 9]*tp[1] + Af[10]*tp[2] + Af[11]*tp[3])+
+     coefs[i+3]*(Af[12]*tp[0] + Af[13]*tp[1] + Af[14]*tp[2] + Af[15]*tp[3]));
 }
 
 /* Value and first derivative */
@@ -69,7 +83,26 @@ inline void
 eval_UBspline_1d_z_vg (UBspline_1d_z * restrict spline, double x, 
 		     complex_double* restrict val, complex_double* restrict grad)
 {
+  x -= spline->x_grid.start;
+  double u = x*spline->x_grid.delta_inv;
+  double ipart, t;
+  t = modf (u, &ipart);
+  int i = (int) ipart;
+  
+  double tp[4];
+  tp[0] = t*t*t;  tp[1] = t*t;  tp[2] = t;  tp[3] = 1.0;
+  complex_double* restrict coefs = spline->coefs;
 
+  *val = 
+    (coefs[i+0]*(Ad[ 0]*tp[0] + Ad[ 1]*tp[1] + Ad[ 2]*tp[2] + Ad[ 3]*tp[3])+
+     coefs[i+1]*(Ad[ 4]*tp[0] + Ad[ 5]*tp[1] + Ad[ 6]*tp[2] + Ad[ 7]*tp[3])+
+     coefs[i+2]*(Ad[ 8]*tp[0] + Ad[ 9]*tp[1] + Ad[10]*tp[2] + Ad[11]*tp[3])+
+     coefs[i+3]*(Ad[12]*tp[0] + Ad[13]*tp[1] + Ad[14]*tp[2] + Ad[15]*tp[3]));
+  *grad = spline->x_grid.delta_inv * 
+    (coefs[i+0]*(dAd[ 1]*tp[1] + dAd[ 2]*tp[2] + dAd[ 3]*tp[3])+
+     coefs[i+1]*(dAd[ 5]*tp[1] + dAd[ 6]*tp[2] + dAd[ 7]*tp[3])+
+     coefs[i+2]*(dAd[ 9]*tp[1] + dAd[10]*tp[2] + dAd[11]*tp[3])+
+     coefs[i+3]*(dAd[13]*tp[1] + dAd[14]*tp[2] + dAd[15]*tp[3]));
 }
 /* Value, first derivative, and second derivative */
 inline void
@@ -77,7 +110,39 @@ eval_UBspline_1d_z_vgl (UBspline_1d_z * restrict spline, double x,
 			complex_double* restrict val, complex_double* restrict grad,
 			complex_double* restrict lapl)
 {
+  x -= spline->x_grid.start;
+  double u = x*spline->x_grid.delta_inv;
+  double ipart, t;
+  t = modf (u, &ipart);
+  int i = (int) ipart;
+  
+  double tp[4];
+  tp[0] = t*t*t;  tp[1] = t*t;  tp[2] = t;  tp[3] = 1.0;
+  complex_double* restrict coefs = spline->coefs;
 
+  *val = 
+    (coefs[i+0]*(Ad[ 0]*tp[0] + Ad[ 1]*tp[1] + Ad[ 2]*tp[2] + Ad[ 3]*tp[3])+
+     coefs[i+1]*(Ad[ 4]*tp[0] + Ad[ 5]*tp[1] + Ad[ 6]*tp[2] + Ad[ 7]*tp[3])+
+     coefs[i+2]*(Ad[ 8]*tp[0] + Ad[ 9]*tp[1] + Ad[10]*tp[2] + Ad[11]*tp[3])+
+     coefs[i+3]*(Ad[12]*tp[0] + Ad[13]*tp[1] + Ad[14]*tp[2] + Ad[15]*tp[3]));
+  *grad = spline->x_grid.delta_inv * 
+    (coefs[i+0]*(dAd[ 1]*tp[1] + dAd[ 2]*tp[2] + dAd[ 3]*tp[3])+
+     coefs[i+1]*(dAd[ 5]*tp[1] + dAd[ 6]*tp[2] + dAd[ 7]*tp[3])+
+     coefs[i+2]*(dAd[ 9]*tp[1] + dAd[10]*tp[2] + dAd[11]*tp[3])+
+     coefs[i+3]*(dAd[13]*tp[1] + dAd[14]*tp[2] + dAd[15]*tp[3]));
+  *lapl = spline->x_grid.delta_inv * spline->x_grid.delta_inv * 
+    (coefs[i+0]*(d2Ad[ 2]*tp[2] + d2Ad[ 3]*tp[3])+
+     coefs[i+1]*(d2Ad[ 6]*tp[2] + d2Ad[ 7]*tp[3])+
+     coefs[i+2]*(d2Ad[10]*tp[2] + d2Ad[11]*tp[3])+
+     coefs[i+3]*(d2Ad[14]*tp[2] + d2Ad[15]*tp[3]));
+}
+
+inline void
+eval_UBspline_1d_z_vgh (UBspline_1d_z * restrict spline, double x, 
+			complex_double* restrict val, complex_double* restrict grad,
+			complex_double* restrict hess)
+{
+  eval_UBspline_1d_z_vgl (spline, x, val, grad, hess); 
 }
 
 /************************************************************/
