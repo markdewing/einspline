@@ -108,7 +108,146 @@ eval_UBspline_2d_z_vgl (UBspline_2d_z * restrict spline,
 			double x, double y, complex_double* restrict val, 
 			complex_double* restrict grad, complex_double* restrict lapl)
 {
+  _mm_prefetch ((void*)  &A0_01,_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A0_23,_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A1_01,_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A1_23,_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A2_01,_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A2_23,_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A3_01,_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A3_23,_MM_HINT_T0);  
 
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;  
+  double ux = x*spline->x_grid.delta_inv;
+  double uy = y*spline->y_grid.delta_inv;
+  ux = fmin (ux, (double)(spline->x_grid.num)-1.0e-5);
+  uy = fmin (uy, (double)(spline->y_grid.num)-1.0e-5);
+  double ipartx, iparty, tx, ty;
+  tx = modf (ux, &ipartx);  int ix = (int) ipartx;
+  ty = modf (uy, &iparty);  int iy = (int) iparty;
+  
+  int xs = spline->x_stride;
+
+  // This macro is used to give the pointer to coefficient data.
+  // i and j should be in the range [0,3].  Coefficients are read four
+  // at a time, so no k value is needed.
+#define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+  // tpz = [t_z^3 t_z^2 t_z 1]
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
+  // A is 4x4 matrix given by the rows A0, A1, A2, A3
+  __m128d tpx01, tpx23, tpy01, tpy23, 
+    a01, b01, da01, db01, d2a01, d2b01,
+    a23, b23, da23, db23, d2a23, d2b23,
+    bP01r, dbP01r, d2bP01r, 
+    bP23r, dbP23r, d2bP23r, 
+    bP01i, dbP01i, d2bP01i, 
+    bP23i, dbP23i, d2bP23i, 
+    tmp0, tmp1, tmp2, tmp3, r0, r1, r2, r3, i0, i1, i2, i3;
+  
+  tpx01 = _mm_set_pd (tx*tx*tx, tx*tx);
+  tpx23 = _mm_set_pd (tx, 1.0);
+  tpy01 = _mm_set_pd (ty*ty*ty, ty*ty);
+  tpy23 = _mm_set_pd (ty, 1.0);
+
+  // x-dependent vectors
+  _MM_DDOT4_PD (  A0_01,   A0_23,   A1_01,   A1_23, tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (  A2_01,   A2_23,   A3_01,   A3_23, tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD ( dA0_01,  dA0_23,  dA1_01,  dA1_23, tpx01, tpx23, tpx01, tpx23,  da01);
+  _MM_DDOT4_PD ( dA2_01,  dA2_23,  dA3_01,  dA3_23, tpx01, tpx23, tpx01, tpx23,  da23);
+  _MM_DDOT4_PD (d2A0_01, d2A0_23, d2A1_01, d2A1_23, tpx01, tpx23, tpx01, tpx23, d2a01);
+  _MM_DDOT4_PD (d2A2_01, d2A2_23, d2A3_01, d2A3_23, tpx01, tpx23, tpx01, tpx23, d2a23);
+
+  // y-dependent vectors
+  _MM_DDOT4_PD (  A0_01,   A0_23,   A1_01,   A1_23, tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (  A2_01,   A2_23,   A3_01,   A3_23, tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD ( dA0_01,  dA0_23,  dA1_01,  dA1_23, tpy01, tpy23, tpy01, tpy23,  db01);
+  _MM_DDOT4_PD ( dA2_01,  dA2_23,  dA3_01,  dA3_23, tpy01, tpy23, tpy01, tpy23,  db23);
+  _MM_DDOT4_PD (d2A0_01, d2A0_23, d2A1_01, d2A1_23, tpy01, tpy23, tpy01, tpy23, d2b01);
+  _MM_DDOT4_PD (d2A2_01, d2A2_23, d2A3_01, d2A3_23, tpy01, tpy23, tpy01, tpy23, d2b23);
+
+  tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(0,2));  tmp1 = _mm_load_pd (P(0,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,0));  tmp1 = _mm_load_pd (P(1,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,2));  tmp1 = _mm_load_pd (P(1,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP01i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,    db01,   db23,   db01,   db23,   dbP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,    db01,   db23,   db01,   db23,   dbP01i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP01i);
+
+  tmp0 = _mm_load_pd (P(2,0));  tmp1 = _mm_load_pd (P(2,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(2,2));  tmp1 = _mm_load_pd (P(2,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,0));  tmp1 = _mm_load_pd (P(3,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,2));  tmp1 = _mm_load_pd (P(3,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP23i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,    db01,   db23,   db01,   db23,   dbP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,    db01,   db23,   db01,   db23,   dbP23i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP23i);
+
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01r, bP23r, *((double*)val+0));
+  _MM_DOT4_PD (a01, a23, bP01i, bP23i, *((double*)val+1));
+
+  double *dgrad = (double*) grad;
+  // Compute gradient
+  _MM_DOT4_PD (da01, da23,  bP01r,  bP23r, dgrad[0]);
+  _MM_DOT4_PD (da01, da23,  bP01i,  bP23i, dgrad[1]);
+  _MM_DOT4_PD ( a01,  a23, dbP01r, dbP23r, dgrad[2]);
+  _MM_DOT4_PD ( a01,  a23, dbP01i, dbP23i, dgrad[3]);
+  // Compute Laplacian
+  double d2x_r, d2x_i, d2y_r, d2y_i;
+  _MM_DOT4_PD (d2a01, d2a23, bP01r, bP23r, d2x_r);
+  _MM_DOT4_PD (d2a01, d2a23, bP01i, bP23i, d2x_i);
+  _MM_DOT4_PD (a01, a23, d2bP01r, d2bP23r, d2y_r);
+  _MM_DOT4_PD (a01, a23, d2bP01i, d2bP23i, d2y_i);
+  
+  // Multiply gradients and hessians by appropriate grid inverses
+  double dxInv = spline->x_grid.delta_inv;
+  double dyInv = spline->y_grid.delta_inv;
+  grad[0] *= dxInv;
+  grad[1] *= dyInv;
+  d2x_r *= dxInv*dxInv;
+  d2x_i *= dxInv*dxInv;
+  d2y_r *= dyInv*dyInv;
+  d2y_i *= dyInv*dyInv;
+  *lapl = (d2x_r + d2y_r) + 1.0I*(d2x_i + d2y_i);
+#undef P
 }
 
 /* Value, gradient, and Hessian */
