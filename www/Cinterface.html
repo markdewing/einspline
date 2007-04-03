@@ -33,7 +33,7 @@ below.  The nonuniform versions will be translated from C++ shortly.
 
 <h2> Uniform splines: </h2>
 
-<h3> Spline creation </h3>
+<h3> <font color="Blue"> Spline creation </font></h3>
 Each B-spline object type has an associated creation routine, to the
 user must pass the dimensions of the data, the boundary conditions to
 use, and a pointer to the mesh data.  
@@ -76,6 +76,175 @@ UBspline_3d_z * create_UBspline_3d_z (Ugrid x_grid,   Ugrid y_grid, Ugrid z_grid
                                       BCtype_z  xBC,  BCtype_z   yBC, BCtype_z   zBC, 
                                       complex_double *data);
 </PRE>
+<hr>
+<h3> <font color="Blue"> Spline evaluation </font> </h3>
+For each of the four datatypes, there are four evaluation routines, depending on
+which quantities need to be computed:
+<ul>
+  <li> Value only
+  <li> Value and gradient
+  <li> Value, gradient, and Laplacian
+  <li> Value, gradient, and Hessian (matrix of 2nd derivatives)
+</ul>
+For consistency, all results are returned through pointers passed to the evaluation
+routines.  Currently, no bounds checking is done for the sake of speed.  The user is
+responsible for ensuring that the points passed to the evaluation functions fall within
+the grids specified at the time of spline creation.<br>
 
+<h4> Function prototypes: </h4>
+<u> Quick Jump Table </u>
+<table CELLPADDING=5> 
+  <tr>
+    <td>   </td>
+    <td> 1D </td>
+    <td> 2D </td>
+    <td> 3D </td>
+  </tr>
+  <tr>
+     <td> Single-precision real </td>
+     <td> <a href="#1Ds"> 1ds </a>
+     <td> <a href="#2Ds"> 2ds </a>
+     <td> <a href="#3Ds"> 3ds </a>
+  </tr>
+  <tr>
+     <td> Single-precision complex </td>
+     <td> <a href="#1Dc"> 1dc </a>
+     <td> <a href="#2Dc"> 2dc </a>
+     <td> <a href="#3Dc"> 3dc </a>
+  </tr>
+  <tr>
+     <td> Double-precision real </td>
+     <td> <a href="#1Dd"> 1dd </a>
+     <td> <a href="#2Dd"> 2dd </a>
+     <td> <a href="#3Dd"> 3dd </a>
+  </tr>
+  <tr>
+     <td> Double-precision complex </td>
+     <td> <a href="#1Dz"> 1dz </a>
+     <td> <a href="#2Dz"> 2dz </a>
+     <td> <a href="#3Dz"> 3dz </a>
+  </tr>
+</table>
+<br>
+<u> Single-precision real:</u><br>
+<u> <a name="1Ds"> 1D </a></u>
+<PRE>
+inline void
+eval_UBspline_1d_s     (UBspline_1d_s * restrict spline, 
+		        double x, float* restrict val);
+
+inline void
+eval_UBspline_1d_s_vg  (UBspline_1d_s * restrict spline, double x, 
+  		        float* restrict val, float* restrict grad);
+
+inline void
+eval_UBspline_1d_s_vgl (UBspline_1d_s * restrict spline, double x, 
+			float* restrict val, float* restrict grad, float* restrict lapl);
+
+inline void /* identical to above routine in 1D */
+eval_UBspline_1d_s_vgh (UBspline_1d_s * restrict spline, double x, 
+			float* restrict val, float* restrict grad, float* restrict hess);
 </PRE>
+
+<u> <a name="2Ds"> 2D </a> </u>
+<PRE>
+inline void
+eval_UBspline_2d_s     (UBspline_2d_s * restrict spline, double x, double y, 
+                        float* restrict val);
+
+inline void
+eval_UBspline_2d_s_vg  (UBspline_2d_s * restrict spline, double x, double y, 
+  		        float* restrict val, float* restrict grad);
+
+inline void
+eval_UBspline_2d_s_vgl (UBspline_2d_s * restrict spline, double x, double y,
+			float* restrict val, float* restrict grad, float* restrict lapl);
+
+inline void 
+eval_UBspline_2d_s_vgh (UBspline_2d_s * restrict spline, double x, double y,
+			float* restrict val, float* restrict grad, float* restrict hess);
+</PRE>
+<u> <a name="3Ds"> 3D </a></u>
+<PRE>
+inline void
+eval_UBspline_3d_s     (UBspline_3d_s * restrict spline, double x, double y, double z,
+                        float* restrict val);
+
+inline void
+eval_UBspline_3d_s_vg  (UBspline_3d_s * restrict spline, double x, double y, double z,
+  		        float* restrict val, float* restrict grad);
+
+inline void
+eval_UBspline_3d_s_vgl (UBspline_3d_s * restrict spline, double x, double y, double z,
+			float* restrict val, float* restrict grad, float* restrict lapl);
+
+inline void 
+eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline, double x, double y,
+			float* restrict val, float* restrict grad, float* restrict hess);
+</PRE>
+
+<u>Single-precision complex: </u><br>
+<u> <a name="1Dc"> 1D </a></u>
+<PRE>
+inline void
+eval_UBspline_1d_c     (UBspline_1d_c * restrict spline, 
+		        double x, complex_float* restrict val);
+
+inline void
+eval_UBspline_1d_c_vg  (UBspline_1d_c * restrict spline, double x, 
+  		        complex_float* restrict val, complex_float* restrict grad);
+
+inline void
+eval_UBspline_1d_c_vgl (UBspline_1d_c * restrict spline, double x, 
+			complex_float* restrict val, complex_float* restrict grad, complex_float* restrict lapl);
+
+inline void /* identical to above routine in 1D */
+eval_UBspline_1d_c_vgh (UBspline_1d_c * restrict spline, double x, 
+			complex_float* restrict val, complex_float* restrict grad, complex_float* restrict hess);
+</PRE>
+
+<u> <a name="2Dc"> 2D </a> </u>
+<PRE>
+inline void
+eval_UBspline_2d_c     (UBspline_2d_c * restrict spline, double x, double y, 
+                        complex_float* restrict val);
+
+inline void
+eval_UBspline_2d_c_vg  (UBspline_2d_c * restrict spline, double x, double y, 
+  		        complex_float* restrict val, complex_float* restrict grad);
+
+inline void
+eval_UBspline_2d_c_vgl (UBspline_2d_c * restrict spline, double x, double y,
+			complex_float* restrict val, complex_float* restrict grad, complex_float* restrict lapl);
+
+inline void 
+eval_UBspline_2d_c_vgh (UBspline_2d_c * restrict spline, double x, double y,
+			complex_float* restrict val, complex_float* restrict grad, complex_float* restrict hess);
+</PRE>
+<u> <a name="3Dc"> 3D </a> </u>
+<PRE>
+inline void
+eval_UBspline_3d_c     (UBspline_3d_c * restrict spline, double x, double y, double z,
+                        complex_float* restrict val);
+
+inline void
+eval_UBspline_3d_c_vg  (UBspline_3d_c * restrict spline, double x, double y, double z,
+  		        complex_float* restrict val, complex_float* restrict grad);
+
+inline void
+eval_UBspline_3d_c_vgl (UBspline_3d_c * restrict spline, double x, double y, double z,
+			complex_float* restrict val, complex_float* restrict grad, complex_float* restrict lapl);
+
+inline void 
+eval_UBspline_3d_c_vgh (UBspline_3d_c * restrict spline, double x, double y,
+			complex_float* restrict val, complex_float* restrict grad, complex_float* restrict hess);
+</PRE>
+<u>Double-precision real: </u><br>
+<PRE>
+</PRE>
+<u>Double-precision complex: </u><br>
+<PRE>
+</PRE>
+
+
 </body>
