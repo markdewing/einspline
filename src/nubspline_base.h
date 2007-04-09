@@ -13,7 +13,7 @@ typedef struct
   double start, end;
   double *points;
   int num_points;
-  int (*reverse_map)(void *grid, int i);
+  int (*reverse_map)(void *grid, double x);
 } NUgrid;
 
 typedef struct
@@ -22,8 +22,8 @@ typedef struct
   grid_type code;
   double start, end;
   double *points;
-  int numPoints;
-  int (*reverse_map)(NUgrid *grid, int i);
+  int num_points;
+  int (*reverse_map)(void *grid, double x);
 
   // private data
   double a, aInv, b, bInv, center, even_half;
