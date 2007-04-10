@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <time.h>
 
 void
 PrintPassFail(bool pass)
@@ -52,8 +53,46 @@ TestGeneralGrid()
   PrintPassFail (passed);
 }
 
+void
+GridSpeedTest()
+{
+  NUgrid* centgrid = create_center_grid (-5.0, 7.0, 6.0, 2000);
+  NUgrid* gengrid = create_general_grid (centgrid->points, 2000);
+  int centsum=0, gensum=0;
+  
+  clock_t rstart, rend, cstart, cend, gstart, gend;
+  
+  rstart = clock();
+  for (int i=0; i<100000000; i++) {
+    double x = -5.0 + 12.0*drand48();
+  }
+  rend = clock();
+
+  cstart = clock();
+  for (int i=0; i<100000000; i++) {
+    double x = -5.0 + 12.0*drand48();
+    centsum += (*centgrid->reverse_map)(centgrid, x);
+  }
+  cend = clock();
+
+  gstart = clock();
+  for (int i=0; i<100000000; i++) {
+    double x = -5.0 + 12.0*drand48();
+    gensum += (*gengrid->reverse_map)(gengrid, x);
+  }
+  gend = clock();
+  
+  double cent_time = (double)(cend-cstart+rstart-rend)/(double)CLOCKS_PER_SEC;
+  double gen_time  = (double)(gend-gstart+rstart-rend)/(double)CLOCKS_PER_SEC;
+  fprintf (stderr, "%d %d\n", centsum, gensum);
+  fprintf (stderr, "center_grid  time = %1.3f s.\n", cent_time);
+  fprintf (stderr, "general_grid time = %1.3f s.\n", gen_time);
+
+}
+
 main()
 {
   TestCenterGrid();
   TestGeneralGrid();
+  GridSpeedTest();
 }

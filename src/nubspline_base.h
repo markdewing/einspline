@@ -11,7 +11,7 @@ typedef struct
   // public data
   grid_type code;
   double start, end;
-  double *points;
+  double* restrict points;
   int num_points;
   int (*reverse_map)(void *grid, double x);
 } NUgrid;
@@ -21,7 +21,7 @@ typedef struct
   // public data
   grid_type code;
   double start, end;
-  double *points;
+  double* restrict points;
   int num_points;
   int (*reverse_map)(void *grid, double x);
 
@@ -31,6 +31,16 @@ typedef struct
   bool odd;
 } center_grid;
 
-
+typedef struct
+{
+  NUgrid* grid;
+  // xVals is just the grid points, augmented by two extra points on
+  // either side.  These are necessary to generate enough basis
+  // functions. 
+  double* xVals;
+  // dxInv[3*i+j] = 1.0/(grid(i+j-1)-grid(i-2))
+  double *dxInv;
+  bool Periodic;
+} NUBasis;
 
 #endif
