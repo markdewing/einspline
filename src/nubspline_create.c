@@ -195,7 +195,7 @@ get_NUBasis_funcs_i (NUBasis* restrict basis, int i,
   bfuncs[3] = (x-xVals[i2])    * dxInv[3*(i+2)+2] * b2[2];
 }
 
-void
+int
 get_NUBasis_dfuncs (NUBasis* restrict basis, double x,
 		    double bfuncs[4], double dbfuncs[4])
 {
@@ -257,7 +257,7 @@ get_NUBasis_dfuncs_i (NUBasis* restrict basis, int i,
 }
 
 
-void
+int
 get_NUBasis_d2funcs (NUBasis* restrict basis, double x,
 		     double bfuncs[4], double dbfuncs[4], double d2bfuncs[4])
 {
@@ -330,6 +330,4 @@ get_NUBasis_d2funcs_i (NUBasis* restrict basis, int i,
   d2bfuncs[2] = 6.0 * (+dxInv[3*(i+1)+2]* dxInv[3*(i+1)+1]*b1[0] -
 		        dxInv[3*(i+2)+1]*(dxInv[3*(i+1)+2] + dxInv[3*(i+2)+2])*b1[1]);
   d2bfuncs[3] = 6.0 * (+dxInv[3*(i+2)+2]* dxInv[3*(i+2)+1]*b1[1]);
-
-  return i;
 }
