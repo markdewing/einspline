@@ -33,14 +33,14 @@ typedef struct
 
 typedef struct
 {
-  NUgrid* grid;
+  NUgrid* restrict grid;
   // xVals is just the grid points, augmented by two extra points on
   // either side.  These are necessary to generate enough basis
   // functions. 
-  double* xVals;
+  double* restrict xVals;
   // dxInv[3*i+j] = 1.0/(grid(i+j-1)-grid(i-2))
-  double *dxInv;
-  bool Periodic;
+  double* restrict dxInv;
+  bool periodic;
 } NUBasis;
 
 #endif

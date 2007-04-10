@@ -109,3 +109,36 @@ create_general_grid (double *points, int num_points)
   }
   return grid;
 }
+
+
+NUBasis*
+create_NUBasis (NUgrid *grid, bool periodic)
+{
+  NUBasis* restrict basis = malloc (sizeof(NUBasis));
+  basis->grid = grid;
+  basis->periodic = periodic;
+  int N = grid->num_points;
+  basis->xVals = malloc ((N+2)*sizeof(double));
+  basis->dxInv = malloc (3*(N+4)*sizeof(double));
+  for (int i=0; i<N; i++)
+    basis->xVals[i+2] = grid->points[i];
+  double*  restrict g = grid->points;
+  // Extend grid points on either end to provide enough points to
+  // construct a full basis set
+  if (!periodic) {
+    basis->xVals[0]   = g[ 0 ] - 2.0*(g[1]-g[0]);
+    basis->xVals[1]   = g[ 0 ] - 1.0*(g[1]-g[0]);
+    basis->xVals[N+2] = g[N-1] + 1.0*(g[N-1]-g[N-2]);
+    basis->xVals[N+3] = g[N-1] + 2.0*(g[N-1]-g[N-2]);
+  }
+  else {
+    basis->xVals[1]   = g[ 0 ] - (g[N-1] - g[N-2]);
+    basis->xVals[0]   = g[ 0 ] - (g[N-1] - g[N-3]);
+    basis->xVals[N+2] = g[N-1] + (g[ 1 ] - g[ 0 ]);
+    basis->xVals[N+3] = g[N-1] + (g[ 2 ] - g[ 0 ]);
+  }
+  for (int i=0; i<N+2; i++) 
+    for (int j=0; j<3; j++) 
+      basis->dxInv[3*i+j] = 1.0/(xVals(i+j+1)-xVals(i));
+  return basis;
+}
