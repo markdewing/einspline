@@ -331,3 +331,131 @@ get_NUBasis_d2funcs_i (NUBasis* restrict basis, int i,
 		        dxInv[3*(i+2)+1]*(dxInv[3*(i+1)+2] + dxInv[3*(i+2)+2])*b1[1]);
   d2bfuncs[3] = 6.0 * (+dxInv[3*(i+2)+2]* dxInv[3*(i+2)+1]*b1[1]);
 }
+
+
+void
+SolveDerivInterp1D (NUBasis* restrict basis, 
+		    double* restrict data, int datastride,
+		    double* restrict p, int pstride,
+		    double abcdInitial[4], double abcdFinal[4])
+{
+  int M = basis->grid->num_points;
+  int N = M+2;
+  // Banded matrix storage.  The first three elements in the
+  // tinyvector store the tridiagonal coefficients.  The last element
+  // stores the RHS data.
+  double bands[4*N];
+
+  // Fill up bands
+  for (int i=0; i<4; i++) {
+    bands[i]         = abcdInitial[i];
+    bands[4*(N-1)+i] = abcdFinal[i];
+  }
+  for (int i=0; i<M; i++) {
+    get_NUBasis_funcs_i (basis, i, &(bands[4*(i+1)]));
+    bands[4*(i+1)+3] = data[datastride*i];
+  }
+    
+  // Now solve:
+  // First and last rows are different
+  bands[4*0+1] /= bands[4*0+0];
+  bands[4*0+2] /= bands[4*0+0];
+  bands[4*0+3] /= bands[4*0+0];
+  bands[4*0+0] = 1.0;
+  bands[4*1+1] -= bands[4*1+0]*bands[4*0+1];
+  bands[4*1+2] -= bands[4*1+0]*bands[4*0+2];
+  bands[4*1+3] -= bands[4*1+0]*bands[4*0+3];
+  bands[4*0+0] = 0.0;
+  bands[4*1+2] /= bands[4*1+1];
+  bands[4*1+3] /= bands[4*1+1];
+  bands[4*1+1] = 1.0;
+  
+  // Now do rows 2 through M+1
+  for (int row=2; row < N-1; row++) {
+    bands[4*(row)+1] -= bands[4*(row)+0]*bands[4*(row-1)+2];
+    bands[4*(row)+3] -= bands[4*(row)+0]*bands[4*(row-1)+3];
+    bands[4*(row)+2] /= bands[4*(row)+1];
+    bands[4*(row)+3] /= bands[4*(row)+1];
+    bands[4*(row)+0] = 0.0;
+    bands[4*(row)+1] = 1.0;
+  }
+
+  // Do last row
+  bands[4*(M+1)+1] -= bands[4*(M+1)+0]*bands[4*(M-1)+2];
+  bands[4*(M+1)+3] -= bands[4*(M+1)+0]*bands[4*(M-1)+3];
+  bands[4*(M+1)+2] -= bands[4*(M+1)+1]*bands[4*(M)+2];
+  bands[4*(M+1)+3] -= bands[4*(M+1)+1]*bands[4*(M)+3];
+  bands[4*(M+1)+3] /= bands[4*(M+1)+2];
+  bands[4*(M+1)+2] = 1.0;
+
+  p[pstride*(M+1)] = bands[4*(M+1)+3];
+  // Now back substitute up
+  for (int row=M; row>0; row--)
+    p[pstride*(row)] = bands[4*(row)+3] - bands[4*(row)+2]*p[pstride*(row+1)];
+  
+  // Finish with first row
+  p[0] = bands[3*(0)+3] - bands[4*(0)+1]*p[pstride*1] - bands[4*(0)+2]*p[pstride*2];
+}
+
+
+void
+SolvePeriodicInterp1D (NUBasis* restrict basis,
+		       double* restrict data, int datastride,
+		       double* restrict p, int pstride)
+{
+  int M = basis->grid->num_points;
+  int N = M+3;
+
+  // Banded matrix storage.  The first three elements in the
+  // tinyvector store the tridiagonal coefficients.  The last element
+  // stores the RHS data.
+  double bands[4*M], lastCol[M];
+
+  // Fill up bands
+  for (int i=0; i<M; i++) {
+    get_NUBasis_funcs_i (basis, i, &(bands[4*i])); 
+    bands[4*(i)+3] = data[i*datastride];
+  }
+    
+  // Now solve:
+  // First and last rows are different
+  bands[4*(0)+2] /= bands[4*(0)+1];
+  bands[4*(0)+0] /= bands[4*(0)+1];
+  bands[4*(0)+3] /= bands[4*(0)+1];
+  bands[4*(0)+1]  = 1.0;
+  bands[4*(M-1)+1] -= bands[4*(M-1)+2]*bands[4*(0)+0];
+  bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(0)+3];
+  bands[4*(M-1)+2]  = -bands[4*(M-1)+2]*bands[4*(0)+2];
+  lastCol[0] = bands[4*(0)+0];
+  
+  for (int row=1; row < (M-1); row++) {
+    bands[4*(row)+1] -= bands[4*(row)+0] * bands[4*(row-1)+2];
+    bands[4*(row)+3] -= bands[4*(row)+0] * bands[4*(row-1)+3];
+    lastCol[row]   = -bands[4*(row)+0] * lastCol[row-1];
+    bands[4*(row)+0] = 0.0;
+    bands[4*(row)+2] /= bands[4*(row)+1];
+    bands[4*(row)+3] /= bands[4*(row)+1];
+    lastCol[row]  /= bands[4*(row)+1];
+    bands[4*(row)+1]  = 1.0;
+    if (row < (M-2)) {
+      bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(row)+3];
+      bands[4*(M-1)+1] -= bands[4*(M-1)+2]*lastCol[row];
+      bands[4*(M-1)+2] = -bands[4*(M-1)+2]*bands[4*(row)+2];
+    }
+  }
+  
+  // Now do last row
+  // The [2] element and [0] element are now on top of each other 
+  bands[4*(M-1)+0] += bands[4*(M-1)+2];
+  bands[4*(M-1)+1] -= bands[4*(M-1)+0] * (bands[4*(M-2)+2]+lastCol[M-2]);
+  bands[4*(M-1)+3] -= bands[4*(M-1)+0] *  bands[4*(M-2)+3];
+  bands[4*(M-1)+3] /= bands[4*(M-1)+1];
+  p[pstride*M] = bands[4*(M-1)+3];
+  for (int row=M-2; row>=0; row--) 
+    p[pstride*(row+1)] = bands[4*(row)+3] - 
+      bands[4*(row)+2]*p[pstride*(row+2)] - lastCol[row]*p[pstride*M];
+  
+  p[pstride*  0  ] = p[pstride*M];
+  p[pstride*(M+1)] = p[pstride*1];
+  p[pstride*(M+2)] = p[pstride*2];
+}
