@@ -3,6 +3,18 @@
 #include <assert.h>
 #include <stdlib.h>
 
+////////////////////////////////////////////////////////
+// Notes on conventions:                              //
+// Below, M (and Mx, My, Mz) represent the number of  //
+// data points to be interpolated.  With derivative   //
+// boundary conditions, it is equal to the number of  //
+// grid points.  With periodic boundary conditions,   //
+// it is one less than the number of grid points.     //
+// N (and Nx, Ny, Nz) is the number of B-spline       //
+// coefficients, which is #(grid points)+2 for all    //
+// boundary conditions.                               //
+////////////////////////////////////////////////////////
+
 
 ////////////////////////////////////////////////////////
 // Single-precision real creation routines            //
@@ -266,19 +278,19 @@ create_NUBspline_3d_s (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
   spline->y_basis = create_NUBasis (y_grid, yBC.lCode==PERIODIC);
   spline->z_basis = create_NUBasis (z_grid, zBC.lCode==PERIODIC);
-  int Mx = x_grid->num_points;
-  int My = y_grid->num_points;
-  int Mz = z_grid->num_points;
-  int Nx, Ny, Nz;
+  int Mx, My, Mz, Nx, Ny, Nz;
+  if (xBC.lCode == PERIODIC) Mx = x_grid->num_points - 1;
+  else                       Mx = x_grid->num_points;
+  if (yBC.lCode == PERIODIC) My = y_grid->num_points - 1;
+  else                       My = y_grid->num_points;
+  if (zBC.lCode == PERIODIC) Mz = z_grid->num_points - 1;
+  else                       Mz = z_grid->num_points;
 
-  // Allocate coefficients and solve
-  if (xBC.lCode == PERIODIC)  Nx = Mx+3;
-  else                        Nx = Mx+2;
-  if (yBC.lCode == PERIODIC)  Ny = My+3;
-  else                        Ny = My+2;
-  if (zBC.lCode == PERIODIC)  Nz = Mz+3;
-  else                        Nz = Mz+2;
-  
+  Nx = x_grid->num_points + 2;
+  Ny = y_grid->num_points + 2;
+  Nz = z_grid->num_points + 2;
+
+  // Allocate coefficients and solve  
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
 #ifndef __SSE2__
@@ -532,16 +544,15 @@ create_NUBspline_2d_d (NUgrid* x_grid, NUgrid* y_grid,
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
   spline->y_basis = create_NUBasis (y_grid, yBC.lCode==PERIODIC);
-  int Mx = x_grid->num_points;
-  int My = y_grid->num_points;
-  int Nx, Ny;
 
-  // Allocate coefficients and solve
-  if (xBC.lCode == PERIODIC)  Nx = Mx+3;
-  else                        Nx = Mx+2;
+  int Mx, My, Nx, Ny;
+  if (xBC.lCode == PERIODIC) Mx = x_grid->num_points - 1;
+  else                       Mx = x_grid->num_points;
+  if (yBC.lCode == PERIODIC) My = y_grid->num_points - 1;
+  else                       My = y_grid->num_points;
 
-  if (yBC.lCode == PERIODIC)  Ny = My+3;
-  else                        Ny = My+2;
+  Nx = x_grid->num_points + 2;
+  Ny = y_grid->num_points + 2;
   
   spline->x_stride = Ny;
 #ifndef __dSE2__
@@ -583,18 +594,18 @@ create_NUBspline_3d_d (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
   spline->y_basis = create_NUBasis (y_grid, yBC.lCode==PERIODIC);
   spline->z_basis = create_NUBasis (z_grid, zBC.lCode==PERIODIC);
-  int Mx = x_grid->num_points;
-  int My = y_grid->num_points;
-  int Mz = z_grid->num_points;
-  int Nx, Ny, Nz;
 
-  // Allocate coefficients and solve
-  if (xBC.lCode == PERIODIC)  Nx = Mx+3;
-  else                        Nx = Mx+2;
-  if (yBC.lCode == PERIODIC)  Ny = My+3;
-  else                        Ny = My+2;
-  if (zBC.lCode == PERIODIC)  Nz = Mz+3;
-  else                        Nz = Mz+2;
+  int Mx, My, Mz, Nx, Ny, Nz;
+  if (xBC.lCode == PERIODIC) Mx = x_grid->num_points - 1;
+  else                       Mx = x_grid->num_points;
+  if (yBC.lCode == PERIODIC) My = y_grid->num_points - 1;
+  else                       My = y_grid->num_points;
+  if (zBC.lCode == PERIODIC) Mz = z_grid->num_points - 1;
+  else                       Mz = z_grid->num_points;
+
+  Nx = x_grid->num_points + 2;
+  Ny = y_grid->num_points + 2;
+  Nz = z_grid->num_points + 2;
   
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
