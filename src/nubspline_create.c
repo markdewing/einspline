@@ -146,8 +146,8 @@ create_NUBasis (NUgrid *grid, bool periodic)
 
 
 int
-get_NUBasis_funcs (NUBasis* restrict basis, double x,
-		   double bfuncs[4])
+get_NUBasis_funcs_s (NUBasis* restrict basis, double x,
+		     float bfuncs[4])
 {
   double b1[2], b2[3];
   int i = (*basis->grid->reverse_map)(basis->grid, x);
@@ -172,8 +172,8 @@ get_NUBasis_funcs (NUBasis* restrict basis, double x,
 
 
 void
-get_NUBasis_funcs_i (NUBasis* restrict basis, int i,
-		     double bfuncs[4])
+get_NUBasis_funcs_si (NUBasis* restrict basis, int i,
+		     float bfuncs[4])
 {
   int i2 = i+2;
   double b1[2], b2[3];
@@ -196,8 +196,8 @@ get_NUBasis_funcs_i (NUBasis* restrict basis, int i,
 }
 
 int
-get_NUBasis_dfuncs (NUBasis* restrict basis, double x,
-		    double bfuncs[4], double dbfuncs[4])
+get_NUBasis_dfuncs_s (NUBasis* restrict basis, double x,
+		      float bfuncs[4], float dbfuncs[4])
 {
   double b1[2], b2[3];
   int i = (*basis->grid->reverse_map)(basis->grid, x);
@@ -228,8 +228,8 @@ get_NUBasis_dfuncs (NUBasis* restrict basis, double x,
 
 
 void
-get_NUBasis_dfuncs_i (NUBasis* restrict basis, int i,
-		      double bfuncs[4], double dbfuncs[4])
+get_NUBasis_dfuncs_si (NUBasis* restrict basis, int i,
+		       float bfuncs[4], float dbfuncs[4])
 {
   double b1[2], b2[3];
   double x = basis->grid->points[i];
@@ -258,8 +258,8 @@ get_NUBasis_dfuncs_i (NUBasis* restrict basis, int i,
 
 
 int
-get_NUBasis_d2funcs (NUBasis* restrict basis, double x,
-		     double bfuncs[4], double dbfuncs[4], double d2bfuncs[4])
+get_NUBasis_d2funcs_s (NUBasis* restrict basis, double x,
+		       float bfuncs[4], float dbfuncs[4], float d2bfuncs[4])
 {
   double b1[2], b2[3];
   int i = (*basis->grid->reverse_map)(basis->grid, x);
@@ -297,8 +297,8 @@ get_NUBasis_d2funcs (NUBasis* restrict basis, double x,
 
 
 void
-get_NUBasis_d2funcs_i (NUBasis* restrict basis, int i,
-		       double bfuncs[4], double dbfuncs[4], double d2bfuncs[4])
+get_NUBasis_d2funcs_si (NUBasis* restrict basis, int i,
+			float bfuncs[4], float dbfuncs[4], float d2bfuncs[4])
 {
   double b1[2], b2[3];
   double x = basis->grid->points[i];
@@ -333,18 +333,212 @@ get_NUBasis_d2funcs_i (NUBasis* restrict basis, int i,
 }
 
 
+//////////////////////////////
+// Double-precision version //
+//////////////////////////////
+int
+get_NUBasis_funcs_d (NUBasis* restrict basis, double x,
+		     double bfuncs[4])
+{
+  double b1[2], b2[3];
+  int i = (*basis->grid->reverse_map)(basis->grid, x);
+  int i2 = i+2;
+  double* restrict dxInv = basis->dxInv;
+  double* restrict xVals = basis->xVals;
+
+  b1[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+2)+0];
+  b1[1]     = (x-xVals[i2])    * dxInv[3*(i+2)+0];
+  b2[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+1)+1] * b1[0];
+  b2[1]     = ((x-xVals[i2-1]) * dxInv[3*(i+1)+1] * b1[0]+
+	       (xVals[i2+2]-x) * dxInv[3*(i+2)+1] * b1[1]);
+  b2[2]     = (x-xVals[i2])    * dxInv[3*(i+2)+1] * b1[1];
+  bfuncs[0] = (xVals[i2+1]-x)  * dxInv[3*(i  )+2] * b2[0];
+  bfuncs[1] = ((x-xVals[i2-2]) * dxInv[3*(i  )+2] * b2[0] +
+	       (xVals[i2+2]-x) * dxInv[3*(i+1)+2] * b2[1]);
+  bfuncs[2] = ((x-xVals[i2-1]) * dxInv[3*(i+1)+2] * b2[1] +
+	       (xVals[i2+3]-x) * dxInv[3*(i+2)+2] * b2[2]);
+  bfuncs[3] = (x-xVals[i2])    * dxInv[3*(i+2)+2] * b2[2];
+  return i;
+}
+
+
 void
-SolveDerivInterp1D (NUBasis* restrict basis, 
-		    double* restrict data, int datastride,
-		    double* restrict p, int pstride,
-		    double abcdInitial[4], double abcdFinal[4])
+get_NUBasis_funcs_di (NUBasis* restrict basis, int i,
+		      double bfuncs[4])
+{
+  int i2 = i+2;
+  double b1[2], b2[3];
+  double x = basis->grid->points[i];
+  double* restrict dxInv = basis->dxInv;
+  double* restrict xVals = basis->xVals; 
+
+  b1[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+2)+0];
+  b1[1]     = (x-xVals[i2])    * dxInv[3*(i+2)+0];
+  b2[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+1)+1] * b1[0];
+  b2[1]     = ((x-xVals[i2-1]) * dxInv[3*(i+1)+1] * b1[0]+
+	       (xVals[i2+2]-x) * dxInv[3*(i+2)+1] * b1[1]);
+  b2[2]     = (x-xVals[i2])    * dxInv[3*(i+2)+1] * b1[1];
+  bfuncs[0] = (xVals[i2+1]-x)  * dxInv[3*(i  )+2] * b2[0];
+  bfuncs[1] = ((x-xVals[i2-2]) * dxInv[3*(i  )+2] * b2[0] +
+	       (xVals[i2+2]-x) * dxInv[3*(i+1)+2] * b2[1]);
+  bfuncs[2] = ((x-xVals[i2-1]) * dxInv[3*(i+1)+2] * b2[1] +
+	       (xVals[i2+3]-x) * dxInv[3*(i+2)+2] * b2[2]);
+  bfuncs[3] = (x-xVals[i2])    * dxInv[3*(i+2)+2] * b2[2];
+}
+
+int
+get_NUBasis_dfuncs_d (NUBasis* restrict basis, double x,
+		      double bfuncs[4], double dbfuncs[4])
+{
+  double b1[2], b2[3];
+  int i = (*basis->grid->reverse_map)(basis->grid, x);
+  int i2 = i+2;
+  double* restrict dxInv = basis->dxInv;
+  double* restrict xVals = basis->xVals;
+
+  b1[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+2)+0];
+  b1[1]     = (x-xVals[i2])    * dxInv[3*(i+2)+0];
+  b2[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+1)+1] * b1[0];
+  b2[1]     = ((x-xVals[i2-1]) * dxInv[3*(i+1)+1] * b1[0]+
+	       (xVals[i2+2]-x) * dxInv[3*(i+2)+1] * b1[1]);
+  b2[2]     = (x-xVals[i2])    * dxInv[3*(i+2)+1] * b1[1];
+  bfuncs[0] = (xVals[i2+1]-x)  * dxInv[3*(i  )+2] * b2[0];
+  bfuncs[1] = ((x-xVals[i2-2]) * dxInv[3*(i  )+2] * b2[0] +
+	       (xVals[i2+2]-x) * dxInv[3*(i+1)+2] * b2[1]);
+  bfuncs[2] = ((x-xVals[i2-1]) * dxInv[3*(i+1)+2] * b2[1] +
+	       (xVals[i2+3]-x) * dxInv[3*(i+2)+2] * b2[2]);
+  bfuncs[3] = (x-xVals[i2])    * dxInv[3*(i+2)+2] * b2[2]; 
+
+  dbfuncs[0] = -3.0 * (dxInv[3*(i  )+2] * b2[0]);
+  dbfuncs[1] =  3.0 * (dxInv[3*(i  )+2] * b2[0] - dxInv[3*(i+1)+2] * b2[1]);
+  dbfuncs[2] =  3.0 * (dxInv[3*(i+1)+2] * b2[1] - dxInv[3*(i+2)+2] * b2[2]);
+  dbfuncs[3] =  3.0 * (dxInv[3*(i+2)+2] * b2[2]);
+
+  return i;
+}
+
+
+void
+get_NUBasis_dfuncs_di (NUBasis* restrict basis, int i,
+		       double bfuncs[4], double dbfuncs[4])
+{
+  double b1[2], b2[3];
+  double x = basis->grid->points[i];
+  int i2 = i+2;
+  double* restrict dxInv = basis->dxInv;
+  double* restrict xVals = basis->xVals;
+
+  b1[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+2)+0];
+  b1[1]     = (x-xVals[i2])    * dxInv[3*(i+2)+0];
+  b2[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+1)+1] * b1[0];
+  b2[1]     = ((x-xVals[i2-1]) * dxInv[3*(i+1)+1] * b1[0]+
+	       (xVals[i2+2]-x) * dxInv[3*(i+2)+1] * b1[1]);
+  b2[2]     = (x-xVals[i2])    * dxInv[3*(i+2)+1] * b1[1];
+  bfuncs[0] = (xVals[i2+1]-x)  * dxInv[3*(i  )+2] * b2[0];
+  bfuncs[1] = ((x-xVals[i2-2]) * dxInv[3*(i  )+2] * b2[0] +
+	       (xVals[i2+2]-x) * dxInv[3*(i+1)+2] * b2[1]);
+  bfuncs[2] = ((x-xVals[i2-1]) * dxInv[3*(i+1)+2] * b2[1] +
+	       (xVals[i2+3]-x) * dxInv[3*(i+2)+2] * b2[2]);
+  bfuncs[3] = (x-xVals[i2])    * dxInv[3*(i+2)+2] * b2[2]; 
+
+  dbfuncs[0] = -3.0 * (dxInv[3*(i  )+2] * b2[0]);
+  dbfuncs[1] =  3.0 * (dxInv[3*(i  )+2] * b2[0] - dxInv[3*(i+1)+2] * b2[1]);
+  dbfuncs[2] =  3.0 * (dxInv[3*(i+1)+2] * b2[1] - dxInv[3*(i+2)+2] * b2[2]);
+  dbfuncs[3] =  3.0 * (dxInv[3*(i+2)+2] * b2[2]);
+}
+
+
+int
+get_NUBasis_d2funcs_d (NUBasis* restrict basis, double x,
+		       double bfuncs[4], double dbfuncs[4], double d2bfuncs[4])
+{
+  double b1[2], b2[3];
+  int i = (*basis->grid->reverse_map)(basis->grid, x);
+  int i2 = i+2;
+  double* restrict dxInv = basis->dxInv;
+  double* restrict xVals = basis->xVals;
+
+  b1[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+2)+0];
+  b1[1]     = (x-xVals[i2])    * dxInv[3*(i+2)+0];
+  b2[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+1)+1] * b1[0];
+  b2[1]     = ((x-xVals[i2-1]) * dxInv[3*(i+1)+1] * b1[0]+
+	       (xVals[i2+2]-x) * dxInv[3*(i+2)+1] * b1[1]);
+  b2[2]     = (x-xVals[i2])    * dxInv[3*(i+2)+1] * b1[1];
+  bfuncs[0] = (xVals[i2+1]-x)  * dxInv[3*(i  )+2] * b2[0];
+  bfuncs[1] = ((x-xVals[i2-2]) * dxInv[3*(i  )+2] * b2[0] +
+	       (xVals[i2+2]-x) * dxInv[3*(i+1)+2] * b2[1]);
+  bfuncs[2] = ((x-xVals[i2-1]) * dxInv[3*(i+1)+2] * b2[1] +
+	       (xVals[i2+3]-x) * dxInv[3*(i+2)+2] * b2[2]);
+  bfuncs[3] = (x-xVals[i2])    * dxInv[3*(i+2)+2] * b2[2]; 
+
+  dbfuncs[0] = -3.0 * (dxInv[3*(i  )+2] * b2[0]);
+  dbfuncs[1] =  3.0 * (dxInv[3*(i  )+2] * b2[0] - dxInv[3*(i+1)+2] * b2[1]);
+  dbfuncs[2] =  3.0 * (dxInv[3*(i+1)+2] * b2[1] - dxInv[3*(i+2)+2] * b2[2]);
+  dbfuncs[3] =  3.0 * (dxInv[3*(i+2)+2] * b2[2]);
+
+  d2bfuncs[0] = 6.0 * (+dxInv[3*(i+0)+2]* dxInv[3*(i+1)+1]*b1[0]);
+  d2bfuncs[1] = 6.0 * (-dxInv[3*(i+1)+1]*(dxInv[3*(i+0)+2]+dxInv[3*(i+1)+2])*b1[0] +
+		        dxInv[3*(i+1)+2]* dxInv[3*(i+2)+1]*b1[1]);
+  d2bfuncs[2] = 6.0 * (+dxInv[3*(i+1)+2]* dxInv[3*(i+1)+1]*b1[0] -
+		        dxInv[3*(i+2)+1]*(dxInv[3*(i+1)+2] + dxInv[3*(i+2)+2])*b1[1]);
+  d2bfuncs[3] = 6.0 * (+dxInv[3*(i+2)+2]* dxInv[3*(i+2)+1]*b1[1]);
+
+  return i;
+}
+
+
+void
+get_NUBasis_d2funcs_di (NUBasis* restrict basis, int i,
+			double bfuncs[4], double dbfuncs[4], 
+			double d2bfuncs[4])
+{
+  double b1[2], b2[3];
+  double x = basis->grid->points[i];
+  int i2 = i+2;
+  double* restrict dxInv = basis->dxInv;
+  double* restrict xVals = basis->xVals;
+
+  b1[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+2)+0];
+  b1[1]     = (x-xVals[i2])    * dxInv[3*(i+2)+0];
+  b2[0]     = (xVals[i2+1]-x)  * dxInv[3*(i+1)+1] * b1[0];
+  b2[1]     = ((x-xVals[i2-1]) * dxInv[3*(i+1)+1] * b1[0]+
+	       (xVals[i2+2]-x) * dxInv[3*(i+2)+1] * b1[1]);
+  b2[2]     = (x-xVals[i2])    * dxInv[3*(i+2)+1] * b1[1];
+  bfuncs[0] = (xVals[i2+1]-x)  * dxInv[3*(i  )+2] * b2[0];
+  bfuncs[1] = ((x-xVals[i2-2]) * dxInv[3*(i  )+2] * b2[0] +
+	       (xVals[i2+2]-x) * dxInv[3*(i+1)+2] * b2[1]);
+  bfuncs[2] = ((x-xVals[i2-1]) * dxInv[3*(i+1)+2] * b2[1] +
+	       (xVals[i2+3]-x) * dxInv[3*(i+2)+2] * b2[2]);
+  bfuncs[3] = (x-xVals[i2])    * dxInv[3*(i+2)+2] * b2[2]; 
+
+  dbfuncs[0] = -3.0 * (dxInv[3*(i  )+2] * b2[0]);
+  dbfuncs[1] =  3.0 * (dxInv[3*(i  )+2] * b2[0] - dxInv[3*(i+1)+2] * b2[1]);
+  dbfuncs[2] =  3.0 * (dxInv[3*(i+1)+2] * b2[1] - dxInv[3*(i+2)+2] * b2[2]);
+  dbfuncs[3] =  3.0 * (dxInv[3*(i+2)+2] * b2[2]);
+
+  d2bfuncs[0] = 6.0 * (+dxInv[3*(i+0)+2]* dxInv[3*(i+1)+1]*b1[0]);
+  d2bfuncs[1] = 6.0 * (-dxInv[3*(i+1)+1]*(dxInv[3*(i+0)+2]+dxInv[3*(i+1)+2])*b1[0] +
+		        dxInv[3*(i+1)+2]* dxInv[3*(i+2)+1]*b1[1]);
+  d2bfuncs[2] = 6.0 * (+dxInv[3*(i+1)+2]* dxInv[3*(i+1)+1]*b1[0] -
+		        dxInv[3*(i+2)+1]*(dxInv[3*(i+1)+2] + dxInv[3*(i+2)+2])*b1[1]);
+  d2bfuncs[3] = 6.0 * (+dxInv[3*(i+2)+2]* dxInv[3*(i+2)+1]*b1[1]);
+}
+
+
+
+
+void
+solve_NUB_deriv_interp_1d_s (NUBasis* restrict basis, 
+			     float* restrict data, int datastride,
+			     float* restrict    p, int pstride,
+			     float abcdInitial[4], float abcdFinal[4])
 {
   int M = basis->grid->num_points;
   int N = M+2;
   // Banded matrix storage.  The first three elements in the
   // tinyvector store the tridiagonal coefficients.  The last element
   // stores the RHS data.
-  double bands[4*N];
+  float bands[4*N];
 
   // Fill up bands
   for (int i=0; i<4; i++) {
@@ -352,7 +546,7 @@ SolveDerivInterp1D (NUBasis* restrict basis,
     bands[4*(N-1)+i] = abcdFinal[i];
   }
   for (int i=0; i<M; i++) {
-    get_NUBasis_funcs_i (basis, i, &(bands[4*(i+1)]));
+    get_NUBasis_funcs_si (basis, i, &(bands[4*(i+1)]));
     bands[4*(i+1)+3] = data[datastride*i];
   }
     
@@ -399,9 +593,9 @@ SolveDerivInterp1D (NUBasis* restrict basis,
 
 
 void
-SolvePeriodicInterp1D (NUBasis* restrict basis,
-		       double* restrict data, int datastride,
-		       double* restrict p, int pstride)
+solve_NUB_periodic_interp_1d_s (NUBasis* restrict basis,
+				float* restrict data, int datastride,
+				float* restrict p, int pstride)
 {
   int M = basis->grid->num_points;
   int N = M+3;
@@ -409,11 +603,11 @@ SolvePeriodicInterp1D (NUBasis* restrict basis,
   // Banded matrix storage.  The first three elements in the
   // tinyvector store the tridiagonal coefficients.  The last element
   // stores the RHS data.
-  double bands[4*M], lastCol[M];
+  float bands[4*M], lastCol[M];
 
   // Fill up bands
   for (int i=0; i<M; i++) {
-    get_NUBasis_funcs_i (basis, i, &(bands[4*i])); 
+    get_NUBasis_funcs_si (basis, i, &(bands[4*i])); 
     bands[4*(i)+3] = data[i*datastride];
   }
     
@@ -458,4 +652,63 @@ SolvePeriodicInterp1D (NUBasis* restrict basis,
   p[pstride*  0  ] = p[pstride*M];
   p[pstride*(M+1)] = p[pstride*1];
   p[pstride*(M+2)] = p[pstride*2];
+}
+
+
+
+void
+find_NUBcoefs_1d_s (NUBasis* restrict basis, BCtype_s bc,
+		    float *data,  int dstride,
+		    float *coefs, int cstride)
+{
+  int M = basis->grid->num_points;
+  if (bc.lCode == PERIODIC) 
+    solve_NUB_periodic_interp_1d_s (basis, data, dstride, coefs, cstride);
+  else {
+    float bands[(M+2)*4];
+    // Setup boundary conditions
+    float bfuncs[4], dbfuncs[4], abcd_left[4], abcd_right[4];
+    // Left boundary
+    if (bc.lCode == FLAT || bc.lCode == NATURAL)
+      bc.lVal = 0.0;
+    if (bc.lCode == FLAT || bc.lCode == DERIV1) {
+      get_NUBasis_dfuncs_si (basis, 0, bfuncs, abcd_left);
+      abcd_left[3] = bc.lVal;
+    }
+    if (bc.lCode == NATURAL || bc.lCode == DERIV2) {
+      get_NUBasis_d2funcs_si (basis, 0, bfuncs, dbfuncs, abcd_left);
+      abcd_left[3] = bc.lVal;
+    }
+    
+    // Right boundary
+    if (bc.rCode == FLAT || bc.rCode == NATURAL)
+      bc.rVal = 0.0;
+    if (bc.rCode == FLAT || bc.rCode == DERIV1) {
+      get_NUBasis_dfuncs_si (basis, M-1, bfuncs, abcd_right);
+      abcd_right[3] = bc.rVal;
+    }
+    if (bc.rCode == NATURAL || bc.rCode == DERIV2) {
+      get_NUBasis_d2funcs_si (basis, M-1, bfuncs, dbfuncs, abcd_right);
+      abcd_right[3] = bc.rVal;
+    }
+    // Now, solve for coefficients
+    solve_NUB_deriv_interp_1d_s (basis, data, dstride, coefs, cstride,
+				 abcd_left, abcd_right);
+  }
+}
+
+
+
+
+NUBspline_1d_s *
+create_NUBspline_1d_s (NUgrid* restrict x_grid, BCtype_s xBC, float *data)
+{
+  // First, create the spline structure
+  NUBspline_1d_s* spline = (NUBspline_1d_s*) malloc (sizeof(NUBspline_1d_s));
+  // Next, create the basis
+  spline->x_basis = malloc (sizeof(NUBasis));
+  
+
+
+
 }

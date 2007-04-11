@@ -1,7 +1,7 @@
 #ifndef NUBSPLINE_CREATE_H
 #define NUBSPLINE_CREATE_H
 
-#include "nubspline_base.h"
+#include "nubspline_structs.h"
 
 NUgrid* 
 create_center_grid (double start, double end, double ratio, int num_points);
@@ -9,5 +9,34 @@ create_center_grid (double start, double end, double ratio, int num_points);
 NUgrid*
 create_general_grid (double *points, int num_points);
 
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////       Nonuniform spline creation routines          ////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+
+////////////////////////////////////////
+// Nonuniform, single precision, real //
+////////////////////////////////////////
+NUBspline_1d_s *
+create_NUBspline_1d_s (NUgrid* restrict x_grid, BCtype_s xBC, float *data);
+
+////////////////////////////////////////
+// Nonuniform, double precision, real //
+////////////////////////////////////////
+NUBspline_1d_d *
+create_NUBspline_1d_d (NUgrid* restrict x_grid, BCtype_d xBC, float *data);
+
+///////////////////////////////////////////
+// Nonuniform, single precision, complex //
+///////////////////////////////////////////
+NUBspline_1d_c *
+create_NUBspline_1d_c (NUgrid* restrict x_grid, BCtype_c xBC, float *data);
+
+///////////////////////////////////////////
+// Nonuniform, double precision, complex //
+///////////////////////////////////////////
+NUBspline_1d_z *
+create_NUBspline_1d_z (NUgrid* restrict x_grid, BCtype_z xBC, float *data);
 
 #endif

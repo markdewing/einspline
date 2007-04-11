@@ -1,7 +1,9 @@
 #ifndef NUBSPLINE_BASH_H
 #define NUBSPLINE_BASH_H
 
+#include "bspline_base.h"
 #include <stdbool.h>
+
 
 typedef enum { LINEAR, GENERAL, CENTER } grid_type;
 
