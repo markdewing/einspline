@@ -128,9 +128,51 @@ TestNUBspline()
     double angle = (x+5.0)/12.0 * 2.0*M_PI;
     fprintf (stderr, "%1.16e %1.16e %1.16e\n", x, val, sin(angle));
   }
-  
 }
 
+void
+TestNUB_2d_s()
+{
+  int Mx=30, My=30;
+  NUgrid *x_grid = create_center_grid (-3.0, 4.0, 7.5, Mx);
+  NUgrid *y_grid = create_center_grid (-1.0, 9.0, 3.5, My);
+  float data[Mx*My];
+  for (int ix=0; ix<Mx; ix++)
+    for (int iy=0; iy<My; iy++)
+      data[ix*My+iy] = -1.0+2.0*drand48();
+//   for (int ix=0; ix<Mx; ix++)
+//     for (int iy=0; iy<My; iy++)
+//       data[ix*My+iy] = data[(ix%(Mx-1))*My + iy%(My-1)];
+  
+  BCtype_s xBC, yBC;
+//   xBC.lCode = PERIODIC;
+//   yBC.lCode = PERIODIC;
+  xBC.lCode = FLAT;  xBC.rCode = FLAT;
+  yBC.lCode = FLAT;  yBC.rCode = FLAT;
+
+
+
+  NUBspline_2d_s *spline = create_NUBspline_2d_s (x_grid, y_grid, xBC, yBC, data);
+  
+  int xFine = 400;
+  int yFine = 400;
+  FILE *fout = fopen ("2d_s.dat", "w");
+  double xi = x_grid->start;
+  double xf = x_grid->end;// + x_grid->points[1] - x_grid->points[0];
+  double yi = y_grid->start;
+  double yf = y_grid->end;// + y_grid->points[1] - y_grid->points[0];
+  for (int ix=0; ix<xFine; ix++) {
+    double x = xi+ (double)ix/(double)(xFine)*(xf-xi);
+    for (int iy=0; iy<yFine; iy++) {
+      double y = yi + (double)iy/(double)(yFine)*(yf-yi);
+      float val;
+      eval_NUBspline_2d_s (spline, x, y, &val);
+      fprintf (fout, "%1.16e ", val);
+    }
+    fprintf (fout, "\n");
+  }
+  fclose (fout);
+}
 
 
 main()
@@ -140,5 +182,6 @@ main()
   // GridSpeedTest();
   // TestNUBasis();
   // TestNUBasis();
-  TestNUBspline();
+  // TestNUBspline();
+  TestNUB_2d_s();
 }
