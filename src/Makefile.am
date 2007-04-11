@@ -27,6 +27,7 @@ libbspline_la_SOURCES =                               \
                        nubspline_base.h               \
                        nubspline_create.c             \
                        nubspline_create.h             \
+                       nubspline_eval_std_s.h         \
                        nubspline_structs.h            \
                        nubasis.h                      \
                        nubasis.c                      \

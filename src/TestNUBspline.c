@@ -1,8 +1,10 @@
 #include "nubspline_create.h"
+#include "nubspline_eval_std_s.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 void
 PrintPassFail(bool pass)
@@ -103,12 +105,40 @@ TestNUBasis()
   }
 }
 
+void
+TestNUBspline()
+{
+  NUgrid* centgrid = create_center_grid (-5.0, 7.0, 10.0, 20);
+  NUBasis* basis = create_NUBasis (centgrid, true);
+  float data[20];
+  for (int i=0; i<20; i++) {
+    double x = centgrid->points[i];
+    double angle = (x+5.0)/12.0 * 2.0*M_PI;
+    data[i] = sin(angle);
+  }
+  BCtype_s bc;
+  //  bc.lCode = PERIODIC;  bc.rCode = PERIODIC;
+  //  bc.lCode = DERIV1; bc.lVal = 2.0*M_PI/12.0;
+  //  bc.rCode = DERIV1; bc.rVal = 2.0*M_PI/12.0;
+  bc.lCode = NATURAL;  bc.rCode = FLAT;
+  NUBspline_1d_s *spline = create_NUBspline_1d_s (centgrid, bc, data);
+  for (double x=-5.0; x<=7.0; x+=0.001) {
+    float val;
+    eval_NUBspline_1d_s (spline, x, &val);
+    double angle = (x+5.0)/12.0 * 2.0*M_PI;
+    fprintf (stderr, "%1.16e %1.16e %1.16e\n", x, val, sin(angle));
+  }
+  
+}
+
 
 
 main()
 {
-//   TestCenterGrid();
-//   TestGeneralGrid();
-//   GridSpeedTest();
-  TestNUBasis();
+  // TestCenterGrid();
+  // TestGeneralGrid();
+  // GridSpeedTest();
+  // TestNUBasis();
+  // TestNUBasis();
+  TestNUBspline();
 }
