@@ -106,6 +106,7 @@ create_general_grid (double *points, int num_points)
     grid->num_points = num_points;
     for (int i=0; i<num_points; i++) 
       grid->points[i] = points[i];
+    grid->code = GENERAL;
   }
   return grid;
 }

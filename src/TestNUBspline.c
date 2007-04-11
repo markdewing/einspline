@@ -92,10 +92,14 @@ GridSpeedTest()
 void
 TestNUBasis()
 {
-  NUgrid* centgrid = create_center_grid (-5.0, 7.0, 10.0, 200);
-  
+  NUgrid* centgrid = create_center_grid (-5.0, 7.0, 10.0, 20);
+  NUBasis* basis = create_NUBasis (centgrid, true);
+
   double bfuncs[4];
   for (double x=-5.0; x<=7.0; x+=0.001) {
+    get_NUBasis_funcs_d (basis, x, bfuncs);
+    fprintf (stderr, "%1.12f %1.12f %1.12f %1.12f %1.12f\n",
+	     x, bfuncs[0], bfuncs[1], bfuncs[2], bfuncs[3]);
   }
 }
 
@@ -103,7 +107,8 @@ TestNUBasis()
 
 main()
 {
-  TestCenterGrid();
-  TestGeneralGrid();
-  GridSpeedTest();
+//   TestCenterGrid();
+//   TestGeneralGrid();
+//   GridSpeedTest();
+  TestNUBasis();
 }
