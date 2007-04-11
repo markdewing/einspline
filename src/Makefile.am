@@ -27,7 +27,13 @@ libbspline_la_SOURCES =                               \
                        nubspline_base.h               \
                        nubspline_create.c             \
                        nubspline_create.h             \
-                       nubspline_structs.h           
+                       nubspline_structs.h            \
+                       nubasis.h                      \
+                       nubasis.c                      \
+                       nugrid.h                       \
+                       nugrid.c
+
+
 libbspline_la_LIBADD = $(FLIBS)
 
 

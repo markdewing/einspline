@@ -87,8 +87,19 @@ GridSpeedTest()
   fprintf (stderr, "%d %d\n", centsum, gensum);
   fprintf (stderr, "center_grid  time = %1.3f s.\n", cent_time);
   fprintf (stderr, "general_grid time = %1.3f s.\n", gen_time);
-
 }
+
+void
+TestNUBasis()
+{
+  NUgrid* centgrid = create_center_grid (-5.0, 7.0, 10.0, 200);
+  
+  double bfuncs[4];
+  for (double x=-5.0; x<=7.0; x+=0.001) {
+  }
+}
+
+
 
 main()
 {

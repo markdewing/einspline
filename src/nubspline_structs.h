@@ -1,7 +1,8 @@
 #ifndef NUBSPLINE_STRUCTS_H
 #define NUBSPLINE_STRUCTS_H
 
-#include "nubspline_base.h"
+#include "bspline_base.h"
+#include "nubasis.h"
 
 #ifdef __cplusplus
 typedef complex<float>  complex_float;
