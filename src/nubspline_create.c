@@ -17,7 +17,9 @@
 
 
 ////////////////////////////////////////////////////////
-// Single-precision real creation routines            //
+////////////////////////////////////////////////////////
+//// Single-precision real creation routines        ////
+////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 void
 solve_NUB_deriv_interp_1d_s (NUBasis* restrict basis, 
@@ -327,9 +329,10 @@ create_NUBspline_3d_s (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   return spline;
 }
 
-
 ////////////////////////////////////////////////////////
-// Double-precision real creation routines            //
+////////////////////////////////////////////////////////
+//// Double-precision real creation routines        ////
+////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 void
 solve_NUB_deriv_interp_1d_d (NUBasis* restrict basis, 
@@ -632,6 +635,168 @@ create_NUBspline_3d_d (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
       int doffset = (ix*Ny+iy)*Nz;
       int coffset = (ix*Ny+iy)*Nz;
       find_NUBcoefs_1d_d (spline->z_basis, zBC, spline->coefs+doffset, 1, 
+			  spline->coefs+coffset, 1);
+    }
+  return spline;
+}
+
+
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+//// Single-precision complex creation routines     ////
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+
+void
+find_NUBcoefs_1d_c (NUBasis* restrict basis, BCtype_c bc,
+		    complex_float *data,  int dstride,
+		    complex_float *coefs, int cstride)
+{
+  BCtype_s bc_r, bc_i;
+  bc_r.lCode = bc.lCode;   bc_i.lCode = bc.lCode;
+  bc_r.rCode = bc.rCode;   bc_i.rCode = bc.rCode;
+  bc_r.lVal  = bc.lVal_r;  bc_r.rVal  = bc.rVal_r;
+  bc_i.lVal  = bc.lVal_i;  bc_i.rVal  = bc.rVal_i;
+
+  float *data_r  = ((float*)data );
+  float *data_i  = ((float*)data )+1;
+  float *coefs_r = ((float*)coefs);
+  float *coefs_i = ((float*)coefs)+1;
+
+  find_NUBcoefs_1d_s (basis, bc_r, data_r, 2*dstride, coefs_r, 2*cstride);
+  find_NUBcoefs_1d_s (basis, bc_i, data_i, 2*dstride, coefs_i, 2*cstride);
+}
+
+
+NUBspline_1d_c *
+create_NUBspline_1d_c (NUgrid* x_grid, BCtype_c xBC, complex_float *data)
+{
+  // First, create the spline structure
+  NUBspline_1d_c* spline = malloc (sizeof(NUBspline_1d_c));
+  if (spline == NULL)
+    return spline;
+
+  // Next, create the basis
+  spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
+  // M is the number of data points
+  int M; 
+  if (xBC.lCode == PERIODIC) M = x_grid->num_points - 1;
+  else                       M = x_grid->num_points;
+  int N = x_grid->num_points + 2;
+
+  // Allocate coefficients and solve  
+  spline->coefs = malloc(N*sizeof(complex_float));
+  find_NUBcoefs_1d_c (spline->x_basis, xBC, data, 1, spline->coefs, 1);
+    
+  return spline;
+}
+
+NUBspline_2d_c *
+create_NUBspline_2d_c (NUgrid* x_grid, NUgrid* y_grid,
+		       BCtype_c xBC, BCtype_c yBC, complex_float *data)
+{
+  // First, create the spline structure
+  NUBspline_2d_c* spline = malloc (sizeof(NUBspline_2d_c));
+  if (spline == NULL)
+    return spline;
+
+  // Next, create the bases
+  spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
+  spline->y_basis = create_NUBasis (y_grid, yBC.lCode==PERIODIC);
+  int Mx, My, Nx, Ny;
+  if (xBC.lCode == PERIODIC) Mx = x_grid->num_points - 1;
+  else                       Mx = x_grid->num_points;
+  if (yBC.lCode == PERIODIC) My = y_grid->num_points - 1;
+  else                       My = y_grid->num_points;
+
+  Nx = x_grid->num_points + 2;
+  Ny = y_grid->num_points + 2;
+    
+  spline->x_stride = Ny;
+#ifndef __SSE2__
+  spline->coefs = malloc (sizeof(complex_float)*Nx*Ny);
+#else
+  posix_memalign ((void**)&spline->coefs, 16, sizeof(complex_float)*Nx*Ny);
+#endif
+
+  // First, solve in the X-direction 
+  for (int iy=0; iy<My; iy++) {
+    int doffset = iy;
+    int coffset = iy;
+    find_NUBcoefs_1d_c (spline->x_basis, xBC, data+doffset, My,
+			spline->coefs+coffset, Ny);
+  }
+  
+  // Now, solve in the Y-direction
+  for (int ix=0; ix<Nx; ix++) {
+    int doffset = ix*Ny;
+    int coffset = ix*Ny;
+    find_NUBcoefs_1d_c (spline->y_basis, yBC, spline->coefs+doffset, 1, 
+			spline->coefs+coffset, 1);
+  }
+    
+  return spline;
+}
+
+
+NUBspline_3d_c *
+create_NUBspline_3d_c (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
+		       BCtype_c xBC, BCtype_c yBC, BCtype_c zBC, complex_float *data)
+{
+  // First, create the spline structure
+  NUBspline_3d_c* spline = malloc (sizeof(NUBspline_3d_c));
+  if (spline == NULL)
+    return spline;
+
+  // Next, create the bases
+  spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
+  spline->y_basis = create_NUBasis (y_grid, yBC.lCode==PERIODIC);
+  spline->z_basis = create_NUBasis (z_grid, zBC.lCode==PERIODIC);
+  int Mx, My, Mz, Nx, Ny, Nz;
+  if (xBC.lCode == PERIODIC) Mx = x_grid->num_points - 1;
+  else                       Mx = x_grid->num_points;
+  if (yBC.lCode == PERIODIC) My = y_grid->num_points - 1;
+  else                       My = y_grid->num_points;
+  if (zBC.lCode == PERIODIC) Mz = z_grid->num_points - 1;
+  else                       Mz = z_grid->num_points;
+
+  Nx = x_grid->num_points + 2;
+  Ny = y_grid->num_points + 2;
+  Nz = z_grid->num_points + 2;
+
+  // Allocate coefficients and solve  
+  spline->x_stride = Ny*Nz;
+  spline->y_stride = Nz;
+#ifndef __SSE2__
+  spline->coefs = malloc (sizeof(complex_float)*Nx*Ny*Nz);
+#else
+  posix_memalign ((void**)&spline->coefs, 16, sizeof(complex_float)*Nx*Ny*Nz);
+#endif
+
+  // First, solve in the X-direction 
+  for (int iy=0; iy<My; iy++) 
+    for (int iz=0; iz<Mz; iz++) {
+      int doffset = iy*Mz+iz;
+      int coffset = iy*Nz+iz;
+      find_NUBcoefs_1d_c (spline->x_basis, xBC, data+doffset, My*Mz,
+			  spline->coefs+coffset, Ny*Nz);
+    }
+  
+  // Now, solve in the Y-direction
+  for (int ix=0; ix<Nx; ix++) 
+    for (int iz=0; iz<Nz; iz++) {
+      int doffset = ix*Ny*Nz + iz;
+      int coffset = ix*Ny*Nz + iz;
+      find_NUBcoefs_1d_c (spline->y_basis, yBC, spline->coefs+doffset, Nz, 
+			  spline->coefs+coffset, Nz);
+    }
+
+  // Now, solve in the Z-direction
+  for (int ix=0; ix<Nx; ix++) 
+    for (int iy=0; iy<Ny; iy++) {
+      int doffset = (ix*Ny+iy)*Nz;
+      int coffset = (ix*Ny+iy)*Nz;
+      find_NUBcoefs_1d_c (spline->z_basis, zBC, spline->coefs+doffset, 1, 
 			  spline->coefs+coffset, 1);
     }
   return spline;
