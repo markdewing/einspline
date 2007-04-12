@@ -255,9 +255,7 @@ TestNUB_2d_d()
     }
     fprintf (fout, "\n");
   }
-  fprintf (stderr, "Before closing file.\n");
   fclose (fout);
-  fprintf (stderr, "After closing file.\n");
 }
 
 int main()
