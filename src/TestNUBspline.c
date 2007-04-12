@@ -140,9 +140,6 @@ TestNUB_2d_s()
   for (int ix=0; ix<Mx; ix++)
     for (int iy=0; iy<My; iy++)
       data[ix*My+iy] = -1.0+2.0*drand48();
-//   for (int ix=0; ix<Mx; ix++)
-//     for (int iy=0; iy<My; iy++)
-//       data[ix*My+iy] = data[(ix%(Mx-1))*My + iy%(My-1)];
   
   BCtype_s xBC, yBC;
 //   xBC.lCode = PERIODIC;
@@ -174,6 +171,89 @@ TestNUB_2d_s()
   fclose (fout);
 }
 
+void
+TestNUB_3d_s()
+{
+  int Mx=20, My=20, Mz=21;
+  NUgrid *x_grid = create_center_grid (-3.0, 4.0,  7.5, Mx);
+  NUgrid *y_grid = create_center_grid (-1.0, 9.0,  3.5, My);
+  NUgrid *z_grid = create_center_grid (-1.8, 2.0,  2.8, Mz);
+  float data[Mx*My*Mz];
+  for (int ix=0; ix<Mx; ix++)
+    for (int iy=0; iy<My; iy++)
+      for (int iz=0; iz<Mz; iz++)
+	data[(ix*My+iy)*Mz+iz] = -1.0+2.0*drand48();
+  
+  BCtype_s xBC, yBC, zBC;
+//   xBC.lCode = PERIODIC;
+//   yBC.lCode = PERIODIC;
+  xBC.lCode = PERIODIC;  xBC.rCode = PERIODIC;
+  yBC.lCode = PERIODIC;  yBC.rCode = PERIODIC;
+  zBC.lCode = PERIODIC;  zBC.rCode = PERIODIC;
+
+  NUBspline_3d_s *spline = create_NUBspline_3d_s (x_grid, y_grid, z_grid, xBC, yBC, zBC, data);
+  
+  int xFine = 200, yFine = 200, zFine=200;
+  FILE *fout = fopen ("3d_s.dat", "w");
+  double xi = x_grid->start;  double xf = x_grid->end;
+  double yi = y_grid->start;  double yf = y_grid->end;
+  double zi = z_grid->start;  double zf = z_grid->end;
+  for (int ix=0; ix<xFine; ix++) {
+    double x = xi+ (double)ix/(double)(xFine-1)*(xf-xi);
+    for (int iy=0; iy<yFine; iy++) {
+      double y = yi + (double)iy/(double)(yFine-1)*(yf-yi);
+      for (int iz=0; iz<zFine; iz++) {
+	double z = zi + (double)iz/(double)(zFine-1)*(zf-zi);
+	float val;
+	eval_NUBspline_3d_s (spline, x, y, z, &val);
+	fprintf (fout, "%1.16e ", val);
+      }
+    }
+    fprintf (fout, "\n");
+  }
+  fclose (fout);
+}
+
+// void
+// TestNUB_2d_d()
+// {
+//   int Mx=30, My=30;
+//   NUgrid *x_grid = create_center_grid (-3.0, 4.0, 7.5, Mx);
+//   NUgrid *y_grid = create_center_grid (-1.0, 9.0, 3.5, My);
+//   double data[Mx*My];
+//   for (int ix=0; ix<Mx; ix++)
+//     for (int iy=0; iy<My; iy++)
+//       data[ix*My+iy] = -1.0+2.0*drand48();
+  
+//   BCtype_d xBC, yBC;
+// //   xBC.lCode = PERIODIC;
+// //   yBC.lCode = PERIODIC;
+//   xBC.lCode = FLAT;  xBC.rCode = FLAT;
+//   yBC.lCode = FLAT;  yBC.rCode = FLAT;
+
+
+
+//   NUBspline_2d_d *spline = create_NUBspline_2d_d (x_grid, y_grid, xBC, yBC, data);
+  
+//   int xFine = 400;
+//   int yFine = 400;
+//   FILE *fout = fopen ("2d_d.dat", "w");
+//   double xi = x_grid->start;
+//   double xf = x_grid->end;// + x_grid->points[1] - x_grid->points[0];
+//   double yi = y_grid->start;
+//   double yf = y_grid->end;// + y_grid->points[1] - y_grid->points[0];
+//   for (int ix=0; ix<xFine; ix++) {
+//     double x = xi+ (double)ix/(double)(xFine)*(xf-xi);
+//     for (int iy=0; iy<yFine; iy++) {
+//       double y = yi + (double)iy/(double)(yFine)*(yf-yi);
+//       double val;
+//       eval_NUBspline_2d_d (spline, x, y, &val);
+//       fprintf (fout, "%1.16e ", val);
+//     }
+//     fprintf (fout, "\n");
+//   }
+//   fclose (fout);
+// }
 
 main()
 {
@@ -183,5 +263,6 @@ main()
   // TestNUBasis();
   // TestNUBasis();
   // TestNUBspline();
-  TestNUB_2d_s();
+  //  TestNUB_2d_s();
+  TestNUB_3d_s();
 }
