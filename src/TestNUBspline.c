@@ -1,5 +1,6 @@
 #include "nubspline_create.h"
 #include "nubspline_eval_std_s.h"
+#include "nubspline_eval_std_d.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -216,48 +217,50 @@ TestNUB_3d_s()
   fclose (fout);
 }
 
-// void
-// TestNUB_2d_d()
-// {
-//   int Mx=30, My=30;
-//   NUgrid *x_grid = create_center_grid (-3.0, 4.0, 7.5, Mx);
-//   NUgrid *y_grid = create_center_grid (-1.0, 9.0, 3.5, My);
-//   double data[Mx*My];
-//   for (int ix=0; ix<Mx; ix++)
-//     for (int iy=0; iy<My; iy++)
-//       data[ix*My+iy] = -1.0+2.0*drand48();
+void
+TestNUB_2d_d()
+{
+  int Mx=30, My=35;
+  NUgrid *x_grid = create_center_grid (-3.0, 4.0, 7.5, Mx);
+  NUgrid *y_grid = create_center_grid (-1.0, 9.0, 3.5, My);
+  double data[Mx*My];
+  for (int ix=0; ix<Mx; ix++)
+    for (int iy=0; iy<My; iy++)
+      data[ix*My+iy] = -1.0+2.0*drand48();
   
-//   BCtype_d xBC, yBC;
-// //   xBC.lCode = PERIODIC;
-// //   yBC.lCode = PERIODIC;
+  BCtype_d xBC, yBC;
+  xBC.lCode = PERIODIC;
+  yBC.lCode = PERIODIC;
 //   xBC.lCode = FLAT;  xBC.rCode = FLAT;
 //   yBC.lCode = FLAT;  yBC.rCode = FLAT;
 
 
 
-//   NUBspline_2d_d *spline = create_NUBspline_2d_d (x_grid, y_grid, xBC, yBC, data);
+  NUBspline_2d_d *spline = create_NUBspline_2d_d (x_grid, y_grid, xBC, yBC, data);
   
-//   int xFine = 400;
-//   int yFine = 400;
-//   FILE *fout = fopen ("2d_d.dat", "w");
-//   double xi = x_grid->start;
-//   double xf = x_grid->end;// + x_grid->points[1] - x_grid->points[0];
-//   double yi = y_grid->start;
-//   double yf = y_grid->end;// + y_grid->points[1] - y_grid->points[0];
-//   for (int ix=0; ix<xFine; ix++) {
-//     double x = xi+ (double)ix/(double)(xFine)*(xf-xi);
-//     for (int iy=0; iy<yFine; iy++) {
-//       double y = yi + (double)iy/(double)(yFine)*(yf-yi);
-//       double val;
-//       eval_NUBspline_2d_d (spline, x, y, &val);
-//       fprintf (fout, "%1.16e ", val);
-//     }
-//     fprintf (fout, "\n");
-//   }
-//   fclose (fout);
-// }
+  int xFine = 400;
+  int yFine = 400;
+  FILE *fout = fopen ("2d_d.dat", "w");
+  double xi = x_grid->start;
+  double xf = x_grid->end;// + x_grid->points[1] - x_grid->points[0];
+  double yi = y_grid->start;
+  double yf = y_grid->end;// + y_grid->points[1] - y_grid->points[0];
+  for (int ix=0; ix<xFine; ix++) {
+    double x = xi+ (double)ix/(double)(xFine)*(xf-xi);
+    for (int iy=0; iy<yFine; iy++) {
+      double y = yi + (double)iy/(double)(yFine)*(yf-yi);
+      double val;
+      eval_NUBspline_2d_d (spline, x, y, &val);
+      fprintf (fout, "%1.16e ", val);
+    }
+    fprintf (fout, "\n");
+  }
+  fprintf (stderr, "Before closing file.\n");
+  fclose (fout);
+  fprintf (stderr, "After closing file.\n");
+}
 
-main()
+int main()
 {
   // TestCenterGrid();
   // TestGeneralGrid();
@@ -265,6 +268,7 @@ main()
   // TestNUBasis();
   // TestNUBasis();
   // TestNUBspline();
-  TestNUB_2d_s();
-  TestNUB_3d_s();
+  // TestNUB_2d_s();
+  TestNUB_2d_d();
+  //TestNUB_3d_s();
 }

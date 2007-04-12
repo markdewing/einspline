@@ -155,10 +155,10 @@ find_NUBcoefs_1d_s (NUBasis* restrict basis, BCtype_s bc,
 		    float *data,  int dstride,
 		    float *coefs, int cstride)
 {
-  int M = basis->grid->num_points;
   if (bc.lCode == PERIODIC) 
     solve_NUB_periodic_interp_1d_s (basis, data, dstride, coefs, cstride);
   else {
+    int M = basis->grid->num_points;
     // Setup boundary conditions
     float bfuncs[4], dbfuncs[4], abcd_left[4], abcd_right[4];
     // Left boundary
@@ -401,8 +401,7 @@ solve_NUB_periodic_interp_1d_d (NUBasis* restrict basis,
 				double* restrict data, int datastride,
 				double* restrict p, int pstride)
 {
-  int M = basis->grid->num_points;
-  int N = M+3;
+  int M = basis->grid->num_points-1;
 
   // Banded matrix storage.  The first three elements in the
   // tinyvector store the tridiagonal coefficients.  The last element
@@ -465,11 +464,10 @@ find_NUBcoefs_1d_d (NUBasis* restrict basis, BCtype_d bc,
 		    double *data,  int dstride,
 		    double *coefs, int cstride)
 {
-  int M = basis->grid->num_points;
   if (bc.lCode == PERIODIC) 
     solve_NUB_periodic_interp_1d_d (basis, data, dstride, coefs, cstride);
   else {
-    double bands[(M+2)*4];
+    int M = basis->grid->num_points;
     // Setup boundary conditions
     double bfuncs[4], dbfuncs[4], abcd_left[4], abcd_right[4];
     // Left boundary
@@ -554,7 +552,7 @@ create_NUBspline_2d_d (NUgrid* x_grid, NUgrid* y_grid,
   Ny = y_grid->num_points + 2;
   
   spline->x_stride = Ny;
-#ifndef __dSE2__
+#ifndef __SSE2__
   spline->coefs = malloc (sizeof(double)*Nx*Ny);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(double)*Nx*Ny);
@@ -608,7 +606,7 @@ create_NUBspline_3d_d (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
-#ifndef __dSE2__
+#ifndef __SSE2__
   spline->coefs = malloc (sizeof(double)*Nx*Ny*Nz);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(double)*Nx*Ny*Nz);
