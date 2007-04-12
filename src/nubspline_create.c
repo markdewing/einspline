@@ -80,7 +80,7 @@ solve_NUB_deriv_interp_1d_s (NUBasis* restrict basis,
     p[pstride*(row)] = bands[4*(row)+3] - bands[4*(row)+2]*p[pstride*(row+1)];
   
   // Finish with first row
-  p[0] = bands[3*(0)+3] - bands[4*(0)+1]*p[pstride*1] - bands[4*(0)+2]*p[pstride*2];
+  p[0] = bands[4*(0)+3] - bands[4*(0)+1]*p[pstride*1] - bands[4*(0)+2]*p[pstride*2];
 }
 
 
@@ -93,10 +93,9 @@ solve_NUB_periodic_interp_1d_s (NUBasis* restrict basis,
 				float* restrict p, int pstride)
 {
   int M = basis->grid->num_points-1;
-  int N = M+3;
 
-  // Banded matrix storage.  The first three elements in the
-  // tinyvector store the tridiagonal coefficients.  The last element
+  // Banded matrix storage.  The first three elements in each row
+  // store the tridiagonal coefficients.  The last element
   // stores the RHS data.
   float bands[4*M], lastCol[M];
 
@@ -393,7 +392,7 @@ solve_NUB_deriv_interp_1d_d (NUBasis* restrict basis,
     p[pstride*(row)] = bands[4*(row)+3] - bands[4*(row)+2]*p[pstride*(row+1)];
   
   // Finish with first row
-  p[0] = bands[3*(0)+3] - bands[4*(0)+1]*p[pstride*1] - bands[4*(0)+2]*p[pstride*2];
+  p[0] = bands[4*(0)+3] - bands[4*(0)+1]*p[pstride*1] - bands[4*(0)+2]*p[pstride*2];
 }
 
 

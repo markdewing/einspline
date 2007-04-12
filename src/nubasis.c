@@ -7,8 +7,8 @@ create_NUBasis (NUgrid *grid, bool periodic)
   basis->grid = grid;
   basis->periodic = periodic;
   int N = grid->num_points;
-  basis->xVals = malloc ((N+2)*sizeof(double));
-  basis->dxInv = malloc (3*(N+4)*sizeof(double));
+  basis->xVals = malloc ((N+4)*sizeof(double));
+  basis->dxInv = malloc (3*(N+2)*sizeof(double));
   for (int i=0; i<N; i++)
     basis->xVals[i+2] = grid->points[i];
   double*  restrict g = grid->points;

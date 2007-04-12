@@ -133,7 +133,7 @@ TestNUBspline()
 void
 TestNUB_2d_s()
 {
-  int Mx=30, My=30;
+  int Mx=30, My=35;
   NUgrid *x_grid = create_center_grid (-3.0, 4.0, 7.5, Mx);
   NUgrid *y_grid = create_center_grid (-1.0, 9.0, 3.5, My);
   float data[Mx*My];
@@ -142,10 +142,10 @@ TestNUB_2d_s()
       data[ix*My+iy] = -1.0+2.0*drand48();
   
   BCtype_s xBC, yBC;
-//   xBC.lCode = PERIODIC;
-//   yBC.lCode = PERIODIC;
-  xBC.lCode = FLAT;  xBC.rCode = FLAT;
-  yBC.lCode = FLAT;  yBC.rCode = FLAT;
+  xBC.lCode = PERIODIC;
+  yBC.lCode = PERIODIC;
+//   xBC.lCode = FLAT;  xBC.rCode = FLAT;
+//   yBC.lCode = FLAT;  yBC.rCode = FLAT;
 
 
 
@@ -174,15 +174,17 @@ TestNUB_2d_s()
 void
 TestNUB_3d_s()
 {
-  int Mx=20, My=20, Mz=21;
+  int Mx=20, My=27, Mz=23;
   NUgrid *x_grid = create_center_grid (-3.0, 4.0,  7.5, Mx);
   NUgrid *y_grid = create_center_grid (-1.0, 9.0,  3.5, My);
   NUgrid *z_grid = create_center_grid (-1.8, 2.0,  2.8, Mz);
   float data[Mx*My*Mz];
   for (int ix=0; ix<Mx; ix++)
     for (int iy=0; iy<My; iy++)
-      for (int iz=0; iz<Mz; iz++)
+      for (int iz=0; iz<Mz; iz++) {
 	data[(ix*My+iy)*Mz+iz] = -1.0+2.0*drand48();
+	//data[(ix*My+iy)*Mz+iz] = data[((ix%(Mx-1))*My+(iy%(My-1)))*Mz+(iz%(Mz-1))];
+      }
   
   BCtype_s xBC, yBC, zBC;
 //   xBC.lCode = PERIODIC;
@@ -199,11 +201,11 @@ TestNUB_3d_s()
   double yi = y_grid->start;  double yf = y_grid->end;
   double zi = z_grid->start;  double zf = z_grid->end;
   for (int ix=0; ix<xFine; ix++) {
-    double x = xi+ (double)ix/(double)(xFine-1)*(xf-xi);
+    double x = xi+ (double)ix/(double)(xFine)*(xf-xi);
     for (int iy=0; iy<yFine; iy++) {
-      double y = yi + (double)iy/(double)(yFine-1)*(yf-yi);
+      double y = yi + (double)iy/(double)(yFine)*(yf-yi);
       for (int iz=0; iz<zFine; iz++) {
-	double z = zi + (double)iz/(double)(zFine-1)*(zf-zi);
+	double z = zi + (double)iz/(double)(zFine)*(zf-zi);
 	float val;
 	eval_NUBspline_3d_s (spline, x, y, z, &val);
 	fprintf (fout, "%1.16e ", val);
@@ -263,6 +265,6 @@ main()
   // TestNUBasis();
   // TestNUBasis();
   // TestNUBspline();
-  //  TestNUB_2d_s();
+  TestNUB_2d_s();
   TestNUB_3d_s();
 }
