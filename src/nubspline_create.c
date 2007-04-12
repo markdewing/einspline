@@ -512,17 +512,13 @@ create_NUBspline_1d_d (NUgrid* x_grid, BCtype_d xBC, double *data)
 
   // Next, create the basis
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
-  int M = x_grid->num_points;
-  int N;
+  // M is the number of data points
+  int M; 
+  if (xBC.lCode == PERIODIC) M = x_grid->num_points - 1;
+  else                       M = x_grid->num_points;
+  int N = x_grid->num_points + 2;
 
   // Allocate coefficients and solve
-  if (xBC.lCode == PERIODIC) {
-    assert (xBC.rCode == PERIODIC);
-    N = M+3;
-  }
-  else 
-    N = M+2;
-  
   spline->coefs = malloc(N*sizeof(double));
   find_NUBcoefs_1d_d (spline->x_basis, xBC, data, 1, spline->coefs, 1);
     
