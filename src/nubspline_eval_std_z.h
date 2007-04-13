@@ -1,5 +1,5 @@
-#ifndef BSPLINE_EVAL_STD_C_H
-#define BSPLINE_EVAL_STD_C_H
+#ifndef BSPLINE_EVAL_STD_Z_H
+#define BSPLINE_EVAL_STD_Z_H
 
 #include <math.h>
 #include <stdio.h>
@@ -11,24 +11,24 @@
 
 /* Value only */
 inline void
-eval_NUBspline_1d_c (NUBspline_1d_c * restrict spline, 
-		     double x, complex_float* restrict val)
+eval_NUBspline_1d_z (NUBspline_1d_z * restrict spline, 
+		     double x, complex_double* restrict val)
 {
-  float bfuncs[4];
-  int i = get_NUBasis_funcs_s (spline->x_basis, x, bfuncs);
-  complex_float* restrict coefs = spline->coefs;
+  double bfuncs[4];
+  int i = get_NUBasis_funcs_d (spline->x_basis, x, bfuncs);
+  complex_double* restrict coefs = spline->coefs;
   *val = (coefs[i+0]*bfuncs[0] +coefs[i+1]*bfuncs[1] +
 	  coefs[i+2]*bfuncs[2] +coefs[i+3]*bfuncs[3]);
 }
 
 /* Value and first derivative */
 inline void
-eval_NUBspline_1d_c_vg (NUBspline_1d_c * restrict spline, double x, 
-			complex_float* restrict val, complex_float* restrict grad)
+eval_NUBspline_1d_z_vg (NUBspline_1d_z * restrict spline, double x, 
+			complex_double* restrict val, complex_double* restrict grad)
 {
-  float bfuncs[4], dbfuncs[4];
-  int i = get_NUBasis_dfuncs_s (spline->x_basis, x, bfuncs, dbfuncs);
-  complex_float* restrict coefs = spline->coefs;
+  double bfuncs[4], dbfuncs[4];
+  int i = get_NUBasis_dfuncs_d (spline->x_basis, x, bfuncs, dbfuncs);
+  complex_double* restrict coefs = spline->coefs;
   *val =  (coefs[i+0]* bfuncs[0] + coefs[i+1]* bfuncs[1] +
 	   coefs[i+2]* bfuncs[2] + coefs[i+3]* bfuncs[3]);
   *grad = (coefs[i+0]*dbfuncs[0] + coefs[i+1]*dbfuncs[1] +
@@ -37,13 +37,13 @@ eval_NUBspline_1d_c_vg (NUBspline_1d_c * restrict spline, double x,
 
 /* Value, first derivative, and second derivative */
 inline void
-eval_NUBspline_1d_c_vgl (NUBspline_1d_c * restrict spline, double x, 
-			complex_float* restrict val, complex_float* restrict grad,
-			complex_float* restrict lapl)
+eval_NUBspline_1d_z_vgl (NUBspline_1d_z * restrict spline, double x, 
+			complex_double* restrict val, complex_double* restrict grad,
+			complex_double* restrict lapl)
 {
-  float bfuncs[4], dbfuncs[4], d2bfuncs[4];
-  int i = get_NUBasis_d2funcs_s (spline->x_basis, x, bfuncs, dbfuncs, d2bfuncs);
-  complex_float* restrict coefs = spline->coefs;
+  double bfuncs[4], dbfuncs[4], d2bfuncs[4];
+  int i = get_NUBasis_d2funcs_d (spline->x_basis, x, bfuncs, dbfuncs, d2bfuncs);
+  complex_double* restrict coefs = spline->coefs;
   *val =  (coefs[i+0]*  bfuncs[0] + coefs[i+1]*  bfuncs[1] +
 	   coefs[i+2]*  bfuncs[2] + coefs[i+3]*  bfuncs[3]);
   *grad = (coefs[i+0]* dbfuncs[0] + coefs[i+1]* dbfuncs[1] +
@@ -54,11 +54,11 @@ eval_NUBspline_1d_c_vgl (NUBspline_1d_c * restrict spline, double x,
 }
 
 inline void
-eval_NUBspline_1d_c_vgh (NUBspline_1d_c * restrict spline, double x, 
-			complex_float* restrict val, complex_float* restrict grad,
-			complex_float* restrict hess)
+eval_NUBspline_1d_z_vgh (NUBspline_1d_z * restrict spline, double x, 
+			complex_double* restrict val, complex_double* restrict grad,
+			complex_double* restrict hess)
 {
-  eval_NUBspline_1d_c_vgl (spline, x, val, grad, hess);
+  eval_NUBspline_1d_z_vgl (spline, x, val, grad, hess);
 }
 
 /************************************************************/
@@ -67,14 +67,14 @@ eval_NUBspline_1d_c_vgh (NUBspline_1d_c * restrict spline, double x,
 
 /* Value only */
 inline void
-eval_NUBspline_2d_c (NUBspline_2d_c * restrict spline, 
-		    double x, double y, complex_float* restrict val)
+eval_NUBspline_2d_z (NUBspline_2d_z * restrict spline, 
+		    double x, double y, complex_double* restrict val)
 {
-  float a[4], b[4];
-  int ix = get_NUBasis_funcs_s (spline->x_basis, x, a);
-  int iy = get_NUBasis_funcs_s (spline->y_basis, y, b);
+  double a[4], b[4];
+  int ix = get_NUBasis_funcs_d (spline->x_basis, x, a);
+  int iy = get_NUBasis_funcs_d (spline->y_basis, y, b);
   
-  complex_float* restrict coefs = spline->coefs;
+  complex_double* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
 #define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
@@ -89,15 +89,15 @@ eval_NUBspline_2d_c (NUBspline_2d_c * restrict spline,
 
 /* Value and gradient */
 inline void
-eval_NUBspline_2d_c_vg (NUBspline_2d_c * restrict spline, 
+eval_NUBspline_2d_z_vg (NUBspline_2d_z * restrict spline, 
 		       double x, double y, 
-		       complex_float* restrict val, complex_float* restrict grad)
+		       complex_double* restrict val, complex_double* restrict grad)
 {
-  float a[4], b[4], da[4], db[4];
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, a, da);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, b, db);
+  double a[4], b[4], da[4], db[4];
+  int ix = get_NUBasis_dfuncs_d (spline->x_basis, x, a, da);
+  int iy = get_NUBasis_dfuncs_d (spline->y_basis, y, b, db);
   
-  complex_float* restrict coefs = spline->coefs;
+  complex_double* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
 #define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
@@ -118,16 +118,16 @@ eval_NUBspline_2d_c_vg (NUBspline_2d_c * restrict spline,
 
 /* Value, gradient, and laplacian */
 inline void
-eval_NUBspline_2d_c_vgl (NUBspline_2d_c * restrict spline, 
-			double x, double y, complex_float* restrict val, 
-			complex_float* restrict grad, complex_float* restrict lapl)
+eval_NUBspline_2d_z_vgl (NUBspline_2d_z * restrict spline, 
+			double x, double y, complex_double* restrict val, 
+			complex_double* restrict grad, complex_double* restrict lapl)
 {
-  float a[4], b[4], da[4], db[4], d2a[4], d2b[4];
-  complex_float bc[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
+  double a[4], b[4], da[4], db[4], d2a[4], d2b[4];
+  complex_double bc[4];
+  int ix = get_NUBasis_d2funcs_d (spline->x_basis, x, a, da, d2a);
+  int iy = get_NUBasis_d2funcs_d (spline->y_basis, y, b, db, d2b);
   
-  complex_float* restrict coefs = spline->coefs;
+  complex_double* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
 #define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
@@ -152,16 +152,16 @@ eval_NUBspline_2d_c_vgl (NUBspline_2d_c * restrict spline,
 
 /* Value, gradient, and Hessian */
 inline void
-eval_NUBspline_2d_c_vgh (NUBspline_2d_c * restrict spline, 
-			double x, double y, complex_float* restrict val, 
-			complex_float* restrict grad, complex_float* restrict hess)
+eval_NUBspline_2d_z_vgh (NUBspline_2d_z * restrict spline, 
+			double x, double y, complex_double* restrict val, 
+			complex_double* restrict grad, complex_double* restrict hess)
 {
-  float a[4], b[4], da[4], db[4], d2a[4], d2b[4];
-  complex_float bc[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
+  double a[4], b[4], da[4], db[4], d2a[4], d2b[4];
+  complex_double bc[4];
+  int ix = get_NUBasis_d2funcs_d (spline->x_basis, x, a, da, d2a);
+  int iy = get_NUBasis_d2funcs_d (spline->y_basis, y, b, db, d2b);
   
-  complex_float* restrict coefs = spline->coefs;
+  complex_double* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
 #define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
@@ -196,16 +196,16 @@ eval_NUBspline_2d_c_vgh (NUBspline_2d_c * restrict spline,
 
 /* Value only */
 inline void
-eval_NUBspline_3d_c (NUBspline_3d_c * restrict spline, 
+eval_NUBspline_3d_z (NUBspline_3d_z * restrict spline, 
 		    double x, double y, double z,
-		    complex_float* restrict val)
+		    complex_double* restrict val)
 {
 
-  float a[4], b[4], c[4];
-  int ix = get_NUBasis_funcs_s (spline->x_basis, x, a);
-  int iy = get_NUBasis_funcs_s (spline->y_basis, y, b);
-  int iz = get_NUBasis_funcs_s (spline->z_basis, z, c);
-  complex_float* restrict coefs = spline->coefs;
+  double a[4], b[4], c[4];
+  int ix = get_NUBasis_funcs_d (spline->x_basis, x, a);
+  int iy = get_NUBasis_funcs_d (spline->y_basis, y, b);
+  int iz = get_NUBasis_funcs_d (spline->z_basis, z, c);
+  complex_double* restrict coefs = spline->coefs;
   
   int xs = spline->x_stride;
   int ys = spline->y_stride;
@@ -232,16 +232,16 @@ eval_NUBspline_3d_c (NUBspline_3d_c * restrict spline,
 
 /* Value and gradient */
 inline void
-eval_NUBspline_3d_c_vg (NUBspline_3d_c * restrict spline, 
+eval_NUBspline_3d_z_vg (NUBspline_3d_z * restrict spline, 
 			double x, double y, double z,
-			complex_float* restrict val, complex_float* restrict grad)
+			complex_double* restrict val, complex_double* restrict grad)
 {
-  float a[4], b[4], c[4], da[4], db[4], dc[4];
-  complex_float cP[16], bcP[4], dbcP[4];
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, a, da);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, b, db);
-  int iz = get_NUBasis_dfuncs_s (spline->z_basis, z, c, dc);
-  complex_float* restrict coefs = spline->coefs;
+  double a[4], b[4], c[4], da[4], db[4], dc[4];
+  complex_double cP[16], bcP[4], dbcP[4];
+  int ix = get_NUBasis_dfuncs_d (spline->x_basis, x, a, da);
+  int iy = get_NUBasis_dfuncs_d (spline->y_basis, y, b, db);
+  int iz = get_NUBasis_dfuncs_d (spline->z_basis, z, c, dc);
+  complex_double* restrict coefs = spline->coefs;
   
   int xs = spline->x_stride;
   int ys = spline->y_stride;
@@ -301,20 +301,20 @@ eval_NUBspline_3d_c_vg (NUBspline_3d_c * restrict spline,
 
 /* Value, gradient, and laplacian */
 inline void
-eval_NUBspline_3d_c_vgl (NUBspline_3d_c * restrict spline, 
+eval_NUBspline_3d_z_vgl (NUBspline_3d_z * restrict spline, 
 			 double x, double y, double z,
-			 complex_float* restrict val, complex_float* restrict grad, 
-			 complex_float* restrict lapl)
+			 complex_double* restrict val, complex_double* restrict grad, 
+			 complex_double* restrict lapl)
 {
-  float a[4], b[4], c[4], da[4], db[4], dc[4], 
+  double a[4], b[4], c[4], da[4], db[4], dc[4], 
     d2a[4], d2b[4], d2c[4];
-  complex_float cP[16], dcP[16], bcP[4], dbcP[4], d2bcP[4], bdcP[4];
+  complex_double cP[16], dcP[16], bcP[4], dbcP[4], d2bcP[4], bdcP[4];
 
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
-  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, c, dc, d2c);
+  int ix = get_NUBasis_d2funcs_d (spline->x_basis, x, a, da, d2a);
+  int iy = get_NUBasis_d2funcs_d (spline->y_basis, y, b, db, d2b);
+  int iz = get_NUBasis_d2funcs_d (spline->z_basis, z, c, dc, d2c);
 
-  complex_float* restrict coefs = spline->coefs;
+  complex_double* restrict coefs = spline->coefs;
   int xs = spline->x_stride;
   int ys = spline->y_stride;
 #define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
@@ -411,21 +411,21 @@ eval_NUBspline_3d_c_vgl (NUBspline_3d_c * restrict spline,
 
 /* Value, gradient, and Hessian */
 inline void
-eval_NUBspline_3d_c_vgh (NUBspline_3d_c * restrict spline, 
+eval_NUBspline_3d_z_vgh (NUBspline_3d_z * restrict spline, 
 			 double x, double y, double z,
-			 complex_float* restrict val, complex_float* restrict grad, complex_float* restrict hess)
+			 complex_double* restrict val, complex_double* restrict grad, complex_double* restrict hess)
 {
-  float a[4], b[4], c[4], da[4], db[4], dc[4], 
+  double a[4], b[4], c[4], da[4], db[4], dc[4], 
     d2a[4], d2b[4], d2c[4];
-  complex_float cP[16], dcP[16], d2cP[16], bcP[4], dbcP[4],
+  complex_double cP[16], dcP[16], d2cP[16], bcP[4], dbcP[4],
     d2bcP[4], dbdcP[4], bd2cP[4], bdcP[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
-  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, c, dc, d2c);
+  int ix = get_NUBasis_d2funcs_d (spline->x_basis, x, a, da, d2a);
+  int iy = get_NUBasis_d2funcs_d (spline->y_basis, y, b, db, d2b);
+  int iz = get_NUBasis_d2funcs_d (spline->z_basis, z, c, dc, d2c);
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-  complex_float* restrict coefs = spline->coefs;
+  complex_double* restrict coefs = spline->coefs;
 #define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
   cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
   cP[ 1] = (P(0,1,0)*c[0]+P(0,1,1)*c[1]+P(0,1,2)*c[2]+P(0,1,3)*c[3]);
