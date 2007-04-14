@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+  <title>libbspline</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body bgcolor=#FFFFD0>
+<center>
+<img src="einspline_logo.png" align="center">
+</center>
+
+<div align=center>
+<TABLE CELLSPACING=20 CELLPADDING=1>
+<TR>
+	<TD><A HREF="download.html">Download</A></TD>
+	<TD><A HREF="benchmark.html">Benchmark</A></TD>
+	<TD><A HREF="index.html'#features">Features</A></TD>
+	<TD><A HREF="Cinterface.html">Documentation</A></TD>
+	<TD><A HREF="faq.html">FAQ</A></TD>
+	<TD><A HREF="links.html">Links</A></TD>
+</TR>
+</TABLE>
+</div>
+
+<center>
+<h1> Nonuniform Splines </h1>
+</center>
+<h2> Nonuniform grids </h2>
+In order to create nonuniform spline objects, we must first create the
+nonuniform grids on which the spline will be defined.  For
+multidimensional grids, a grid object is needed for each dimension
+(though a single grid object pointer may be used for more than one
+dimension).  
+<h3> <font color="Blue"> Grid creation </font></h3>
+Currently, there are two nonuniform grids implemented:
+
+<h4><u> Center grid</u> </h4>
+The <b>center grid</b> grid is a set of points which are more closely
+packed near the center of the interval than out the outside.  It is
+created by specifying four quantities:
+<ol>
+  <li> The first point
+  <li> The last point
+  <li> The number of points
+  <li> The ratio of the largest to smallest grid spacing
+</ol>
+
+</body>
+</html>
