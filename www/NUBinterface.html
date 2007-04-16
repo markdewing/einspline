@@ -42,9 +42,68 @@ created by specifying four quantities:
 <ol>
   <li> The first point
   <li> The last point
-  <li> The number of points
   <li> The ratio of the largest to smallest grid spacing
+  <li> The number of points
 </ol>
+A center grid is created with the call
+<pre>
+NUgrid*
+<font color="blue">create_center_grid</font> (double <i>start</i>, double <i>end</i>, double <i>ratio</i>, 
+		    int <i>num_points</i>);
+</pre>
+The center grid function has an analytic inverse, which can be used to
+find the nearest grid point to a given point very quickly.
 
+
+<h4><u> General grid</u> </h4>
+The general grid is a catch-all for all other types of grids.  It is
+created with a call to
+<pre>
+NUgrid*
+<font color="blue">create_general_grid</font> (double *<i>points</i>, int <i>num_points</i>);
+</pre>
+<i>points</i> is an array of points, which must be
+sorted in assending order.  <i>num_points</i> is
+self-explanatory.  While general_grid can be used for any type of grid
+spacing, it has the disadvantage that a bisection search must be
+performed to find the nearest grid point. 
+
+<h3> <font color="Blue"> Spline creation </font></h3>
+<h4> Function prototypes: </h4>
+<u>Single-precision real: </u><br>
+<PRE>
+NUBspline_1d_s * <font color="blue">create_NUBspline_1d_s</font> (NUgrid* <i>x_grid</i>, BCtype_s <i>xBC</i>, float *<i>data</i>);
+NUBspline_2d_s * <font color="blue">create_NUBspline_2d_s</font> (NUgrid* <i>x_grid</i>, NUgrid* <i>y_grid</i>,
+                                        BCtype_s <i>xBC</i>, BCtype_s <i>yBC</i>, float *<i>data</i>);
+NUBspline_3d_s * <font color="blue">create_NUBspline_3d_s</font> (NUgrid* <i>x_grid</i>,   NUgrid* <i>y_grid</i>, NUgrid* <i>z_grid</i>,
+                                        BCtype_s  <i>xBC</i>,  BCtype_s   <i>yBC</i>, BCtype_s   <i>zBC</i>, float *<i>data</i>);
+</PRE>
+<u>Single-precision complex: </u><br>
+<PRE>
+NUBspline_1d_c * <font color="blue">create_NUBspline_1d_c</font> (NUgrid* <i>x_grid</i>, BCtype_c <i>xBC</i>, complex_float *<i>data</i>);
+NUBspline_2d_c * <font color="blue">create_NUBspline_2d_c</font> (NUgrid* <i>x_grid</i>, NUgrid* <i>y_grid</i>,
+                                        BCtype_c <i>xBC</i>, BCtype_c <i>yBC</i>, complex_float *<i>data</i>);
+NUBspline_3d_c * <font color="blue">create_NUBspline_3d_c</font> (NUgrid* <i>x_grid</i>,   NUgrid* <i>y_grid</i>, NUgrid* <i>z_grid</i>,
+                                        BCtype_c  <i>xBC</i>,  BCtype_c   <i>yBC</i>, BCtype_c   <i>zBC</i>, 
+                                        complex_float *<i>data</i>);
+</PRE>
+<u>Double-precision real: </u><br>
+<PRE>
+NUBspline_1d_d * <font color="blue">create_NUBspline_1d_d</font> (NUgrid* <i>x_grid</i>, BCtype_d <i>xBC</i>, double *<i>data</i>);
+NUBspline_2d_d * <font color="blue">create_NUBspline_2d_d</font> (NUgrid* <i>x_grid</i>, NUgrid* <i>y_grid</i>,
+                                        BCtype_d <i>xBC</i>, BCtype_d <i>yBC</i>, double *<i>data</i>);
+NUBspline_3d_d * <font color="blue">create_NUBspline_3d_d</font> (NUgrid* <i>x_grid</i>,   NUgrid* <i>y_grid</i>, NUgrid* <i>z_grid</i>,
+                                        BCtype_d  <i>xBC</i>,  BCtype_d   <i>yBC</i>, BCtype_d   <i>zBC</i>, double *<i>data</i>);
+</PRE>
+<u> Double-precision complex: </u><br>
+<PRE>
+NUBspline_1d_z * <font color="blue">create_NUBspline_1d_z</font> (NUgrid* <i>x_grid</i>, BCtype_z <i>xBC</i>, complex_double *<i>data</i>);
+NUBspline_2d_z * <font color="blue">create_NUBspline_2d_z </font>(NUgrid* <i>x_grid</i>, NUgrid* <i>y_grid</i>,
+                                        BCtype_z <i>xBC</i>, BCtype_z <i>yBC</i>, complex_double *<i>data</i>);
+NUBspline_3d_z * <font color="blue">create_NUBspline_3d_z</font> (NUgrid* <i>x_grid</i>,   NUgrid* <i>y_grid</i>, NUgrid* <i>z_grid</i>,
+                                        BCtype_z  <i>xBC</i>,  BCtype_z   <i>yBC</i>, BCtype_z   <i>zBC</i>, 
+                                        complex_double *<i>data</i>);
+</PRE>
+<hr>
 </body>
 </html>
