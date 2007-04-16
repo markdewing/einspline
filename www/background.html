@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+  <title>libbspline</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body bgcolor=#FFFFD0>
+<center>
+<img src="einspline_logo.png" align="center">
+</center>
+
+<div align=center>
+<TABLE CELLSPACING=20 CELLPADDING=1>
+<TR>
+	<TD><A HREF="download.html">Download</A></TD>
+	<TD><A HREF="benchmark.html">Benchmark</A></TD>
+	<TD><A HREF="index.html#features">Features</A></TD>
+	<TD><A HREF="doc.html">Documentation</A></TD>
+	<TD><A HREF="faq.html">FAQ</A></TD>
+	<TD><A HREF="links.html">Links</A></TD>
+</TR>
+</TABLE>
+</div>
+
+<center><h1>Background</h1></center>
+Basis splines were developed by Carl de Boor for the parametric
+representation of curves, surfaces, volumetric data, etc.  The are
+more commonly known as B-splines.
+<h3> One dimension </h3>
+As the name suggests, B-splines are constructed as a linear
+combination of basis functions, which are hat-like functions of
+<i>compact support</i>, i.e. each function is nonzero only in a
+bounded range.  The basis is constructed in such a way as to guarantee
+the continuity of the value, and perhaps derivatives of the B-spline,
+depending of the B-spline degree, <i>N</i>.  
+
+The B-spline basis is determined by two pieces of information:
+<ol>
+  <li> an ascending sequence of points, or <i>knot values</i>, which
+  are abscissas for the spline function
+  <li> the B-spline degree, <i>N</i>.  
+</ol>
+The degree determines how <i>smooth</i> the spline will be.  For
+degree <i>N</i>, the value and first <i>N-1</i> derivatives of the
+spline function will be continuous.  Cubic B-splines (<i>N</i>=3) are
+perhaps the most common form, and have continuous value, first, and
+second derivatives.
+
+
+</body>
+</html>
