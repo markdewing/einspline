@@ -598,60 +598,66 @@ eval_NUBspline_3d_s_vgh (NUBspline_3d_s * restrict spline,
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
+  int ys2 = 2*ys;
+  int ys3 = 3*ys;
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
   float *restrict p = P(0,0);
   _mm_prefetch ((char*)(p     ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+1*ys), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
   p+= xs;
   _mm_prefetch ((char*)(p     ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+1*ys), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
   p+= xs;
   _mm_prefetch ((char*)(p     ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+1*ys), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
   p+= xs;
   _mm_prefetch ((char*)(p     ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+1*ys), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
-  tmp0 = _mm_loadu_ps (P(0,0));
-  tmp1 = _mm_loadu_ps (P(0,1));
-  tmp2 = _mm_loadu_ps (P(0,2));
-  tmp3 = _mm_loadu_ps (P(0,3));
+  p = P(0,0);
+  tmp0 = _mm_loadu_ps (p   );
+  tmp1 = _mm_loadu_ps (p+ys);
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[0]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[0]);
   // 2nd quarter
-  tmp0 = _mm_loadu_ps (P(1,0));
-  tmp1 = _mm_loadu_ps (P(1,1));
-  tmp2 = _mm_loadu_ps (P(1,2));
-  tmp3 = _mm_loadu_ps (P(1,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[1]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[1]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[1]);
   // 3rd quarter
-  tmp0 = _mm_loadu_ps (P(2,0));
-  tmp1 = _mm_loadu_ps (P(2,1));
-  tmp2 = _mm_loadu_ps (P(2,2));
-  tmp3 = _mm_loadu_ps (P(2,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys2);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[2]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[2]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[2]);
   // 4th quarter
-  tmp0 = _mm_loadu_ps (P(3,0));
-  tmp1 = _mm_loadu_ps (P(3,1));
-  tmp2 = _mm_loadu_ps (P(3,2));
-  tmp3 = _mm_loadu_ps (P(3,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[3]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[3]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[3]);

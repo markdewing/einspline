@@ -223,8 +223,8 @@ TestNUB_3d_s()
       double y = yi + (double)iy/(double)(yFine)*(yf-yi);
       for (int iz=0; iz<zFine; iz++) {
 	double z = zi + (double)iz/(double)(zFine)*(zf-zi);
-	float val;
-	eval_NUBspline_3d_s (spline, x, y, z, &val);
+	float val, grad[3], hess[9];
+	eval_NUBspline_3d_s_vgh (spline, x, y, z, &val, grad, hess);
 	fprintf (fout, "%1.16e ", val);
       }
     }
