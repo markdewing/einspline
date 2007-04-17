@@ -627,8 +627,8 @@ eval_NUBspline_3d_s_vgh (NUBspline_3d_s * restrict spline,
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
   p = P(0,0);
-  tmp0 = _mm_loadu_ps (p   );
-  tmp1 = _mm_loadu_ps (p+ys);
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
   tmp2 = _mm_loadu_ps (p+ys2);
   tmp3 = _mm_loadu_ps (p+ys3);
   p += xs;
