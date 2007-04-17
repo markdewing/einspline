@@ -574,7 +574,7 @@ eval_NUBspline_3d_s_vgl (NUBspline_3d_s * restrict spline,
 
 
 
-
+typedef union { float scalars[4]; __m128 v; } vec4;
 
 /* Value, gradient, and Hessian */
 inline void
@@ -586,40 +586,54 @@ eval_NUBspline_3d_s_vgh (NUBspline_3d_s * restrict spline,
   
   __m128 a, b, c, da, db, dc, d2a, d2b, d2c, cP[4], dcP[4], d2cP[4], bcP, dbcP,
     d2bcP, dbdcP, bd2cP, bdcP, tmp0, tmp1, tmp2, tmp3;
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2bf);
-  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, cf, dcf, d2cf);
+
+  vec4 av, bv, cv, dav, dbv, dcv, d2av, d2bv, d2cv;
+ 
+  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, av.scalars, dav.scalars, d2av.scalars);
+  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bv.scalars, dbv.scalars, d2bv.scalars);
+  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, cv.scalars, dcv.scalars, d2cv.scalars);
+  a   =   av.v;   b =   bv.v;   c =   cv.v;
+  da  =  dav.v;  db =  dbv.v;  dc =  dcv.v;
+  d2a = d2av.v; d2b = d2bv.v; d2c = d2cv.v;
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
-  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
+  float *restrict p = P(0,0);
+  _mm_prefetch ((char*)(p     ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+1*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
+  p+= xs;
+  _mm_prefetch ((char*)(p     ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+1*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
+  p+= xs;
+  _mm_prefetch ((char*)(p     ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+1*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
+  p+= xs;
+  _mm_prefetch ((char*)(p     ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+1*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
 
-  a   = _mm_loadu_ps (af);
-  b   = _mm_loadu_ps (bf);
-  c   = _mm_loadu_ps (cf);
-  da  = _mm_loadu_ps (daf);
-  db  = _mm_loadu_ps (dbf);
-  dc  = _mm_loadu_ps (dcf);
-  d2a = _mm_loadu_ps (d2af);
-  d2b = _mm_loadu_ps (d2bf);
-  d2c = _mm_loadu_ps (d2cf);
+//   _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+//   _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
   
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.

@@ -37,7 +37,6 @@
   #include "nubspline_eval_std_z.h"
 #endif
 
-#include "nubspline_create.h"
 void
 destroy_Bspline (Bspline *ptr);
 

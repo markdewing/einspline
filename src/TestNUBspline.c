@@ -237,9 +237,9 @@ void
 SpeedNUB_3d_s()
 {
   int Mx=200, My=200, Mz=200;
-  NUgrid *x_grid = create_center_grid (-3.0, 4.0,  7.5, Mx);
-  NUgrid *y_grid = create_center_grid (-1.0, 9.0,  3.5, My);
-  NUgrid *z_grid = create_center_grid (-1.8, 2.0,  2.8, Mz);
+  NUgrid *x_grid = create_center_grid (-3.0, 4.0,  1.0001, Mx);
+  NUgrid *y_grid = create_center_grid (-1.0, 9.0,  1.0001, My);
+  NUgrid *z_grid = create_center_grid (-1.8, 2.0,  1.0001, Mz);
   float *data;
   data = malloc (sizeof(float)*Mx*My*Mz);
   for (int ix=0; ix<Mx; ix++)
