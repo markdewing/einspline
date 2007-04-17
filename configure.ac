@@ -27,6 +27,7 @@ AC_CHECK_HEADERS([stdlib.h sys/time.h unistd.h])
 
 
 AC_MSG_CHECKING([optimal compiler flags])
+CFLAGS="${CFLAGS} -g"
 AC_MSG_RESULT([${CFLAGS}])
 
 AC_ARG_ENABLE(altivec,[  --enable-altivec        enable PowerPC SIMD extensions])
@@ -74,5 +75,8 @@ AC_CHECK_FUNCS([clock_gettime floor pow sqrt strtol])
 AC_SUBST(PKGDATADEF)
 
 AC_CONFIG_FILES([ Makefile                  \
-		  src/Makefile              ])
+		  src/Makefile              \
+                  doc/Makefile              \
+		  www/Makefile              \
+                  einspline.pc  ])
 AC_OUTPUT

@@ -6,11 +6,11 @@ TestNUBspline_SOURCES = TestNUBspline.c
 LDADD = 
 AM_CCFLAGS = -g 
 
-TestBspline_LDADD   = libbspline.la $(FLIBS)
-TestNUBspline_LDADD = libbspline.la $(FLIBS)
+TestBspline_LDADD   = libeinspline.la $(FLIBS)
+TestNUBspline_LDADD = libeinspline.la $(FLIBS)
 
-lib_LTLIBRARIES = libbspline.la
-libbspline_la_SOURCES =                               \
+lib_LTLIBRARIES = libeinspline.la
+libeinspline_la_SOURCES =                               \
                        bspline_base.h                 \
                        bspline_create.c               \
                        bspline_create.h               \
@@ -35,10 +35,10 @@ libbspline_la_SOURCES =                               \
                        nugrid.c
 
 
-libbspline_la_LIBADD = $(FLIBS)
+libeinspline_la_LIBADD = $(FLIBS)
 
 
-includedir=$(prefix)/include/bspline
+includedir=$(prefix)/include/einspline
 
 
 #if WITH_F77

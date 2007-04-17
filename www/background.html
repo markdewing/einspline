@@ -46,6 +46,25 @@ degree <i>N</i>, the value and first <i>N-1</i> derivatives of the
 spline function will be continuous.  Cubic B-splines (<i>N</i>=3) are
 perhaps the most common form, and have continuous value, first, and
 second derivatives.
+<h4> Uniform case:</h4>
+In the case of a grid with uniform spacing, the basis functions for a
+cubic B-spline look like: 
+<center>
+<img src="UBsplineBasis.png" width=500/>
+</center>
+The vertical lines show the locations of the knots and the colored
+lines show the basis functions.  Note that at any value of <i>x</i>,
+only four basis functions are nonzero.
+<h4> Nonuniform case: </h4>
+We can also construct a grid with nonuniform spacing.  This is useful
+if the function to be represented has detailed structure concentrated
+over one part of it's range.  For example, the radial wave functions
+for an atom have rapid oscillations near the nucleus, but are much
+more slowly varying at large distance.  For a nonuniform grid spacing,
+the basis looks like:
+<center>
+<img src="NUBsplineBasis.png" width=500/>
+</center>
 
 
 </body>
