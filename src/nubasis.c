@@ -1,4 +1,5 @@
 #include "nubasis.h"
+#include <stdlib.h>
 
 NUBasis*
 create_NUBasis (NUgrid *grid, bool periodic)
