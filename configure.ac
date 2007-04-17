@@ -38,7 +38,14 @@ fi
 
 AC_ARG_ENABLE(fftw,   [  --enable-fftw           enable FFTW library for creating blips])
 if test "x$enable_fftw" = "xyes"; then
-  PKG_CHECK_MODULES(FFTW, fftw, fftw_ok=yes, fftw_ok=no)
+  PKG_CHECK_MODULES(FFTW3,  fftw3,  fftw3_ok=yes,  fftw3_ok=no)
+  PKG_CHECK_MODULES(FFTW3F, fftw3f, fftw3f_ok=yes, fftw3f_ok=no)
+  if test "x$fftw3_ok" = "xyes"; then
+    AC_DEFINE([HAVE_FFTW3], [1], [FFTW3 library is available])
+  fi
+  if test "x$fftw3f_ok" = "xyes"; then
+    AC_DEFINE([HAVE_FFTW3F], [1], [FFTW3F library is available])
+  fi
 fi
 
 AC_ARG_ENABLE(profile,[  --enable-profile        instrument code with profiling information])
