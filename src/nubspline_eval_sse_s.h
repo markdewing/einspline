@@ -621,20 +621,6 @@ eval_NUBspline_3d_s_vgh (NUBspline_3d_s * restrict spline,
   _mm_prefetch ((char*)(p+2*ys), _MM_HINT_T0);
   _mm_prefetch ((char*)(p+3*ys), _MM_HINT_T0);
 
-//   _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
-//   _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
-  
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
