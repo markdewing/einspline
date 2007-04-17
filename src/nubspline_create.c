@@ -21,8 +21,12 @@
 #include "nubspline_create.h"
 #include <math.h>
 #include <assert.h>
-#define _XOPEN_SOURCE 600
-#define __USE_XOPEN2K
+#ifndef _XOPEN_SOURCE
+  #define _XOPEN_SOURCE 600
+#endif
+#ifndef __USE_XOPEN2K
+  #define __USE_XOPEN2K
+#endif
 #include <stdlib.h>
 
 ////////////////////////////////////////////////////////

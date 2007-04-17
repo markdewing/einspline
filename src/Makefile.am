@@ -28,6 +28,10 @@ libeinspline_la_SOURCES =                               \
                        nubspline_create.c             \
                        nubspline_create.h             \
                        nubspline_eval_std_s.h         \
+                       nubspline_eval_std_c.h         \
+                       nubspline_eval_std_d.h         \
+                       nubspline_eval_std_z.h         \
+                       nubspline_eval_sse_s.h         \
                        nubspline_structs.h            \
                        nubasis.h                      \
                        nubasis.c                      \

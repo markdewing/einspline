@@ -19,7 +19,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "nubspline_create.h"
-#include "nubspline_eval_std_s.h"
+//#include "nubspline_eval_std_s.h"
+#include "nubspline_eval_sse_s.h"
 #include "nubspline_eval_std_d.h"
 #include "nubspline_eval_std_c.h"
 #include "nubspline_eval_std_z.h"

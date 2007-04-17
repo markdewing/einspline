@@ -18,12 +18,55 @@
 //  Boston, MA  02110-1301  USA                                            //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef BSPLINE_EVAL_SSE_S_H
-#define BSPLINE_EVAL_SSE_S_H
+#ifndef NUBBSPLINE_EVAL_SSE_S_H
+#define NUBBSPLINE_EVAL_SSE_S_H
 
 #include <math.h>
 #include <stdio.h>
 #include "nubspline_structs.h"
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#include <pmmintrin.h>
+#ifdef __SSE3__
+#define _MM_MATVEC4_PS(M0, M1, M2, M3, v, r)                        \
+do {                                                                \
+  __m128 r0 = _mm_hadd_ps (_mm_mul_ps (M0, v), _mm_mul_ps (M1, v)); \
+  __m128 r1 = _mm_hadd_ps (_mm_mul_ps (M2, v), _mm_mul_ps (M3, v)); \
+  r = _mm_hadd_ps (r0, r1);                                         \
+ } while (0);
+#define _MM_DOT4_PS(A, B, p)                                        \
+do {                                                                \
+  __m128 t  = _mm_mul_ps (A, B);                                    \
+  __m128 t1 = _mm_hadd_ps (t,t);                                    \
+  __m128 r  = _mm_hadd_ps (t1, t1);                                 \
+  _mm_store_ss (&(p), r);                                           \
+} while(0);
+#else
+// Use plain-old SSE instructions
+#define _MM_MATVEC4_PS(M0, M1, M2, M3, v, r)                        \
+do {                                                                \
+  __m128 r0 = _mm_mul_ps (M0, v);                                   \
+  __m128 r1 = _mm_mul_ps (M1, v);				    \
+  __m128 r2 = _mm_mul_ps (M2, v);                                   \
+  __m128 r3 = _mm_mul_ps (M3, v);				    \
+  _MM_TRANSPOSE4_PS (r0, r1, r2, r3);                               \
+  r = _mm_add_ps (_mm_add_ps (r0, r1), _mm_add_ps (r2, r3));        \
+ } while (0);
+#define _MM_DOT4_PS(A, B, p)                                        \
+do {                                                                \
+  __m128 t    = _mm_mul_ps (A, B);                                  \
+  __m128 alo  = _mm_shuffle_ps (t, t, _MM_SHUFFLE(0,1,0,1));	    \
+  __m128 ahi  = _mm_shuffle_ps (t, t, _MM_SHUFFLE(2,3,2,3));	    \
+  __m128 a    = _mm_add_ps (alo, ahi);                              \
+  __m128 rlo  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(0,0,0,0));	    \
+  __m128 rhi  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(1,1,1,1));	    \
+  __m128 r    = _mm_add_ps (rlo, rhi);                              \
+  _mm_store_ss (&(p), r);                                           \
+} while(0);
+#endif
+
+
+
 
 /************************************************************/
 /* 1D single-precision, real evaulation functions           */
@@ -91,9 +134,10 @@ eval_NUBspline_2d_s (NUBspline_2d_s * restrict spline,
 		    double x, double y, float* restrict val)
 {
   float af[4], bf[4];
-  __m128 tmp0, tmp1, tmp2, tmp3;
+  __m128 a, b, bP, tmp0, tmp1, tmp2, tmp3;
   int ix = get_NUBasis_funcs_s (spline->x_basis, x, af);
   int iy = get_NUBasis_funcs_s (spline->y_basis, y, bf);
+
   float* restrict coefs = spline->coefs;
   int xs = spline->x_stride;
   #define P(i) (spline->coefs+(ix+(i))*xs+iy)
@@ -104,8 +148,8 @@ eval_NUBspline_2d_s (NUBspline_2d_s * restrict spline,
   _mm_prefetch ((void*)P(2), _MM_HINT_T0);
   _mm_prefetch ((void*)P(3), _MM_HINT_T0);
 
-  a = _mm_loadu_ps (&af);
-  b = _mm_loadu_ps (&bf);
+  a = _mm_loadu_ps (af);
+  b = _mm_loadu_ps (bf);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -115,8 +159,7 @@ eval_NUBspline_2d_s (NUBspline_2d_s * restrict spline,
   // Compute value
   _MM_DOT4_PS (a, bP, *val);
 
-#undef C
-
+#undef P
 }
 
 
@@ -126,27 +169,38 @@ eval_NUBspline_2d_s_vg (NUBspline_2d_s * restrict spline,
 		       double x, double y, 
 		       float* restrict val, float* restrict grad)
 {
-  float a[4], b[4], da[4], db[4];
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, a, da);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, b, db);
-  
+  float af[4], bf[4], daf[4], dbf[4];
+  __m128 a, b, da, db, bP, dbP, tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, af, daf);
+  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, bf, dbf);
   float* restrict coefs = spline->coefs;
-
   int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  *val = (a[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
-	  a[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
-	  a[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
-	  a[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[0] = (da[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
-	     da[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
-	     da[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
-	     da[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-#undef C
+#define P(i) (spline->coefs+(ix+(i))*xs+iy)
+  
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  _mm_prefetch ((void*)P(0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3), _MM_HINT_T0);
+
+  a  = _mm_loadu_ps (af);
+  b  = _mm_loadu_ps (bf);
+  da = _mm_loadu_ps (daf);
+  db = _mm_loadu_ps (dbf);
+
+  tmp0 = _mm_loadu_ps (P(0));
+  tmp1 = _mm_loadu_ps (P(1));
+  tmp2 = _mm_loadu_ps (P(2));
+  tmp3 = _mm_loadu_ps (P(3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   b,   bP);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  db,  dbP);
+  // Compute value
+  _MM_DOT4_PS (a, bP, *val);
+  // Compute gradient
+  _MM_DOT4_PS (da, bP, grad[0]);
+  _MM_DOT4_PS (a, dbP, grad[1]);
+#undef P
 }
 
 /* Value, gradient, and laplacian */
@@ -155,31 +209,46 @@ eval_NUBspline_2d_s_vgl (NUBspline_2d_s * restrict spline,
 			double x, double y, float* restrict val, 
 			float* restrict grad, float* restrict lapl)
 {
-  float a[4], b[4], da[4], db[4], d2a[4], d2b[4], bc[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
-  
+  float af[4], bf[4], daf[4], dbf[4], d2af[4], d2bf[4];
+  __m128 a, b, da, db, d2a, d2b, bP, dbP, d2bP, tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
+  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2af);
   float* restrict coefs = spline->coefs;
-
   int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  bc[0] = (C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3]);
-  bc[1] = (C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3]);
-  bc[2] = (C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3]);
-  bc[3] = (C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]);
-  *val = (a[0]*bc[0] + a[1]*bc[1] + a[2]*bc[2] + a[3]*bc[3]);
-  grad[0] = (da[0]*bc[0] + da[1]*bc[1] + da[2]*bc[2] + da[3]*bc[3]);
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  *lapl   = (d2a[0]*bc[0] + d2a[1]*bc[1] + d2a[2]*bc[2] + d2a[3]*bc[3]+
-	     a[0]*(C(0,0)*d2b[0]+C(0,1)*d2b[1]+C(0,2)*d2b[2]+C(0,3)*d2b[3])+
-	     a[1]*(C(1,0)*d2b[0]+C(1,1)*d2b[1]+C(1,2)*d2b[2]+C(1,3)*d2b[3])+
-	     a[2]*(C(2,0)*d2b[0]+C(2,1)*d2b[1]+C(2,2)*d2b[2]+C(2,3)*d2b[3])+
-	     a[3]*(C(3,0)*d2b[0]+C(3,1)*d2b[1]+C(3,2)*d2b[2]+C(3,3)*d2b[3]));
+#define P(i) (spline->coefs+(ix+(i))*xs+iy)
   
-#undef C
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  _mm_prefetch ((void*)P(0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3), _MM_HINT_T0);
+
+  a   = _mm_loadu_ps (af);
+  b   = _mm_loadu_ps (bf);
+  da  = _mm_loadu_ps (daf);
+  db  = _mm_loadu_ps (dbf);
+  d2a = _mm_loadu_ps (d2af);
+  d2b = _mm_loadu_ps (d2bf);
+
+  tmp0 = _mm_loadu_ps (P(0));
+  tmp1 = _mm_loadu_ps (P(1));
+  tmp2 = _mm_loadu_ps (P(2));
+  tmp3 = _mm_loadu_ps (P(3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   b,   bP);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  db,  dbP);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2b, d2bP);
+  // Compute value
+  _MM_DOT4_PS (a, bP, *val);
+  // Compute gradient
+  _MM_DOT4_PS (da, bP, grad[0]);
+  _MM_DOT4_PS (a, dbP, grad[1]);
+  float sec_derivs[2];
+  // Compute laplacian
+  _MM_DOT4_PS (d2a, bP, sec_derivs[0]);
+  _MM_DOT4_PS (a, d2bP, sec_derivs[1]);
+  *lapl = sec_derivs[0] + sec_derivs[1];
+#undef P
 }
 
 /* Value, gradient, and Hessian */
@@ -188,36 +257,49 @@ eval_NUBspline_2d_s_vgh (NUBspline_2d_s * restrict spline,
 			double x, double y, float* restrict val, 
 			float* restrict grad, float* restrict hess)
 {
-  float a[4], b[4], da[4], db[4], d2a[4], d2b[4], bc[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
-  
+  float af[4], bf[4], daf[4], dbf[4], d2af[4], d2bf[4];
+  __m128 a, b, da, db, d2a, d2b, bP, dbP, d2bP, tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
+  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2af);
   float* restrict coefs = spline->coefs;
-
   int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  bc[0] = (C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3]);
-  bc[1] = (C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3]);
-  bc[2] = (C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3]);
-  bc[3] = (C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]);
-  *val = (a[0]*bc[0] + a[1]*bc[1] + a[2]*bc[2] + a[3]*bc[3]);
-  grad[0] = (da[0]*bc[0] + da[1]*bc[1] + da[2]*bc[2] + da[3]*bc[3]);
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  hess[0] = (d2a[0]*bc[0] + d2a[1]*bc[1] + d2a[2]*bc[2] + d2a[3]*bc[3]);
-  hess[1] = (da[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     da[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     da[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     da[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  hess[3] = (a[0]*(C(0,0)*d2b[0]+C(0,1)*d2b[1]+C(0,2)*d2b[2]+C(0,3)*d2b[3])+
-	     a[1]*(C(1,0)*d2b[0]+C(1,1)*d2b[1]+C(1,2)*d2b[2]+C(1,3)*d2b[3])+
-	     a[2]*(C(2,0)*d2b[0]+C(2,1)*d2b[1]+C(2,2)*d2b[2]+C(2,3)*d2b[3])+
-	     a[3]*(C(3,0)*d2b[0]+C(3,1)*d2b[1]+C(3,2)*d2b[2]+C(3,3)*d2b[3]));
-  hess[2] = hess[1];
+#define P(i) (spline->coefs+(ix+(i))*xs+iy)
   
-#undef C
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  _mm_prefetch ((void*)P(0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3), _MM_HINT_T0);
+
+  a   = _mm_loadu_ps (af);
+  b   = _mm_loadu_ps (bf);
+  da  = _mm_loadu_ps (daf);
+  db  = _mm_loadu_ps (dbf);
+  d2a = _mm_loadu_ps (d2af);
+  d2b = _mm_loadu_ps (d2bf);
+
+  tmp0 = _mm_loadu_ps (P(0));
+  tmp1 = _mm_loadu_ps (P(1));
+  tmp2 = _mm_loadu_ps (P(2));
+  tmp3 = _mm_loadu_ps (P(3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   b,   bP);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  db,  dbP);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2b, d2bP);
+  // Compute value
+  _MM_DOT4_PS (a, bP, *val);
+  // Compute gradient
+  _MM_DOT4_PS (da, bP, grad[0]);
+  _MM_DOT4_PS (a, dbP, grad[1]);
+  float sec_derivs[2];
+  // Compute hessian
+  // Compute hessian
+  _MM_DOT4_PS (d2a, bP, hess[0]);
+  _MM_DOT4_PS (a, d2bP, hess[3]);
+  _MM_DOT4_PS (da, dbP, hess[1]);
+  // Copy hessian element into lower half of 2x2 matrix
+  hess[2] = hess[1];
+#undef P
 }
 
 
@@ -231,34 +313,71 @@ eval_NUBspline_3d_s (NUBspline_3d_s * restrict spline,
 		    double x, double y, double z,
 		    float* restrict val)
 {
-
-  float a[4], b[4], c[4];
-  int ix = get_NUBasis_funcs_s (spline->x_basis, x, a);
-  int iy = get_NUBasis_funcs_s (spline->y_basis, y, b);
-  int iz = get_NUBasis_funcs_s (spline->z_basis, z, c);
-  float* restrict coefs = spline->coefs;
+  float af[4], bf[4], cf[4];
+  
+  __m128 a, b, c, cP[4], bcP, tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_funcs_s (spline->x_basis, x, af);
+  int iy = get_NUBasis_funcs_s (spline->y_basis, y, bf);
+  int iz = get_NUBasis_funcs_s (spline->z_basis, z, cf);
   
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-#define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
-  *val = (a[0]*(b[0]*(P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3])+
-		b[1]*(P(0,1,0)*c[0]+P(0,1,1)*c[1]+P(0,1,2)*c[2]+P(0,1,3)*c[3])+
-		b[2]*(P(0,2,0)*c[0]+P(0,2,1)*c[1]+P(0,2,2)*c[2]+P(0,2,3)*c[3])+
-		b[3]*(P(0,3,0)*c[0]+P(0,3,1)*c[1]+P(0,3,2)*c[2]+P(0,3,3)*c[3]))+
-	  a[1]*(b[0]*(P(1,0,0)*c[0]+P(1,0,1)*c[1]+P(1,0,2)*c[2]+P(1,0,3)*c[3])+
-		b[1]*(P(1,1,0)*c[0]+P(1,1,1)*c[1]+P(1,1,2)*c[2]+P(1,1,3)*c[3])+
-		b[2]*(P(1,2,0)*c[0]+P(1,2,1)*c[1]+P(1,2,2)*c[2]+P(1,2,3)*c[3])+
-		b[3]*(P(1,3,0)*c[0]+P(1,3,1)*c[1]+P(1,3,2)*c[2]+P(1,3,3)*c[3]))+
-	  a[2]*(b[0]*(P(2,0,0)*c[0]+P(2,0,1)*c[1]+P(2,0,2)*c[2]+P(2,0,3)*c[3])+
-		b[1]*(P(2,1,0)*c[0]+P(2,1,1)*c[1]+P(2,1,2)*c[2]+P(2,1,3)*c[3])+
-		b[2]*(P(2,2,0)*c[0]+P(2,2,1)*c[1]+P(2,2,2)*c[2]+P(2,2,3)*c[3])+
-		b[3]*(P(2,3,0)*c[0]+P(2,3,1)*c[1]+P(2,3,2)*c[2]+P(2,3,3)*c[3]))+
-	  a[3]*(b[0]*(P(3,0,0)*c[0]+P(3,0,1)*c[1]+P(3,0,2)*c[2]+P(3,0,3)*c[3])+
-		b[1]*(P(3,1,0)*c[0]+P(3,1,1)*c[1]+P(3,1,2)*c[2]+P(3,1,3)*c[3])+
-		b[2]*(P(3,2,0)*c[0]+P(3,2,1)*c[1]+P(3,2,2)*c[2]+P(3,2,3)*c[3])+
-		b[3]*(P(3,3,0)*c[0]+P(3,3,1)*c[1]+P(3,3,2)*c[2]+P(3,3,3)*c[3])));
-#undef P
+  float* restrict coefs = spline->coefs;
+#define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
+  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
+  
+  a   = _mm_loadu_ps (af);
+  b   = _mm_loadu_ps (bf);
+  c   = _mm_loadu_ps (cf);
+  
+  // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
+  // register reuse and avoid rerereading from memory or cache.
+  // 1st quarter
+  tmp0 = _mm_loadu_ps (P(0,0));
+  tmp1 = _mm_loadu_ps (P(0,1));
+  tmp2 = _mm_loadu_ps (P(0,2));
+  tmp3 = _mm_loadu_ps (P(0,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
+  // 2nd quarter
+  tmp0 = _mm_loadu_ps (P(1,0));
+  tmp1 = _mm_loadu_ps (P(1,1));
+  tmp2 = _mm_loadu_ps (P(1,2));
+  tmp3 = _mm_loadu_ps (P(1,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[1]);
+  // 3rd quarter
+  tmp0 = _mm_loadu_ps (P(2,0));
+  tmp1 = _mm_loadu_ps (P(2,1));
+  tmp2 = _mm_loadu_ps (P(2,2));
+  tmp3 = _mm_loadu_ps (P(2,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[2]);
+  // 4th quarter
+  tmp0 = _mm_loadu_ps (P(3,0));
+  tmp1 = _mm_loadu_ps (P(3,1));
+  tmp2 = _mm_loadu_ps (P(3,2));
+  tmp3 = _mm_loadu_ps (P(3,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[3]);
+  
+  // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],   b,   bcP);
+  // Compute value
+  _MM_DOT4_PS (a, bcP, *val);
 
+#undef P
 }
 
 /* Value and gradient */
@@ -267,65 +386,85 @@ eval_NUBspline_3d_s_vg (NUBspline_3d_s * restrict spline,
 			double x, double y, double z,
 			float* restrict val, float* restrict grad)
 {
-  float a[4], b[4], c[4], da[4], db[4], dc[4], 
-    cP[16], bcP[4], dbcP[4];
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, a, da);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, b, db);
-  int iz = get_NUBasis_dfuncs_s (spline->z_basis, z, c, dc);
-  float* restrict coefs = spline->coefs;
+  float af[4], bf[4], cf[4], daf[4], dbf[4], dcf[4];
+  
+  __m128 a, b, c, da, db, dc, cP[4], dcP[4], bcP, dbcP, 
+    dbP, bdcP, tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, af, daf);
+  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, bf, dbf);
+  int iz = get_NUBasis_dfuncs_s (spline->z_basis, z, cf, dcf);
   
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-#define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
-  cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
-  cP[ 1] = (P(0,1,0)*c[0]+P(0,1,1)*c[1]+P(0,1,2)*c[2]+P(0,1,3)*c[3]);
-  cP[ 2] = (P(0,2,0)*c[0]+P(0,2,1)*c[1]+P(0,2,2)*c[2]+P(0,2,3)*c[3]);
-  cP[ 3] = (P(0,3,0)*c[0]+P(0,3,1)*c[1]+P(0,3,2)*c[2]+P(0,3,3)*c[3]);
-  cP[ 4] = (P(1,0,0)*c[0]+P(1,0,1)*c[1]+P(1,0,2)*c[2]+P(1,0,3)*c[3]);
-  cP[ 5] = (P(1,1,0)*c[0]+P(1,1,1)*c[1]+P(1,1,2)*c[2]+P(1,1,3)*c[3]);
-  cP[ 6] = (P(1,2,0)*c[0]+P(1,2,1)*c[1]+P(1,2,2)*c[2]+P(1,2,3)*c[3]);
-  cP[ 7] = (P(1,3,0)*c[0]+P(1,3,1)*c[1]+P(1,3,2)*c[2]+P(1,3,3)*c[3]);
-  cP[ 8] = (P(2,0,0)*c[0]+P(2,0,1)*c[1]+P(2,0,2)*c[2]+P(2,0,3)*c[3]);
-  cP[ 9] = (P(2,1,0)*c[0]+P(2,1,1)*c[1]+P(2,1,2)*c[2]+P(2,1,3)*c[3]);
-  cP[10] = (P(2,2,0)*c[0]+P(2,2,1)*c[1]+P(2,2,2)*c[2]+P(2,2,3)*c[3]);
-  cP[11] = (P(2,3,0)*c[0]+P(2,3,1)*c[1]+P(2,3,2)*c[2]+P(2,3,3)*c[3]);
-  cP[12] = (P(3,0,0)*c[0]+P(3,0,1)*c[1]+P(3,0,2)*c[2]+P(3,0,3)*c[3]);
-  cP[13] = (P(3,1,0)*c[0]+P(3,1,1)*c[1]+P(3,1,2)*c[2]+P(3,1,3)*c[3]);
-  cP[14] = (P(3,2,0)*c[0]+P(3,2,1)*c[1]+P(3,2,2)*c[2]+P(3,2,3)*c[3]);
-  cP[15] = (P(3,3,0)*c[0]+P(3,3,1)*c[1]+P(3,3,2)*c[2]+P(3,3,3)*c[3]);
+  float* restrict coefs = spline->coefs;
+#define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
+  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
+  
+  a   = _mm_loadu_ps (af);
+  b   = _mm_loadu_ps (bf);
+  c   = _mm_loadu_ps (cf);
+  da  = _mm_loadu_ps (daf);
+  db  = _mm_loadu_ps (dbf);
+  dc  = _mm_loadu_ps (dcf);
+  
+  // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
+  // register reuse and avoid rerereading from memory or cache.
+  // 1st quarter
+  tmp0 = _mm_loadu_ps (P(0,0));
+  tmp1 = _mm_loadu_ps (P(0,1));
+  tmp2 = _mm_loadu_ps (P(0,2));
+  tmp3 = _mm_loadu_ps (P(0,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[0]);
+  // 2nd quarter
+  tmp0 = _mm_loadu_ps (P(1,0));
+  tmp1 = _mm_loadu_ps (P(1,1));
+  tmp2 = _mm_loadu_ps (P(1,2));
+  tmp3 = _mm_loadu_ps (P(1,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[1]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[1]);
+  // 3rd quarter
+  tmp0 = _mm_loadu_ps (P(2,0));
+  tmp1 = _mm_loadu_ps (P(2,1));
+  tmp2 = _mm_loadu_ps (P(2,2));
+  tmp3 = _mm_loadu_ps (P(2,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[2]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[2]);
+  // 4th quarter
+  tmp0 = _mm_loadu_ps (P(3,0));
+  tmp1 = _mm_loadu_ps (P(3,1));
+  tmp2 = _mm_loadu_ps (P(3,2));
+  tmp3 = _mm_loadu_ps (P(3,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[3]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[3]);
+  
+  // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],   b,   bcP);
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],  db,  dbcP);
+  _MM_MATVEC4_PS ( dcP[0],  dcP[1],  dcP[2],  dcP[3],   b,  bdcP);
+  // Compute value
+  _MM_DOT4_PS (a, bcP, *val);
+  // Compute gradient
+  _MM_DOT4_PS (da, bcP, grad[0]);
+  _MM_DOT4_PS (a, dbcP, grad[1]);
+  _MM_DOT4_PS (a, bdcP, grad[2]);
 
-  bcP[0] = ( b[0]*cP[ 0] + b[1]*cP[ 1] + b[2]*cP[ 2] + b[3]*cP[ 3]);
-  bcP[1] = ( b[0]*cP[ 4] + b[1]*cP[ 5] + b[2]*cP[ 6] + b[3]*cP[ 7]);
-  bcP[2] = ( b[0]*cP[ 8] + b[1]*cP[ 9] + b[2]*cP[10] + b[3]*cP[11]);
-  bcP[3] = ( b[0]*cP[12] + b[1]*cP[13] + b[2]*cP[14] + b[3]*cP[15]);
-
-  dbcP[0] = ( db[0]*cP[ 0] + db[1]*cP[ 1] + db[2]*cP[ 2] + db[3]*cP[ 3]);
-  dbcP[1] = ( db[0]*cP[ 4] + db[1]*cP[ 5] + db[2]*cP[ 6] + db[3]*cP[ 7]);
-  dbcP[2] = ( db[0]*cP[ 8] + db[1]*cP[ 9] + db[2]*cP[10] + db[3]*cP[11]);
-  dbcP[3] = ( db[0]*cP[12] + db[1]*cP[13] + db[2]*cP[14] + db[3]*cP[15]);
-
-  *val    = ( a[0]*bcP[0] +  a[1]*bcP[1] +  a[2]*bcP[2] +  a[3]*bcP[3]);
-  grad[0] = (da[0]*bcP[0] + da[1]*bcP[1] + da[2]*bcP[2] + da[3]*bcP[3]);
-  grad[1] = (a[0]*dbcP[0] + a[1]*dbcP[1] + a[2]*dbcP[2] + a[3]*dbcP[3]);
-  grad[2] = 
-    (a[0]*(b[0]*(P(0,0,0)*dc[0]+P(0,0,1)*dc[1]+P(0,0,2)*dc[2]+P(0,0,3)*dc[3])+
-	   b[1]*(P(0,1,0)*dc[0]+P(0,1,1)*dc[1]+P(0,1,2)*dc[2]+P(0,1,3)*dc[3])+
-	   b[2]*(P(0,2,0)*dc[0]+P(0,2,1)*dc[1]+P(0,2,2)*dc[2]+P(0,2,3)*dc[3])+
-	   b[3]*(P(0,3,0)*dc[0]+P(0,3,1)*dc[1]+P(0,3,2)*dc[2]+P(0,3,3)*dc[3]))+
-     a[1]*(b[0]*(P(1,0,0)*dc[0]+P(1,0,1)*dc[1]+P(1,0,2)*dc[2]+P(1,0,3)*dc[3])+
-	   b[1]*(P(1,1,0)*dc[0]+P(1,1,1)*dc[1]+P(1,1,2)*dc[2]+P(1,1,3)*dc[3])+
-	   b[2]*(P(1,2,0)*dc[0]+P(1,2,1)*dc[1]+P(1,2,2)*dc[2]+P(1,2,3)*dc[3])+
-	   b[3]*(P(1,3,0)*dc[0]+P(1,3,1)*dc[1]+P(1,3,2)*dc[2]+P(1,3,3)*dc[3]))+
-     a[2]*(b[0]*(P(2,0,0)*dc[0]+P(2,0,1)*dc[1]+P(2,0,2)*dc[2]+P(2,0,3)*dc[3])+
-	   b[1]*(P(2,1,0)*dc[0]+P(2,1,1)*dc[1]+P(2,1,2)*dc[2]+P(2,1,3)*dc[3])+
-	   b[2]*(P(2,2,0)*dc[0]+P(2,2,1)*dc[1]+P(2,2,2)*dc[2]+P(2,2,3)*dc[3])+
-	   b[3]*(P(2,3,0)*dc[0]+P(2,3,1)*dc[1]+P(2,3,2)*dc[2]+P(2,3,3)*dc[3]))+
-     a[3]*(b[0]*(P(3,0,0)*dc[0]+P(3,0,1)*dc[1]+P(3,0,2)*dc[2]+P(3,0,3)*dc[3])+
-	   b[1]*(P(3,1,0)*dc[0]+P(3,1,1)*dc[1]+P(3,1,2)*dc[2]+P(3,1,3)*dc[3])+
-	   b[2]*(P(3,2,0)*dc[0]+P(3,2,1)*dc[1]+P(3,2,2)*dc[2]+P(3,2,3)*dc[3])+
-	   b[3]*(P(3,3,0)*dc[0]+P(3,3,1)*dc[1]+P(3,3,2)*dc[2]+P(3,3,3)*dc[3])));
 #undef P
-
 }
 
 
@@ -333,105 +472,104 @@ eval_NUBspline_3d_s_vg (NUBspline_3d_s * restrict spline,
 /* Value, gradient, and laplacian */
 inline void
 eval_NUBspline_3d_s_vgl (NUBspline_3d_s * restrict spline, 
-			double x, double y, double z,
-			float* restrict val, float* restrict grad, float* restrict lapl)
+			 double x, double y, double z,
+			 float* restrict val, float* restrict grad, float* restrict lapl)
 {
-  float a[4], b[4], c[4], da[4], db[4], dc[4], 
-    d2a[4], d2b[4], d2c[4], cP[16], dcP[16], bcP[4], dbcP[4], d2bcP[4], bdcP[4];
-
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
-  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, c, dc, d2c);
-
-  float* restrict coefs = spline->coefs;
+  float af[4], bf[4], cf[4], daf[4], dbf[4], dcf[4], d2af[4], d2bf[4], d2cf[4]; 
+  
+  __m128 a, b, c, da, db, dc, d2a, d2b, d2c, cP[4], dcP[4], d2cP[4], bcP, dbcP,
+    d2bcP, dbdcP, bd2cP, bdcP, tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
+  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2bf);
+  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, cf, dcf, d2cf);
+  
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-#define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
-  cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
-  cP[ 1] = (P(0,1,0)*c[0]+P(0,1,1)*c[1]+P(0,1,2)*c[2]+P(0,1,3)*c[3]);
-  cP[ 2] = (P(0,2,0)*c[0]+P(0,2,1)*c[1]+P(0,2,2)*c[2]+P(0,2,3)*c[3]);
-  cP[ 3] = (P(0,3,0)*c[0]+P(0,3,1)*c[1]+P(0,3,2)*c[2]+P(0,3,3)*c[3]);
-  cP[ 4] = (P(1,0,0)*c[0]+P(1,0,1)*c[1]+P(1,0,2)*c[2]+P(1,0,3)*c[3]);
-  cP[ 5] = (P(1,1,0)*c[0]+P(1,1,1)*c[1]+P(1,1,2)*c[2]+P(1,1,3)*c[3]);
-  cP[ 6] = (P(1,2,0)*c[0]+P(1,2,1)*c[1]+P(1,2,2)*c[2]+P(1,2,3)*c[3]);
-  cP[ 7] = (P(1,3,0)*c[0]+P(1,3,1)*c[1]+P(1,3,2)*c[2]+P(1,3,3)*c[3]);
-  cP[ 8] = (P(2,0,0)*c[0]+P(2,0,1)*c[1]+P(2,0,2)*c[2]+P(2,0,3)*c[3]);
-  cP[ 9] = (P(2,1,0)*c[0]+P(2,1,1)*c[1]+P(2,1,2)*c[2]+P(2,1,3)*c[3]);
-  cP[10] = (P(2,2,0)*c[0]+P(2,2,1)*c[1]+P(2,2,2)*c[2]+P(2,2,3)*c[3]);
-  cP[11] = (P(2,3,0)*c[0]+P(2,3,1)*c[1]+P(2,3,2)*c[2]+P(2,3,3)*c[3]);
-  cP[12] = (P(3,0,0)*c[0]+P(3,0,1)*c[1]+P(3,0,2)*c[2]+P(3,0,3)*c[3]);
-  cP[13] = (P(3,1,0)*c[0]+P(3,1,1)*c[1]+P(3,1,2)*c[2]+P(3,1,3)*c[3]);
-  cP[14] = (P(3,2,0)*c[0]+P(3,2,1)*c[1]+P(3,2,2)*c[2]+P(3,2,3)*c[3]);
-  cP[15] = (P(3,3,0)*c[0]+P(3,3,1)*c[1]+P(3,3,2)*c[2]+P(3,3,3)*c[3]);
+  float* restrict coefs = spline->coefs;
+#define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
+  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
+  
+  a   = _mm_loadu_ps (af);
+  b   = _mm_loadu_ps (bf);
+  c   = _mm_loadu_ps (cf);
+  da  = _mm_loadu_ps (daf);
+  db  = _mm_loadu_ps (dbf);
+  dc  = _mm_loadu_ps (dcf);
+  d2a = _mm_loadu_ps (d2af);
+  d2b = _mm_loadu_ps (d2bf);
+  d2c = _mm_loadu_ps (d2cf);
+  
+  // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
+  // register reuse and avoid rerereading from memory or cache.
+  // 1st quarter
+  tmp0 = _mm_loadu_ps (P(0,0));
+  tmp1 = _mm_loadu_ps (P(0,1));
+  tmp2 = _mm_loadu_ps (P(0,2));
+  tmp3 = _mm_loadu_ps (P(0,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[0]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[0]);
+  // 2nd quarter
+  tmp0 = _mm_loadu_ps (P(1,0));
+  tmp1 = _mm_loadu_ps (P(1,1));
+  tmp2 = _mm_loadu_ps (P(1,2));
+  tmp3 = _mm_loadu_ps (P(1,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[1]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[1]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[1]);
+  // 3rd quarter
+  tmp0 = _mm_loadu_ps (P(2,0));
+  tmp1 = _mm_loadu_ps (P(2,1));
+  tmp2 = _mm_loadu_ps (P(2,2));
+  tmp3 = _mm_loadu_ps (P(2,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[2]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[2]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[2]);
+  // 4th quarter
+  tmp0 = _mm_loadu_ps (P(3,0));
+  tmp1 = _mm_loadu_ps (P(3,1));
+  tmp2 = _mm_loadu_ps (P(3,2));
+  tmp3 = _mm_loadu_ps (P(3,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[3]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[3]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[3]);
+  
+  // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],   b,   bcP);
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],  db,  dbcP);
+  _MM_MATVEC4_PS ( dcP[0],  dcP[1],  dcP[2],  dcP[3],   b,  bdcP);
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3], d2b, d2bcP);
+  _MM_MATVEC4_PS (d2cP[0], d2cP[1], d2cP[2], d2cP[3],   b, bd2cP);
+  _MM_MATVEC4_PS ( dcP[0],  dcP[1],  dcP[2],  dcP[3],  db, dbdcP);
+  // Compute value
+  _MM_DOT4_PS (a, bcP, *val);
+  // Compute gradient
+  _MM_DOT4_PS (da, bcP, grad[0]);
+  _MM_DOT4_PS (a, dbcP, grad[1]);
+  _MM_DOT4_PS (a, bdcP, grad[2]);
+  // Compute laplacian
+  float sec_derivs[3];
 
-  dcP[ 0] = (P(0,0,0)*dc[0]+P(0,0,1)*dc[1]+P(0,0,2)*dc[2]+P(0,0,3)*dc[3]);
-  dcP[ 1] = (P(0,1,0)*dc[0]+P(0,1,1)*dc[1]+P(0,1,2)*dc[2]+P(0,1,3)*dc[3]);
-  dcP[ 2] = (P(0,2,0)*dc[0]+P(0,2,1)*dc[1]+P(0,2,2)*dc[2]+P(0,2,3)*dc[3]);
-  dcP[ 3] = (P(0,3,0)*dc[0]+P(0,3,1)*dc[1]+P(0,3,2)*dc[2]+P(0,3,3)*dc[3]);
-  dcP[ 4] = (P(1,0,0)*dc[0]+P(1,0,1)*dc[1]+P(1,0,2)*dc[2]+P(1,0,3)*dc[3]);
-  dcP[ 5] = (P(1,1,0)*dc[0]+P(1,1,1)*dc[1]+P(1,1,2)*dc[2]+P(1,1,3)*dc[3]);
-  dcP[ 6] = (P(1,2,0)*dc[0]+P(1,2,1)*dc[1]+P(1,2,2)*dc[2]+P(1,2,3)*dc[3]);
-  dcP[ 7] = (P(1,3,0)*dc[0]+P(1,3,1)*dc[1]+P(1,3,2)*dc[2]+P(1,3,3)*dc[3]);
-  dcP[ 8] = (P(2,0,0)*dc[0]+P(2,0,1)*dc[1]+P(2,0,2)*dc[2]+P(2,0,3)*dc[3]);
-  dcP[ 9] = (P(2,1,0)*dc[0]+P(2,1,1)*dc[1]+P(2,1,2)*dc[2]+P(2,1,3)*dc[3]);
-  dcP[10] = (P(2,2,0)*dc[0]+P(2,2,1)*dc[1]+P(2,2,2)*dc[2]+P(2,2,3)*dc[3]);
-  dcP[11] = (P(2,3,0)*dc[0]+P(2,3,1)*dc[1]+P(2,3,2)*dc[2]+P(2,3,3)*dc[3]);
-  dcP[12] = (P(3,0,0)*dc[0]+P(3,0,1)*dc[1]+P(3,0,2)*dc[2]+P(3,0,3)*dc[3]);
-  dcP[13] = (P(3,1,0)*dc[0]+P(3,1,1)*dc[1]+P(3,1,2)*dc[2]+P(3,1,3)*dc[3]);
-  dcP[14] = (P(3,2,0)*dc[0]+P(3,2,1)*dc[1]+P(3,2,2)*dc[2]+P(3,2,3)*dc[3]);
-  dcP[15] = (P(3,3,0)*dc[0]+P(3,3,1)*dc[1]+P(3,3,2)*dc[2]+P(3,3,3)*dc[3]);
-
-  bcP[0] = ( b[0]*cP[ 0] + b[1]*cP[ 1] + b[2]*cP[ 2] + b[3]*cP[ 3]);
-  bcP[1] = ( b[0]*cP[ 4] + b[1]*cP[ 5] + b[2]*cP[ 6] + b[3]*cP[ 7]);
-  bcP[2] = ( b[0]*cP[ 8] + b[1]*cP[ 9] + b[2]*cP[10] + b[3]*cP[11]);
-  bcP[3] = ( b[0]*cP[12] + b[1]*cP[13] + b[2]*cP[14] + b[3]*cP[15]);
-
-  dbcP[0] = ( db[0]*cP[ 0] + db[1]*cP[ 1] + db[2]*cP[ 2] + db[3]*cP[ 3]);
-  dbcP[1] = ( db[0]*cP[ 4] + db[1]*cP[ 5] + db[2]*cP[ 6] + db[3]*cP[ 7]);
-  dbcP[2] = ( db[0]*cP[ 8] + db[1]*cP[ 9] + db[2]*cP[10] + db[3]*cP[11]);
-  dbcP[3] = ( db[0]*cP[12] + db[1]*cP[13] + db[2]*cP[14] + db[3]*cP[15]);
-
-  bdcP[0] = ( b[0]*dcP[ 0] + b[1]*dcP[ 1] + b[2]*dcP[ 2] + b[3]*dcP[ 3]);
-  bdcP[1] = ( b[0]*dcP[ 4] + b[1]*dcP[ 5] + b[2]*dcP[ 6] + b[3]*dcP[ 7]);
-  bdcP[2] = ( b[0]*dcP[ 8] + b[1]*dcP[ 9] + b[2]*dcP[10] + b[3]*dcP[11]);
-  bdcP[3] = ( b[0]*dcP[12] + b[1]*dcP[13] + b[2]*dcP[14] + b[3]*dcP[15]);
-
-  d2bcP[0] = ( d2b[0]*cP[ 0] + d2b[1]*cP[ 1] + d2b[2]*cP[ 2] + d2b[3]*cP[ 3]);
-  d2bcP[1] = ( d2b[0]*cP[ 4] + d2b[1]*cP[ 5] + d2b[2]*cP[ 6] + d2b[3]*cP[ 7]);
-  d2bcP[2] = ( d2b[0]*cP[ 8] + d2b[1]*cP[ 9] + d2b[2]*cP[10] + d2b[3]*cP[11]);
-  d2bcP[3] = ( d2b[0]*cP[12] + d2b[1]*cP[13] + d2b[2]*cP[14] + d2b[3]*cP[15]);
-
-
-  *val    = 
-    ( a[0]*bcP[0] +  a[1]*bcP[1] +  a[2]*bcP[2] +  a[3]*bcP[3]);
-
-  grad[0] = 
-    (da[0]*bcP[0] + da[1]*bcP[1] + da[2]*bcP[2] + da[3]*bcP[3]);
-  grad[1] = 
-    (a[0]*dbcP[0] + a[1]*dbcP[1] + a[2]*dbcP[2] + a[3]*dbcP[3]);
-  grad[2] = 
-    (a[0]*bdcP[0] + a[1]*bdcP[1] + a[2]*bdcP[2] + a[3]*bdcP[3]);
-
-  *lapl = (d2a[0]*bcP[0] + d2a[1]*bcP[1] + d2a[2]*bcP[2] + d2a[3]*bcP[3])
-    +     (a[0]*d2bcP[0] + a[1]*d2bcP[1] + a[2]*d2bcP[2] + a[3]*d2bcP[3]) +
-    (a[0]*(b[0]*(P(0,0,0)*d2c[0]+P(0,0,1)*d2c[1]+P(0,0,2)*d2c[2]+P(0,0,3)*d2c[3])+    
-	   b[1]*(P(0,1,0)*d2c[0]+P(0,1,1)*d2c[1]+P(0,1,2)*d2c[2]+P(0,1,3)*d2c[3])+
-	   b[2]*(P(0,2,0)*d2c[0]+P(0,2,1)*d2c[1]+P(0,2,2)*d2c[2]+P(0,2,3)*d2c[3])+
-	   b[3]*(P(0,3,0)*d2c[0]+P(0,3,1)*d2c[1]+P(0,3,2)*d2c[2]+P(0,3,3)*d2c[3]))+
-     a[1]*(b[0]*(P(1,0,0)*d2c[0]+P(1,0,1)*d2c[1]+P(1,0,2)*d2c[2]+P(1,0,3)*d2c[3])+
-	   b[1]*(P(1,1,0)*d2c[0]+P(1,1,1)*d2c[1]+P(1,1,2)*d2c[2]+P(1,1,3)*d2c[3])+
-	   b[2]*(P(1,2,0)*d2c[0]+P(1,2,1)*d2c[1]+P(1,2,2)*d2c[2]+P(1,2,3)*d2c[3])+
-	   b[3]*(P(1,3,0)*d2c[0]+P(1,3,1)*d2c[1]+P(1,3,2)*d2c[2]+P(1,3,3)*d2c[3]))+
-     a[2]*(b[0]*(P(2,0,0)*d2c[0]+P(2,0,1)*d2c[1]+P(2,0,2)*d2c[2]+P(2,0,3)*d2c[3])+
-	   b[1]*(P(2,1,0)*d2c[0]+P(2,1,1)*d2c[1]+P(2,1,2)*d2c[2]+P(2,1,3)*d2c[3])+
-	   b[2]*(P(2,2,0)*d2c[0]+P(2,2,1)*d2c[1]+P(2,2,2)*d2c[2]+P(2,2,3)*d2c[3])+
-	   b[3]*(P(2,3,0)*d2c[0]+P(2,3,1)*d2c[1]+P(2,3,2)*d2c[2]+P(2,3,3)*d2c[3]))+
-     a[3]*(b[0]*(P(3,0,0)*d2c[0]+P(3,0,1)*d2c[1]+P(3,0,2)*d2c[2]+P(3,0,3)*d2c[3])+
-	   b[1]*(P(3,1,0)*d2c[0]+P(3,1,1)*d2c[1]+P(3,1,2)*d2c[2]+P(3,1,3)*d2c[3])+
-	   b[2]*(P(3,2,0)*d2c[0]+P(3,2,1)*d2c[1]+P(3,2,2)*d2c[2]+P(3,2,3)*d2c[3])+
-	   b[3]*(P(3,3,0)*d2c[0]+P(3,3,1)*d2c[1]+P(3,3,2)*d2c[2]+P(3,3,3)*d2c[3])));
+  _MM_DOT4_PS (d2a, bcP, sec_derivs[0]);
+  _MM_DOT4_PS (a, d2bcP, sec_derivs[1]);
+  _MM_DOT4_PS (a, bd2cP, sec_derivs[2]);
+  *lapl = sec_derivs[0] + sec_derivs[1] + sec_derivs[2];
 #undef P
-
 }
 
 
@@ -444,119 +582,107 @@ eval_NUBspline_3d_s_vgh (NUBspline_3d_s * restrict spline,
 			 double x, double y, double z,
 			 float* restrict val, float* restrict grad, float* restrict hess)
 {
-  float a[4], b[4], c[4], da[4], db[4], dc[4], 
-    d2a[4], d2b[4], d2c[4], cP[16], dcP[16], d2cP[16], bcP[4], dbcP[4],
-    d2bcP[4], dbdcP[4], bd2cP[4], bdcP[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
-  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, c, dc, d2c);
+  float af[4], bf[4], cf[4], daf[4], dbf[4], dcf[4], d2af[4], d2bf[4], d2cf[4]; 
+  
+  __m128 a, b, c, da, db, dc, d2a, d2b, d2c, cP[4], dcP[4], d2cP[4], bcP, dbcP,
+    d2bcP, dbdcP, bd2cP, bdcP, tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
+  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2bf);
+  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, cf, dcf, d2cf);
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
   float* restrict coefs = spline->coefs;
-#define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
-  cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
-  cP[ 1] = (P(0,1,0)*c[0]+P(0,1,1)*c[1]+P(0,1,2)*c[2]+P(0,1,3)*c[3]);
-  cP[ 2] = (P(0,2,0)*c[0]+P(0,2,1)*c[1]+P(0,2,2)*c[2]+P(0,2,3)*c[3]);
-  cP[ 3] = (P(0,3,0)*c[0]+P(0,3,1)*c[1]+P(0,3,2)*c[2]+P(0,3,3)*c[3]);
-  cP[ 4] = (P(1,0,0)*c[0]+P(1,0,1)*c[1]+P(1,0,2)*c[2]+P(1,0,3)*c[3]);
-  cP[ 5] = (P(1,1,0)*c[0]+P(1,1,1)*c[1]+P(1,1,2)*c[2]+P(1,1,3)*c[3]);
-  cP[ 6] = (P(1,2,0)*c[0]+P(1,2,1)*c[1]+P(1,2,2)*c[2]+P(1,2,3)*c[3]);
-  cP[ 7] = (P(1,3,0)*c[0]+P(1,3,1)*c[1]+P(1,3,2)*c[2]+P(1,3,3)*c[3]);
-  cP[ 8] = (P(2,0,0)*c[0]+P(2,0,1)*c[1]+P(2,0,2)*c[2]+P(2,0,3)*c[3]);
-  cP[ 9] = (P(2,1,0)*c[0]+P(2,1,1)*c[1]+P(2,1,2)*c[2]+P(2,1,3)*c[3]);
-  cP[10] = (P(2,2,0)*c[0]+P(2,2,1)*c[1]+P(2,2,2)*c[2]+P(2,2,3)*c[3]);
-  cP[11] = (P(2,3,0)*c[0]+P(2,3,1)*c[1]+P(2,3,2)*c[2]+P(2,3,3)*c[3]);
-  cP[12] = (P(3,0,0)*c[0]+P(3,0,1)*c[1]+P(3,0,2)*c[2]+P(3,0,3)*c[3]);
-  cP[13] = (P(3,1,0)*c[0]+P(3,1,1)*c[1]+P(3,1,2)*c[2]+P(3,1,3)*c[3]);
-  cP[14] = (P(3,2,0)*c[0]+P(3,2,1)*c[1]+P(3,2,2)*c[2]+P(3,2,3)*c[3]);
-  cP[15] = (P(3,3,0)*c[0]+P(3,3,1)*c[1]+P(3,3,2)*c[2]+P(3,3,3)*c[3]);
+#define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
+  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
 
-  dcP[ 0] = (P(0,0,0)*dc[0]+P(0,0,1)*dc[1]+P(0,0,2)*dc[2]+P(0,0,3)*dc[3]);
-  dcP[ 1] = (P(0,1,0)*dc[0]+P(0,1,1)*dc[1]+P(0,1,2)*dc[2]+P(0,1,3)*dc[3]);
-  dcP[ 2] = (P(0,2,0)*dc[0]+P(0,2,1)*dc[1]+P(0,2,2)*dc[2]+P(0,2,3)*dc[3]);
-  dcP[ 3] = (P(0,3,0)*dc[0]+P(0,3,1)*dc[1]+P(0,3,2)*dc[2]+P(0,3,3)*dc[3]);
-  dcP[ 4] = (P(1,0,0)*dc[0]+P(1,0,1)*dc[1]+P(1,0,2)*dc[2]+P(1,0,3)*dc[3]);
-  dcP[ 5] = (P(1,1,0)*dc[0]+P(1,1,1)*dc[1]+P(1,1,2)*dc[2]+P(1,1,3)*dc[3]);
-  dcP[ 6] = (P(1,2,0)*dc[0]+P(1,2,1)*dc[1]+P(1,2,2)*dc[2]+P(1,2,3)*dc[3]);
-  dcP[ 7] = (P(1,3,0)*dc[0]+P(1,3,1)*dc[1]+P(1,3,2)*dc[2]+P(1,3,3)*dc[3]);
-  dcP[ 8] = (P(2,0,0)*dc[0]+P(2,0,1)*dc[1]+P(2,0,2)*dc[2]+P(2,0,3)*dc[3]);
-  dcP[ 9] = (P(2,1,0)*dc[0]+P(2,1,1)*dc[1]+P(2,1,2)*dc[2]+P(2,1,3)*dc[3]);
-  dcP[10] = (P(2,2,0)*dc[0]+P(2,2,1)*dc[1]+P(2,2,2)*dc[2]+P(2,2,3)*dc[3]);
-  dcP[11] = (P(2,3,0)*dc[0]+P(2,3,1)*dc[1]+P(2,3,2)*dc[2]+P(2,3,3)*dc[3]);
-  dcP[12] = (P(3,0,0)*dc[0]+P(3,0,1)*dc[1]+P(3,0,2)*dc[2]+P(3,0,3)*dc[3]);
-  dcP[13] = (P(3,1,0)*dc[0]+P(3,1,1)*dc[1]+P(3,1,2)*dc[2]+P(3,1,3)*dc[3]);
-  dcP[14] = (P(3,2,0)*dc[0]+P(3,2,1)*dc[1]+P(3,2,2)*dc[2]+P(3,2,3)*dc[3]);
-  dcP[15] = (P(3,3,0)*dc[0]+P(3,3,1)*dc[1]+P(3,3,2)*dc[2]+P(3,3,3)*dc[3]);
-
-  d2cP[ 0] = (P(0,0,0)*d2c[0]+P(0,0,1)*d2c[1]+P(0,0,2)*d2c[2]+P(0,0,3)*d2c[3]);
-  d2cP[ 1] = (P(0,1,0)*d2c[0]+P(0,1,1)*d2c[1]+P(0,1,2)*d2c[2]+P(0,1,3)*d2c[3]);
-  d2cP[ 2] = (P(0,2,0)*d2c[0]+P(0,2,1)*d2c[1]+P(0,2,2)*d2c[2]+P(0,2,3)*d2c[3]);
-  d2cP[ 3] = (P(0,3,0)*d2c[0]+P(0,3,1)*d2c[1]+P(0,3,2)*d2c[2]+P(0,3,3)*d2c[3]);
-  d2cP[ 4] = (P(1,0,0)*d2c[0]+P(1,0,1)*d2c[1]+P(1,0,2)*d2c[2]+P(1,0,3)*d2c[3]);
-  d2cP[ 5] = (P(1,1,0)*d2c[0]+P(1,1,1)*d2c[1]+P(1,1,2)*d2c[2]+P(1,1,3)*d2c[3]);
-  d2cP[ 6] = (P(1,2,0)*d2c[0]+P(1,2,1)*d2c[1]+P(1,2,2)*d2c[2]+P(1,2,3)*d2c[3]);
-  d2cP[ 7] = (P(1,3,0)*d2c[0]+P(1,3,1)*d2c[1]+P(1,3,2)*d2c[2]+P(1,3,3)*d2c[3]);
-  d2cP[ 8] = (P(2,0,0)*d2c[0]+P(2,0,1)*d2c[1]+P(2,0,2)*d2c[2]+P(2,0,3)*d2c[3]);
-  d2cP[ 9] = (P(2,1,0)*d2c[0]+P(2,1,1)*d2c[1]+P(2,1,2)*d2c[2]+P(2,1,3)*d2c[3]);
-  d2cP[10] = (P(2,2,0)*d2c[0]+P(2,2,1)*d2c[1]+P(2,2,2)*d2c[2]+P(2,2,3)*d2c[3]);
-  d2cP[11] = (P(2,3,0)*d2c[0]+P(2,3,1)*d2c[1]+P(2,3,2)*d2c[2]+P(2,3,3)*d2c[3]);
-  d2cP[12] = (P(3,0,0)*d2c[0]+P(3,0,1)*d2c[1]+P(3,0,2)*d2c[2]+P(3,0,3)*d2c[3]);
-  d2cP[13] = (P(3,1,0)*d2c[0]+P(3,1,1)*d2c[1]+P(3,1,2)*d2c[2]+P(3,1,3)*d2c[3]);
-  d2cP[14] = (P(3,2,0)*d2c[0]+P(3,2,1)*d2c[1]+P(3,2,2)*d2c[2]+P(3,2,3)*d2c[3]);
-  d2cP[15] = (P(3,3,0)*d2c[0]+P(3,3,1)*d2c[1]+P(3,3,2)*d2c[2]+P(3,3,3)*d2c[3]);
-
-  bcP[0] = ( b[0]*cP[ 0] + b[1]*cP[ 1] + b[2]*cP[ 2] + b[3]*cP[ 3]);
-  bcP[1] = ( b[0]*cP[ 4] + b[1]*cP[ 5] + b[2]*cP[ 6] + b[3]*cP[ 7]);
-  bcP[2] = ( b[0]*cP[ 8] + b[1]*cP[ 9] + b[2]*cP[10] + b[3]*cP[11]);
-  bcP[3] = ( b[0]*cP[12] + b[1]*cP[13] + b[2]*cP[14] + b[3]*cP[15]);
-
-  dbcP[0] = ( db[0]*cP[ 0] + db[1]*cP[ 1] + db[2]*cP[ 2] + db[3]*cP[ 3]);
-  dbcP[1] = ( db[0]*cP[ 4] + db[1]*cP[ 5] + db[2]*cP[ 6] + db[3]*cP[ 7]);
-  dbcP[2] = ( db[0]*cP[ 8] + db[1]*cP[ 9] + db[2]*cP[10] + db[3]*cP[11]);
-  dbcP[3] = ( db[0]*cP[12] + db[1]*cP[13] + db[2]*cP[14] + db[3]*cP[15]);
-
-  bdcP[0] = ( b[0]*dcP[ 0] + b[1]*dcP[ 1] + b[2]*dcP[ 2] + b[3]*dcP[ 3]);
-  bdcP[1] = ( b[0]*dcP[ 4] + b[1]*dcP[ 5] + b[2]*dcP[ 6] + b[3]*dcP[ 7]);
-  bdcP[2] = ( b[0]*dcP[ 8] + b[1]*dcP[ 9] + b[2]*dcP[10] + b[3]*dcP[11]);
-  bdcP[3] = ( b[0]*dcP[12] + b[1]*dcP[13] + b[2]*dcP[14] + b[3]*dcP[15]);
-
-  bd2cP[0] = ( b[0]*d2cP[ 0] + b[1]*d2cP[ 1] + b[2]*d2cP[ 2] + b[3]*d2cP[ 3]);
-  bd2cP[1] = ( b[0]*d2cP[ 4] + b[1]*d2cP[ 5] + b[2]*d2cP[ 6] + b[3]*d2cP[ 7]);
-  bd2cP[2] = ( b[0]*d2cP[ 8] + b[1]*d2cP[ 9] + b[2]*d2cP[10] + b[3]*d2cP[11]);
-  bd2cP[3] = ( b[0]*d2cP[12] + b[1]*d2cP[13] + b[2]*d2cP[14] + b[3]*d2cP[15]);
-
-  d2bcP[0] = ( d2b[0]*cP[ 0] + d2b[1]*cP[ 1] + d2b[2]*cP[ 2] + d2b[3]*cP[ 3]);
-  d2bcP[1] = ( d2b[0]*cP[ 4] + d2b[1]*cP[ 5] + d2b[2]*cP[ 6] + d2b[3]*cP[ 7]);
-  d2bcP[2] = ( d2b[0]*cP[ 8] + d2b[1]*cP[ 9] + d2b[2]*cP[10] + d2b[3]*cP[11]);
-  d2bcP[3] = ( d2b[0]*cP[12] + d2b[1]*cP[13] + d2b[2]*cP[14] + d2b[3]*cP[15]);
+  a   = _mm_loadu_ps (af);
+  b   = _mm_loadu_ps (bf);
+  c   = _mm_loadu_ps (cf);
+  da  = _mm_loadu_ps (daf);
+  db  = _mm_loadu_ps (dbf);
+  dc  = _mm_loadu_ps (dcf);
+  d2a = _mm_loadu_ps (d2af);
+  d2b = _mm_loadu_ps (d2bf);
+  d2c = _mm_loadu_ps (d2cf);
   
-  dbdcP[0] = ( db[0]*dcP[ 0] + db[1]*dcP[ 1] + db[2]*dcP[ 2] + db[3]*dcP[ 3]);
-  dbdcP[1] = ( db[0]*dcP[ 4] + db[1]*dcP[ 5] + db[2]*dcP[ 6] + db[3]*dcP[ 7]);
-  dbdcP[2] = ( db[0]*dcP[ 8] + db[1]*dcP[ 9] + db[2]*dcP[10] + db[3]*dcP[11]);
-  dbdcP[3] = ( db[0]*dcP[12] + db[1]*dcP[13] + db[2]*dcP[14] + db[3]*dcP[15]);
+  // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
+  // register reuse and avoid rerereading from memory or cache.
+  // 1st quarter
+  tmp0 = _mm_loadu_ps (P(0,0));
+  tmp1 = _mm_loadu_ps (P(0,1));
+  tmp2 = _mm_loadu_ps (P(0,2));
+  tmp3 = _mm_loadu_ps (P(0,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[0]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[0]);
+  // 2nd quarter
+  tmp0 = _mm_loadu_ps (P(1,0));
+  tmp1 = _mm_loadu_ps (P(1,1));
+  tmp2 = _mm_loadu_ps (P(1,2));
+  tmp3 = _mm_loadu_ps (P(1,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[1]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[1]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[1]);
+  // 3rd quarter
+  tmp0 = _mm_loadu_ps (P(2,0));
+  tmp1 = _mm_loadu_ps (P(2,1));
+  tmp2 = _mm_loadu_ps (P(2,2));
+  tmp3 = _mm_loadu_ps (P(2,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[2]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[2]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[2]);
+  // 4th quarter
+  tmp0 = _mm_loadu_ps (P(3,0));
+  tmp1 = _mm_loadu_ps (P(3,1));
+  tmp2 = _mm_loadu_ps (P(3,2));
+  tmp3 = _mm_loadu_ps (P(3,3));
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[3]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[3]);
+  _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[3]);
+  
+  // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],   b,   bcP);
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],  db,  dbcP);
+  _MM_MATVEC4_PS ( dcP[0],  dcP[1],  dcP[2],  dcP[3],   b,  bdcP);
+  _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3], d2b, d2bcP);
+  _MM_MATVEC4_PS (d2cP[0], d2cP[1], d2cP[2], d2cP[3],   b, bd2cP);
+  _MM_MATVEC4_PS ( dcP[0],  dcP[1],  dcP[2],  dcP[3],  db, dbdcP);
+  // Compute value
+  _MM_DOT4_PS (a, bcP, *val);
+  // Compute gradient
+  _MM_DOT4_PS (da, bcP, grad[0]);
+  _MM_DOT4_PS (a, dbcP, grad[1]);
+  _MM_DOT4_PS (a, bdcP, grad[2]);
+  // Compute hessian
+  _MM_DOT4_PS (d2a, bcP, hess[0]);
+  _MM_DOT4_PS (a, d2bcP, hess[4]);
+  _MM_DOT4_PS (a, bd2cP, hess[8]);
+  _MM_DOT4_PS (da, dbcP, hess[1]);
+  _MM_DOT4_PS (da, bdcP, hess[2]);
+  _MM_DOT4_PS (a, dbdcP, hess[5]);
 
-  *val = a[0]*bcP[0] + a[1]*bcP[1] + a[2]*bcP[2] + a[3]*bcP[3];
-  grad[0] = (da[0] *bcP[0] + da[1]*bcP[1] + da[2]*bcP[2] + da[3]*bcP[3]);
-  grad[1] = (a[0]*dbcP[0] + a[1]*dbcP[1] + a[2]*dbcP[2] + a[3]*dbcP[3]);
-  grad[2] = (a[0]*bdcP[0] + a[1]*bdcP[1] + a[2]*bdcP[2] + a[3]*bdcP[3]);
-  // d2x
-  hess[0] = (d2a[0]*bcP[0] + d2a[1]*bcP[1] + d2a[2]*bcP[2] + d2a[3]*bcP[3]);
-  // dx dy
-  hess[1] = (da[0]*dbcP[0] + da[1]*dbcP[1] + da[1]*dbcP[1] + da[1]*dbcP[1]);
+  // Copy hessian elements into lower half of 3x3 matrix
   hess[3] = hess[1];
-  // dx dz;
-  hess[2] = (da[0]*bdcP[0] + da[1]*bdcP[1] + da[1]*bdcP[1] + da[1]*bdcP[1]);
   hess[6] = hess[2];
-  // d2y
-  hess[4] = (a[0]*d2bcP[0] + a[1]*d2bcP[1] + a[2]*d2bcP[2] + a[3]*d2bcP[3]);
-  // dy dz
-  hess[5] = (a[0]*dbdcP[0] + a[1]*dbdcP[1] + a[2]*dbdcP[2] + a[3]*dbdcP[3]);
   hess[7] = hess[5];
-  // d2z
-  hess[8] = (a[0]*bd2cP[0] + a[1]*bd2cP[1] + a[2]*bd2cP[2] + a[3]*bd2cP[3]);
-#undef P
 
+#undef P
 }
 
 #endif
