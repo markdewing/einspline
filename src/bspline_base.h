@@ -21,6 +21,8 @@
 #ifndef BSPLINE_BASE_H
 #define BSPLINE_BASE_H
 
+#include "config.h"
+
 // Conventions:
 // Postfixes:  
 // s:  single precision real

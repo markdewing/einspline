@@ -4,7 +4,7 @@ AC_PREREQ(2.61)
 AC_INIT(einspline, 0.5, kesler@ciw.edu, einspline)
 AM_INIT_AUTOMAKE(einspline, 0.5)
 AC_CONFIG_SRCDIR([src/bspline.h])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([src/config.h])
 
 
 # Checks for programs.
@@ -36,6 +36,11 @@ if test "x$enable_altivec" = "xyes"; then
    FFLAGS="$FFLAGS -DUSE_ALTIVEC"
 fi
 
+AC_ARG_ENABLE(fftw,   [  --enable-fftw           enable FFTW library for creating blips])
+if test "x$enable_fftw" = "xyes"; then
+  PKG_CHECK_MODULES(FFTW, fftw, fftw_ok=yes, fftw_ok=no)
+fi
+
 AC_ARG_ENABLE(profile,[  --enable-profile        instrument code with profiling information])
 if test "x$enable_profile" = "xyes"; then
    CFLAGS="-pg $CFLAGS"
@@ -49,14 +54,7 @@ if test "x$enable_debug" = "xyes"; then
    FFLAGS="-DDEBUG $FFLAGS"
 fi
 
-AC_ARG_WITH(boost,    [  --with-boost=/path/to/my/boost	include boost libraries; needed for qmcpack])
-if (test "x$with_boost" != "x"); then
-	 	BOOST_LIB="-I$with_boost/include -L$with_boost/lib"
-else # don't link with boost
-		BOOST_LIB=" "
-fi
 
-AC_SUBST(BOOST_LIB)
 AC_F77_WRAPPERS
 AC_F77_LIBRARY_LDFLAGS
 AC_F77_DUMMY_MAIN
