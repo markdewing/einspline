@@ -205,10 +205,8 @@ TestNUB_3d_s()
   float data[Mx*My*Mz];
   for (int ix=0; ix<Mx; ix++)
     for (int iy=0; iy<My; iy++)
-      for (int iz=0; iz<Mz; iz++) {
+      for (int iz=0; iz<Mz; iz++)
 	data[(ix*My+iy)*Mz+iz] = -1.0+2.0*drand48();
-	//data[(ix*My+iy)*Mz+iz] = data[((ix%(Mx-1))*My+(iy%(My-1)))*Mz+(iz%(Mz-1))];
-      }
   
   BCtype_s xBC, yBC, zBC;
 //   xBC.lCode = PERIODIC;
@@ -239,6 +237,51 @@ TestNUB_3d_s()
   }
   fclose (fout);
 }
+
+void
+SpeedNUB_3d_s()
+{
+  int Mx=200, My=200, Mz=200;
+  NUgrid *x_grid = create_center_grid (-3.0, 4.0,  7.5, Mx);
+  NUgrid *y_grid = create_center_grid (-1.0, 9.0,  3.5, My);
+  NUgrid *z_grid = create_center_grid (-1.8, 2.0,  2.8, Mz);
+  float *data;
+  data = malloc (sizeof(float)*Mx*My*Mz);
+  for (int ix=0; ix<Mx; ix++)
+    for (int iy=0; iy<My; iy++)
+      for (int iz=0; iz<Mz; iz++)
+	data[(ix*My+iy)*Mz+iz] = -1.0+2.0*drand48();
+  
+  BCtype_s xBC, yBC, zBC;
+//   xBC.lCode = PERIODIC;
+//   yBC.lCode = PERIODIC;
+  xBC.lCode = PERIODIC;  xBC.rCode = PERIODIC;
+  yBC.lCode = PERIODIC;  yBC.rCode = PERIODIC;
+  zBC.lCode = PERIODIC;  zBC.rCode = PERIODIC;
+
+  NUBspline_3d_s *spline = create_NUBspline_3d_s (x_grid, y_grid, z_grid, xBC, yBC, zBC, data);
+ 
+  float val, grad[3], hess[9];
+  clock_t start, end, rstart, rend;
+  rstart = clock();
+  for (int i=0; i<10000000; i++) {
+    double x = x_grid->start+ 0.9999*drand48()*(x_grid->end - x_grid->start);
+    double y = y_grid->start+ 0.9999*drand48()*(y_grid->end - y_grid->start);
+    double z = z_grid->start+ 0.9999*drand48()*(z_grid->end - z_grid->start);
+  }
+  rend = clock();
+  start = clock();
+  for (int i=0; i<10000000; i++) {
+    double x = x_grid->start+ 0.9999*drand48()*(x_grid->end - x_grid->start);
+    double y = y_grid->start+ 0.9999*drand48()*(y_grid->end - y_grid->start);
+    double z = z_grid->start+ 0.9999*drand48()*(z_grid->end - z_grid->start);
+    eval_NUBspline_3d_s_vgh (spline, x, y, z, &val, grad, hess);
+  }
+  end = clock();
+  fprintf (stderr, "10,000,000 evalations in %f seconds.\n", 
+	   (double)(end-start-(rend-rstart))/(double)CLOCKS_PER_SEC);
+}
+
 
 void
 TestNUB_2d_d()
@@ -290,6 +333,7 @@ int main()
   // TestNUBasis();
   // TestNUBspline();
   // TestNUB_2d_s();
-  TestNUB_2d_d();
-  //TestNUB_3d_s();
+  SpeedNUB_3d_s();
+  // TestNUB_2d_d();
+  // TestNUB_3d_s();
 }
