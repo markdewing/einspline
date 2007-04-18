@@ -36,16 +36,23 @@ PrintPassFail(bool pass)
     fprintf (stderr, "%c[31mFailed%c[0m\n", 0x1B, 0x1B);
 }
 
+void PrintTest (char *name, bool pass)
+{
+  int n = strlen (name);
+  fprintf (stderr, "%s:", name);
+  for (int i=n; i<57; i++)
+    fprintf (stderr, " ");
+  PrintPassFail (pass);
+}
 
-void
+
+bool
 TestCenterGrid()
 {
   fprintf (stderr, "Testing CenterGrid:   ");
   bool passed = true;
   NUgrid* grid = create_center_grid (-5.0, 7.0, 6.0, 200);
 
-/*   for (int i=0; i<200; i++) */
-/*     fprintf (stderr, "%16.12f\n", grid->points[i]); */
   for (int i=0; i<10000; i++) {
     double x = -5.0+12.0*drand48();
     int lo = (*grid->reverse_map)(grid, x);
@@ -53,18 +60,17 @@ TestCenterGrid()
     assert (x <= grid->points[lo+1]);
   }
   PrintPassFail (passed);
+  return passed;
 }
 
 
-void
+bool
 TestGeneralGrid()
 {
   fprintf (stderr, "Testing GeneralGrid:  ");
   bool passed = true;
   NUgrid* centgrid = create_center_grid (-5.0, 7.0, 6.0, 200);
   NUgrid* grid = create_general_grid (centgrid->points, 200);
-/*   for (int i=0; i<200; i++) */
-/*     fprintf (stderr, "%16.12f\n", grid->points[i]); */
   for (int i=0; i<10000; i++) {
     double x = -5.0+12.0*drand48();
     int lo = (*grid->reverse_map)(grid, x);
@@ -72,6 +78,83 @@ TestGeneralGrid()
     passed = passed && (x <= grid->points[lo+1]);
   }
   PrintPassFail (passed);
+  return passed;
+}
+
+bool
+close_float (float x, float y)
+{
+  float max = fmaxf (x, y);
+  return (fabs(x-y)/max < 1.0e-6);
+}
+
+bool
+TestNUB_1d_s()
+{
+  double start = -5.0;
+  double end = 7.0;
+  int N  = 200;
+  NUgrid* grid = create_center_grid (start, end, 6.0, N);
+  bool passed = true;
+  float data[N];
+  for (int i=0; i<N; i++) 
+    data[i] = -1.0 + 2.0*drand48();
+  BCtype_s bc;
+
+  // Create spline with PBC
+  fprintf (stderr, "Testing 1D single-precision periodic boundary conditions:\n");
+  bc.lCode = PERIODIC; bc.rCode = PERIODIC;
+  NUBspline_1d_s *periodic = create_NUBspline_1d_s (grid, bc, data);
+  float sval, sgrad, slapl, eval, egrad, elapl;
+  eval_NUBspline_1d_s_vgl (periodic, start, &sval, &sgrad, &slapl);
+  eval_NUBspline_1d_s_vgl (periodic, end  , &eval, &egrad, &elapl);
+  bool v_passed, grad_passed, lapl_passed;
+  v_passed    = close_float (sval, eval);
+  grad_passed = close_float (sgrad, egrad);
+  lapl_passed = close_float (slapl, elapl);
+  PrintTest ("Value", v_passed);
+  PrintTest ("First derivative", grad_passed);
+  PrintTest ("Second derivative", lapl_passed);
+  passed = passed && v_passed && grad_passed && lapl_passed;
+
+  double x = grid->points[26];
+  float val;
+  eval_NUBspline_1d_s (periodic, x, &val);
+  bool interp_passed = close_float (val, data[26]);
+  PrintTest ("Interpolation", interp_passed);
+  passed = passed && interp_passed;
+
+  // Create spline with fixed first derivative:
+  bc.lCode = DERIV1; bc.lVal = 1.5;
+  bc.rCode = DERIV1; bc.rVal = -0.3;
+  NUBspline_1d_s *fixed_first = create_NUBspline_1d_s (grid, bc, data);
+  fprintf (stderr, "Testing 1D single-precsion fixed first derivative boundary conditions:  \n");
+  eval_NUBspline_1d_s_vg (fixed_first, start, &sval, &sgrad);
+  eval_NUBspline_1d_s_vg (fixed_first,   end, &eval, &egrad);
+  bool bc_passed = close_float (sgrad, 1.5) && close_float (egrad, -0.3);
+  PrintTest ("Boundary conditions", bc_passed);
+  x = grid->points[26];
+  eval_NUBspline_1d_s (periodic, x, &val);
+  interp_passed = close_float (val, data[26]);
+  PrintTest ("Interpolation", interp_passed);
+  passed = passed && interp_passed && bc_passed;
+
+  // Create spline with fixed second derivative:
+  bc.lCode = DERIV2; bc.lVal = 1.5;
+  bc.rCode = DERIV2; bc.rVal = -0.3;
+  NUBspline_1d_s *fixed_second = create_NUBspline_1d_s (grid, bc, data);
+  fprintf (stderr, "Testing 1d_s fixed second derivative boundary conditions:  \n");
+  eval_NUBspline_1d_s_vgl (fixed_second, start, &sval, &sgrad, &slapl);
+  eval_NUBspline_1d_s_vgl (fixed_second,   end, &eval, &egrad, &elapl);
+  bc_passed = close_float (slapl, 1.5) && close_float (elapl, -0.3);
+  PrintTest ("Boundary conditions", bc_passed);
+  x = grid->points[26];
+  eval_NUBspline_1d_s (periodic, x, &val);
+  interp_passed = close_float (val, data[26]);
+  PrintTest ("Interpolation", interp_passed);
+  passed = passed && interp_passed && bc_passed;
+
+  return passed;
 }
 
 void
@@ -328,7 +411,9 @@ int main()
   // TestNUBasis();
   // TestNUBspline();
   // TestNUB_2d_s();
-  SpeedNUB_3d_s();
+  //  SpeedNUB_3d_s();
   // TestNUB_2d_d();
   // TestNUB_3d_s();
+  bool passed = TestNUB_1d_s();
 }
+
