@@ -38,6 +38,8 @@
 
 typedef enum { PERIODIC, DERIV1, DERIV2, FLAT, NATURAL } bc_code;
 typedef enum { U1D, U2D, U3D, NU1D, NU2D, NU3D } spline_code;
+typedef enum { SINGLE_REAL, DOUBLE_REAL, SINGLE_COMPLEX, DOUBLE_COMPLEX }
+  type_code;
 
 typedef struct 
 {
@@ -75,7 +77,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code sp_code;
+  type_code   t_code;
 } Bspline;
 
 

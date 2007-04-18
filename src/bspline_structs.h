@@ -35,7 +35,8 @@ typedef complex double complex_double;
 ///////////////////////////
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   float* restrict coefs;
   int coefs_size;
   Ugrid x_grid;
@@ -44,7 +45,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   float* restrict coefs;
   int coefs_size, x_stride;
   Ugrid x_grid, y_grid;
@@ -53,7 +55,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   float* restrict coefs;
   int coefs_size, x_stride, y_stride;
   Ugrid x_grid, y_grid, z_grid;
@@ -66,7 +69,8 @@ typedef struct
 ///////////////////////////
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   double* restrict coefs;
   int coefs_size;
   Ugrid x_grid;
@@ -75,7 +79,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   double* restrict coefs;
   int x_stride;
   Ugrid x_grid, y_grid;
@@ -84,7 +89,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   double* restrict coefs;
   int x_stride, y_stride;
   Ugrid x_grid, y_grid, z_grid;
@@ -98,7 +104,8 @@ typedef struct
 //////////////////////////////
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_float* restrict coefs;
   int coefs_size;
   Ugrid x_grid;
@@ -108,7 +115,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_float* restrict coefs;
   int x_stride;
   Ugrid x_grid, y_grid;
@@ -118,7 +126,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_float* restrict coefs;
   int x_stride, y_stride;
   Ugrid x_grid, y_grid, z_grid;
@@ -134,7 +143,8 @@ typedef struct
 //////////////////////////////
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_double* restrict coefs;
   int coefs_size;
   Ugrid x_grid;
@@ -143,7 +153,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_double* restrict coefs;
   int x_stride;
   Ugrid x_grid, y_grid;
@@ -152,7 +163,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_double* restrict coefs;
   int x_stride, y_stride;
   Ugrid x_grid, y_grid, z_grid;

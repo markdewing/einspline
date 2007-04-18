@@ -38,7 +38,8 @@ typedef complex double complex_double;
 ///////////////////////////
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   float* restrict coefs;
   NUgrid *restrict  x_grid;
   NUBasis *restrict x_basis;
@@ -47,7 +48,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   float* restrict coefs;
   int x_stride;
   NUgrid  *restrict x_grid,  *restrict y_grid;
@@ -57,7 +59,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   float* restrict coefs;
   int x_stride, y_stride;
   NUgrid  *restrict x_grid,  *restrict y_grid,  *restrict z_grid;
@@ -70,7 +73,8 @@ typedef struct
 ///////////////////////////
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   double* restrict coefs;
   NUgrid* restrict x_grid;
   NUBasis* restrict x_basis;
@@ -79,7 +83,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   double* restrict coefs;
   int x_stride;
   NUgrid * restrict x_grid, * restrict y_grid;
@@ -89,7 +94,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   double* restrict coefs;
   int x_stride, y_stride;
   NUgrid  *restrict x_grid,  *restrict y_grid,  *restrict z_grid;
@@ -102,7 +108,8 @@ typedef struct
 //////////////////////////////
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_float* restrict coefs;
   NUgrid* restrict x_grid;
   NUBasis* restrict x_basis;
@@ -111,7 +118,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_float* restrict coefs;
   int x_stride;
   NUgrid* restrict x_grid, *restrict y_grid;
@@ -121,7 +129,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_float* restrict coefs;
   int x_stride, y_stride;
   NUgrid  *restrict x_grid,  *restrict y_grid,  *restrict z_grid;
@@ -134,8 +143,9 @@ typedef struct
 //////////////////////////////
 typedef struct
 {
-  spline_code code;
-  complex_double* restrict coefs;
+  spline_code spcode;
+  type_code    tcode;
+ complex_double* restrict coefs;
   NUgrid  *restrict x_grid;
   NUBasis *restrict x_basis;
   BCtype_z xBC;
@@ -143,7 +153,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_double* restrict coefs;
   int x_stride;
   NUgrid  *restrict x_grid,  *restrict y_grid;
@@ -153,7 +164,8 @@ typedef struct
 
 typedef struct
 {
-  spline_code code;
+  spline_code spcode;
+  type_code    tcode;
   complex_double* restrict coefs;
   int x_stride, y_stride;
   NUgrid  *restrict x_grid,  *restrict y_grid,  *restrict z_grid;

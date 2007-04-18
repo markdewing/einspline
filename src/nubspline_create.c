@@ -228,6 +228,8 @@ create_NUBspline_1d_s (NUgrid* x_grid, BCtype_s xBC, float *data)
   NUBspline_1d_s* spline = malloc (sizeof(NUBspline_1d_s));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU1D;
+  spline->tcode  = SINGLE_REAL;
 
   // Next, create the basis
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -252,6 +254,8 @@ create_NUBspline_2d_s (NUgrid* x_grid, NUgrid* y_grid,
   NUBspline_2d_s* spline = malloc (sizeof(NUBspline_2d_s));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU2D;
+  spline->tcode  = SINGLE_REAL;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -300,6 +304,8 @@ create_NUBspline_3d_s (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   NUBspline_3d_s* spline = malloc (sizeof(NUBspline_3d_s));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU3D;
+  spline->tcode  = SINGLE_REAL;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -538,6 +544,8 @@ create_NUBspline_1d_d (NUgrid* x_grid, BCtype_d xBC, double *data)
   NUBspline_1d_d* spline = malloc (sizeof(NUBspline_1d_d));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU1D;
+  spline->tcode  = DOUBLE_REAL;
 
   // Next, create the basis
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -562,6 +570,8 @@ create_NUBspline_2d_d (NUgrid* x_grid, NUgrid* y_grid,
   NUBspline_2d_d* spline = malloc (sizeof(NUBspline_2d_d));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU2D;
+  spline->tcode  = DOUBLE_REAL;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -611,6 +621,8 @@ create_NUBspline_3d_d (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   NUBspline_3d_d* spline = malloc (sizeof(NUBspline_3d_d));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU3D;
+  spline->tcode  = DOUBLE_REAL;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -701,6 +713,8 @@ create_NUBspline_1d_c (NUgrid* x_grid, BCtype_c xBC, complex_float *data)
   NUBspline_1d_c* spline = malloc (sizeof(NUBspline_1d_c));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU1D;
+  spline->tcode  = SINGLE_COMPLEX;
 
   // Next, create the basis
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -725,6 +739,8 @@ create_NUBspline_2d_c (NUgrid* x_grid, NUgrid* y_grid,
   NUBspline_2d_c* spline = malloc (sizeof(NUBspline_2d_c));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU2D;
+  spline->tcode  = SINGLE_COMPLEX;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -773,6 +789,8 @@ create_NUBspline_3d_c (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   NUBspline_3d_c* spline = malloc (sizeof(NUBspline_3d_c));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU3D;
+  spline->tcode  = SINGLE_COMPLEX;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -862,6 +880,8 @@ create_NUBspline_1d_z (NUgrid* x_grid, BCtype_z xBC, complex_double *data)
   NUBspline_1d_z* spline = malloc (sizeof(NUBspline_1d_z));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU1D;
+  spline->tcode  = DOUBLE_COMPLEX;
 
   // Next, create the basis
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -886,6 +906,8 @@ create_NUBspline_2d_z (NUgrid* x_grid, NUgrid* y_grid,
   NUBspline_2d_z* spline = malloc (sizeof(NUBspline_2d_z));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU2D;
+  spline->tcode  = DOUBLE_COMPLEX;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -934,6 +956,8 @@ create_NUBspline_3d_z (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   NUBspline_3d_z* spline = malloc (sizeof(NUBspline_3d_z));
   if (spline == NULL)
     return spline;
+  spline->spcode = NU3D;
+  spline->tcode  = DOUBLE_COMPLEX;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);

@@ -271,6 +271,8 @@ create_UBspline_1d_s (Ugrid x_grid, BCtype_s xBC, float *data)
 {
   // Create new spline
   UBspline_1d_s* restrict spline = malloc (sizeof(UBspline_1d_s));
+  spline->spcode = U1D;
+  spline->tcode  = SINGLE_REAL;
   // Setup internal variables
   int M = x_grid.num;
   int N;
@@ -304,6 +306,8 @@ create_UBspline_2d_s (Ugrid x_grid, Ugrid y_grid,
 {
   // Create new spline
   UBspline_2d_s* restrict spline = malloc (sizeof(UBspline_2d_s));
+  spline->spcode = U2D;
+  spline->tcode  = SINGLE_REAL;
   // Setup internal variables
   int Mx = x_grid.num;
   int My = y_grid.num;
@@ -354,6 +358,8 @@ create_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 {
   // Create new spline
   UBspline_3d_s* restrict spline = malloc (sizeof(UBspline_3d_s));
+  spline->spcode = U3D;
+  spline->tcode  = SINGLE_REAL;
   // Setup internal variables
   int Mx = x_grid.num;  int My = y_grid.num; int Mz = z_grid.num;
   int Nx, Ny, Nz;
@@ -433,6 +439,8 @@ create_UBspline_1d_c (Ugrid x_grid, BCtype_c xBC, complex_float *data)
 {
   // Create new spline
   UBspline_1d_c* restrict spline = malloc (sizeof(UBspline_1d_c));
+  spline->spcode = U1D;
+  spline->tcode  = SINGLE_COMPLEX;
   // Setup internal variables
   int M = x_grid.num;
   int N;
@@ -477,6 +485,9 @@ create_UBspline_2d_c (Ugrid x_grid, Ugrid y_grid,
 {
   // Create new spline
   UBspline_2d_c* restrict spline = malloc (sizeof(UBspline_2d_c));
+  spline->spcode = U2D;
+  spline->tcode  = SINGLE_COMPLEX;
+
   // Setup internal variables
   int Mx = x_grid.num;
   int My = y_grid.num;
@@ -545,6 +556,9 @@ create_UBspline_3d_c (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 {
   // Create new spline
   UBspline_3d_c* restrict spline = malloc (sizeof(UBspline_3d_c));
+  spline->spcode = U3D;
+  spline->tcode  = SINGLE_COMPLEX;
+
   // Setup internal variables
   int Mx = x_grid.num;  int My = y_grid.num; int Mz = z_grid.num;
   int Nx, Ny, Nz;
@@ -821,6 +835,8 @@ create_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, double *data)
 {
   // Create new spline
   UBspline_1d_d* restrict spline = malloc (sizeof(UBspline_1d_d));
+  spline->spcode = U1D;
+  spline->tcode  = DOUBLE_REAL;
   // Setup internal variables
   int M = x_grid.num;
   int N;
@@ -857,6 +873,8 @@ create_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,
 {
   // Create new spline
   UBspline_2d_d* restrict spline = malloc (sizeof(UBspline_2d_d));
+  spline->spcode = U2D;
+  spline->tcode  = DOUBLE_REAL;
   // Setup internal variables
   int Mx = x_grid.num;
   int My = y_grid.num;
@@ -911,6 +929,8 @@ create_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 {
   // Create new spline
   UBspline_3d_d* restrict spline = malloc (sizeof(UBspline_3d_d));
+  spline->spcode = U3D;
+  spline->tcode  = DOUBLE_REAL;
   // Setup internal variables
   int Mx = x_grid.num;  int My = y_grid.num; int Mz = z_grid.num;
   int Nx, Ny, Nz;
@@ -995,6 +1015,8 @@ create_UBspline_1d_z (Ugrid x_grid, BCtype_z xBC, complex_double *data)
 {
   // Create new spline
   UBspline_1d_z* restrict spline = malloc (sizeof(UBspline_1d_z));
+  spline->spcode = U1D;
+  spline->tcode  = DOUBLE_COMPLEX;
   // Setup internal variables
   int M = x_grid.num;
   int N;
@@ -1039,6 +1061,8 @@ create_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
 {
   // Create new spline
   UBspline_2d_z* restrict spline = malloc (sizeof(UBspline_2d_z));
+  spline->spcode = U2D;
+  spline->tcode  = DOUBLE_COMPLEX;
   // Setup internal variables
   int Mx = x_grid.num;
   int My = y_grid.num;
@@ -1108,6 +1132,8 @@ create_UBspline_3d_z (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 {
   // Create new spline
   UBspline_3d_z* restrict spline = malloc (sizeof(UBspline_3d_z));
+  spline->spcode = U3D;
+  spline->tcode  = DOUBLE_COMPLEX;
   // Setup internal variables
   int Mx = x_grid.num;  int My = y_grid.num; int Mz = z_grid.num;
   int Nx, Ny, Nz;
