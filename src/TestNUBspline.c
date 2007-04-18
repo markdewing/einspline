@@ -85,7 +85,7 @@ bool
 close_float (float x, float y)
 {
   float max = fmaxf (x, y);
-  return (fabs(x-y)/max < 1.0e-6);
+  return (fabs(x-y)/max < 1.0e-5);
 }
 
 bool
@@ -147,6 +147,7 @@ TestNUB_1d_s()
   eval_NUBspline_1d_s_vgl (fixed_second, start, &sval, &sgrad, &slapl);
   eval_NUBspline_1d_s_vgl (fixed_second,   end, &eval, &egrad, &elapl);
   bc_passed = close_float (slapl, 1.5) && close_float (elapl, -0.3);
+  fprintf (stderr, "slapl = %1.8f  elapl = %1.8f\n", slapl, elapl);
   PrintTest ("Boundary conditions", bc_passed);
   x = grid->points[26];
   eval_NUBspline_1d_s (periodic, x, &val);
@@ -249,8 +250,6 @@ TestNUB_2d_s()
 //   xBC.lCode = FLAT;  xBC.rCode = FLAT;
 //   yBC.lCode = FLAT;  yBC.rCode = FLAT;
 
-
-
   NUBspline_2d_s *spline = create_NUBspline_2d_s (x_grid, y_grid, xBC, yBC, data);
   
   int xFine = 400;
@@ -271,6 +270,50 @@ TestNUB_2d_s()
     fprintf (fout, "\n");
   }
   fclose (fout);
+}
+
+
+void
+TestNUB_2d_c()
+{
+  int Mx=30, My=35;
+  NUgrid *x_grid = create_center_grid (-3.0, 4.0, 7.5, Mx);
+  NUgrid *y_grid = create_center_grid (-1.0, 9.0, 3.5, My);
+  complex_float data[Mx*My];
+  for (int ix=0; ix<Mx; ix++)
+    for (int iy=0; iy<My; iy++)
+      data[ix*My+iy] = -1.0+2.0*drand48() + 1.0fi*(-1.0+2.0*drand48());
+  
+  BCtype_c xBC, yBC;
+  xBC.lCode = PERIODIC;
+  yBC.lCode = PERIODIC;
+//   xBC.lCode = FLAT;  xBC.rCode = FLAT;
+//   yBC.lCode = FLAT;  yBC.rCode = FLAT;
+
+  NUBspline_2d_c *spline = create_NUBspline_2d_c (x_grid, y_grid, xBC, yBC, data);
+  
+  int xFine = 400;
+  int yFine = 400;
+  FILE *rout = fopen ("2d_r.dat", "w");
+  FILE *iout = fopen ("2d_i.dat", "w");
+  double xi = x_grid->start;
+  double xf = x_grid->end;// + x_grid->points[1] - x_grid->points[0];
+  double yi = y_grid->start;
+  double yf = y_grid->end;// + y_grid->points[1] - y_grid->points[0];
+  for (int ix=0; ix<xFine; ix++) {
+    double x = xi+ (double)ix/(double)(xFine)*(xf-xi);
+    for (int iy=0; iy<yFine; iy++) {
+      double y = yi + (double)iy/(double)(yFine)*(yf-yi);
+      complex_float val, grad[2], hess[4];
+      eval_NUBspline_2d_c_vgh (spline, x, y, &val, grad, hess);
+      fprintf (rout, "%1.16e ", crealf(val));
+      fprintf (iout, "%1.16e ", cimagf(val));
+    }
+    fprintf (rout, "\n");
+    fprintf (iout, "\n");
+  }
+  fclose (rout);
+  fclose (iout);
 }
 
 void
@@ -411,6 +454,7 @@ int main()
   // TestNUBasis();
   // TestNUBspline();
   // TestNUB_2d_s();
+  TestNUB_2d_c();
   //  SpeedNUB_3d_s();
   // TestNUB_2d_d();
   // TestNUB_3d_s();

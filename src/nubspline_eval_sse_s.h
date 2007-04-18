@@ -691,4 +691,7 @@ eval_NUBspline_3d_s_vgh (NUBspline_3d_s * restrict spline,
 #undef P
 }
 
+#undef _MM_MATVEC4_PS
+#undef _MM_DOT4_PS
+
 #endif
