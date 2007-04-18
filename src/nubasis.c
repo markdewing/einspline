@@ -54,6 +54,14 @@ create_NUBasis (NUgrid *grid, bool periodic)
   return basis;
 }
 
+void
+destroy_NUBasis (NUBasis *basis)
+{
+  free (basis->xVals);
+  free (basis->dxInv);
+  free (basis);
+}
+
 
 int
 get_NUBasis_funcs_s (NUBasis* restrict basis, double x,

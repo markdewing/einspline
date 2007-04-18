@@ -1020,17 +1020,17 @@ destroy_NUBspline(Bspline *spline)
   free (spline->coefs);
   switch (spline->sp_code) {
   case NU1D:
-    free (((NUBspline_1d*)spline)->x_basis);
+    destroy_NUBasis (((NUBspline_1d*)spline)->x_basis);
     break;
   case NU2D:
-    free (((NUBspline_2d*)spline)->x_basis);
-    free (((NUBspline_2d*)spline)->y_basis);
+    destroy_NUBasis (((NUBspline_2d*)spline)->x_basis);
+    destroy_NUBasis (((NUBspline_2d*)spline)->y_basis);
     break;
     
   case NU3D:
-    free (((NUBspline_3d*)spline)->x_basis);
-    free (((NUBspline_3d*)spline)->y_basis);
-    free (((NUBspline_3d*)spline)->z_basis);
+    destroy_NUBasis (((NUBspline_3d*)spline)->x_basis);
+    destroy_NUBasis (((NUBspline_3d*)spline)->y_basis);
+    destroy_NUBasis (((NUBspline_3d*)spline)->z_basis);
     break;
   }
 }
