@@ -79,6 +79,17 @@ Once the basis is established, we must solve for the B-spline
 coefficients.  The einspline library chooses the coefficients such
 that the B-spline <i>interpolates</i> the data, i.e. the B-spline
 curve passes through the data values given at the knots.
+<br>
+In periodic boundary conditions, these equations may be written in
+matrix form as
+<center>
+<img src="PeriodicEquations.png"/>
+</center>
+For fixed first or second-derivative boundary condtions, they take the
+form
+<center>
+<img src="DerivativeEquations.png"/>
+</center>
 
 </body>
 </html>
