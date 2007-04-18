@@ -109,8 +109,4 @@ create_UBspline_3d_z (Ugrid  x_grid, Ugrid   y_grid, Ugrid z_grid,
 		      BCtype_z  xBC, BCtype_z   yBC, BCtype_z zBC,
 		      complex_double *data);
 
-
-void
-destroy_Bspline (Bspline *spline);
-
 #endif

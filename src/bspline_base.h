@@ -82,6 +82,8 @@ typedef struct
   void *restrict coefs;
 } Bspline;
 
+void
+destroy_Bspline (Bspline *spline);
 
 
 #endif
