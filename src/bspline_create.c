@@ -24,6 +24,7 @@
   #define __USE_XOPEN2K
 #endif
 #include <stdlib.h>
+#include <stdio.h>
 
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
@@ -1218,4 +1219,26 @@ create_UBspline_3d_z (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
     }
   init_sse_data();
   return spline;
+}
+
+void
+destroy_UBspline (Bspline *spline)
+{
+  free (spline->coefs);
+  free (spline);
+}
+
+void 
+destroy_NUBspline (Bspline *spline);
+
+void
+destroy_Bspline (Bspline *spline)
+{
+  if (spline->sp_code <= U3D)
+    destroy_UBspline (spline);
+  else if (spline->sp_code <= NU3D)
+    destroy_NUBspline (spline);
+  else
+    fprintf (stderr, "Error in destroy_Bspline:  invalide spline code %d.\n",
+	     spline->sp_code);
 }

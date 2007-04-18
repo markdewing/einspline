@@ -33,6 +33,34 @@ typedef complex float  complex_float;
 typedef complex double complex_double;
 #endif
 
+typedef struct
+{
+  spline_code spcode;
+  type_code    tcode;
+  void * restrict coefs;
+  NUgrid *restrict  x_grid;
+  NUBasis *restrict x_basis;
+} NUBspline_1d;
+
+typedef struct
+{
+  spline_code spcode;
+  type_code    tcode;
+  void * restrict coefs;
+  NUgrid *restrict  x_grid, *restrict y_grid;
+  NUBasis *restrict x_basis, *restrict y_basis;
+} NUBspline_2d;
+
+typedef struct
+{
+  spline_code spcode;
+  type_code    tcode;
+  void * restrict coefs;
+  NUgrid *restrict  x_grid, *restrict y_grid, *restrict z_grid;
+  NUBasis *restrict x_basis, *restrict y_basis, *restrict z_basis;
+} NUBspline_3d;
+
+
 ///////////////////////////
 // Single precision real //
 ///////////////////////////
