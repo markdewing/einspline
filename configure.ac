@@ -36,6 +36,37 @@ if test "x$enable_altivec" = "xyes"; then
    FFLAGS="$FFLAGS -DUSE_ALTIVEC"
 fi
 
+AC_ARG_ENABLE(sse2, [  --enable-sse2           enable SSE2 SIMD instructions])
+if test "x$enable_sse2" = "xyes"; then
+  AC_CHECK_HEADER([xmmintrin.h],
+                  [AC_DEFINE([HAVE_XMMINTRIN_H],[1],
+                   [xmmintrin.h is available.])],
+                  [AC_MSG_ERROR([Cannot utilize SSE2 extensions without xmmintrin.h])])
+  AC_CHECK_HEADER([emmintrin.h],
+                  [AC_DEFINE([HAVE_EMMINTRIN_H],[1],
+                   [emmintrin.h is available.])],
+                  [AC_MSG_ERROR([Cannot utilize SSE2 extensions without emmintrin.h])])
+  AC_DEFINE([HAVE_SSE2], [1], [SSE2 instructions are available])
+fi
+
+AC_ARG_ENABLE(sse3, [  --enable-sse3           enable SSE3 SIMD instructions])
+if test "x$enable_sse3" = "xyes"; then
+  AC_CHECK_HEADER([xmmintrin.h],
+                  [AC_DEFINE([HAVE_XMMINTRIN_H],[1],
+                   [xmmintrin.h is available.])],
+                  [AC_MSG_ERROR([Cannot utilize SSE2 extensions without xmmintrin.h])])
+  AC_CHECK_HEADER([emmintrin.h],
+                  [AC_DEFINE([HAVE_EMMINTRIN_H],[1],
+                   [emmintrin.h is available.])],
+                  [AC_MSG_ERROR([Cannot utilize SSE2 extensions without emmintrin.h])])
+  AC_CHECK_HEADER([pmmintrin.h],
+                  [AC_DEFINE([HAVE_PMMINTRIN_H],[1],
+                   [pmmintrin.h is available.])],
+                  [AC_MSG_ERROR([Cannot utilize SSE2 extensions without pmmintrin.h])])
+  AC_DEFINE([HAVE_SSE2], [1], [SSE2 instructions are available])
+  AC_DEFINE([HAVE_SSE3], [1], [SSE3 instructions are available])
+fi
+
 AC_ARG_ENABLE(fftw,   [  --enable-fftw           enable FFTW library for creating blips])
 if test "x$enable_fftw" = "xyes"; then
   PKG_CHECK_MODULES(FFTW3,  fftw3,  fftw3_ok=yes,  fftw3_ok=no)
