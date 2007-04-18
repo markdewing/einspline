@@ -128,15 +128,55 @@ eval_NUBspline_1d_c_vgh (NUBspline_1d_c * restrict spline, double x,
 /* Value only */
 inline void
 eval_NUBspline_2d_c (NUBspline_2d_c * restrict spline, 
-		    double x, double y, complex_float* restrict val)
+		     double x, double y, complex_float* restrict val)
 {
-  float a[4], b[4];
-  int ix = get_NUBasis_funcs_s (spline->x_basis, x, a);
-  int iy = get_NUBasis_funcs_s (spline->y_basis, y, b);
+  float af[4], bf[4];
+  complex_float bc[4];
+  int ix = get_NUBasis_funcs_s (spline->x_basis, x, af);
+  int iy = get_NUBasis_funcs_s (spline->y_basis, y, bf);
   
   complex_float* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
+  int xs2 = 2*xs;
+
+  __m128 a, b, bPr, bPi, r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
+  #define P(i,j) (const float*)(spline->coefs+(ix+(i))*xs+iy+j)
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  float* restrict p = (float*)P(0,0);
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);
+  a=_mm_loadu_ps (af);  
+  b=_mm_loadu_ps (bf);  
+
+  p = (float *)P(0,0);
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+
+  _MM_MATVEC4_PS (r0, r1, r2, r3,   b,   bPr);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,   b,   bPi);
+
+  float *valr   = ((float*)val)  +0;
+  float *vali   = ((float*)val)  +1;
+
+  // Compute value
+  _MM_DOT4_PS (a, bPr, *valr);
+  _MM_DOT4_PS (a, bPi, *vali);
+
+#undef P
 }
 
 
@@ -146,13 +186,64 @@ eval_NUBspline_2d_c_vg (NUBspline_2d_c * restrict spline,
 		       double x, double y, 
 		       complex_float* restrict val, complex_float* restrict grad)
 {
-  float a[4], b[4], da[4], db[4];
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, a, da);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, b, db);
+  float af[4], bf[4], daf[4], dbf[4];
+  complex_float bc[4];
+  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, af, daf);
+  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, bf, dbf);
   
   complex_float* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
+  int xs2 = 2*xs;
+
+  __m128 a, b, da, db, 
+    bPr, dbPr, bPi, dbPi, r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
+  #define P(i,j) (const float*)(spline->coefs+(ix+(i))*xs+iy+j)
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  float* restrict p = (float*)P(0,0);
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);
+  a=_mm_loadu_ps (af);  da=_mm_loadu_ps (daf);
+  b=_mm_loadu_ps (bf);  db=_mm_loadu_ps (dbf);
+
+  p = (float *)P(0,0);
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+
+  _MM_MATVEC4_PS (r0, r1, r2, r3,   b,   bPr);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,   b,   bPi);
+  _MM_MATVEC4_PS (r0, r1, r2, r3,  db,  dbPr);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,  db,  dbPi);
+
+  float *valr   = ((float*)val)  +0;
+  float *vali   = ((float*)val)  +1;
+  float *gradr0 = ((float *)grad)+0;
+  float *gradi0 = ((float *)grad)+1;
+  float *gradr1 = ((float *)grad)+2;
+  float *gradi1 = ((float *)grad)+3;
+
+  // Compute value
+  _MM_DOT4_PS (a, bPr, *valr);
+  _MM_DOT4_PS (a, bPi, *vali);
+  // Compute gradient
+  _MM_DOT4_PS (da, bPr, *gradr0);
+  _MM_DOT4_PS (da, bPi, *gradr0);
+  _MM_DOT4_PS (a, dbPr, *gradi1);
+  _MM_DOT4_PS (a, dbPi, *gradi1);
+#undef P
 }
 
 /* Value, gradient, and laplacian */
@@ -161,14 +252,74 @@ eval_NUBspline_2d_c_vgl (NUBspline_2d_c * restrict spline,
 			double x, double y, complex_float* restrict val, 
 			complex_float* restrict grad, complex_float* restrict lapl)
 {
-  float a[4], b[4], da[4], db[4], d2a[4], d2b[4];
+  float af[4], bf[4], daf[4], dbf[4], d2af[4], d2bf[4];
   complex_float bc[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
+  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
+  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2bf);
   
   complex_float* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
+  int xs2 = 2*xs;
+
+  __m128 a, b, da, db, d2a, d2b, 
+    bPr, dbPr, d2bPr, bPi, dbPi, d2bPi,
+    r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
+  #define P(i,j) (const float*)(spline->coefs+(ix+(i))*xs+iy+j)
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  float* restrict p = (float*)P(0,0);
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
+  _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);
+  a=_mm_loadu_ps (af);  da=_mm_loadu_ps (daf);  d2a=_mm_loadu_ps (d2af);
+  b=_mm_loadu_ps (bf);  db=_mm_loadu_ps (dbf);  d2b=_mm_loadu_ps (d2bf);
+
+  p = (float *)P(0,0);
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
+  r3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+
+  _MM_MATVEC4_PS (r0, r1, r2, r3,   b,   bPr);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,   b,   bPi);
+  _MM_MATVEC4_PS (r0, r1, r2, r3,  db,  dbPr);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,  db,  dbPi);
+  _MM_MATVEC4_PS (r0, r1, r2, r3, d2b, d2bPr);
+  _MM_MATVEC4_PS (i0, i1, i2, i3, d2b, d2bPi);
+
+  float *valr   = ((float*)val)  +0;
+  float *vali   = ((float*)val)  +1;
+  float *gradr0 = ((float *)grad)+0;
+  float *gradi0 = ((float *)grad)+1;
+  float *gradr1 = ((float *)grad)+2;
+  float *gradi1 = ((float *)grad)+3;
+
+  // Compute value
+  _MM_DOT4_PS (a, bPr, *valr);
+  _MM_DOT4_PS (a, bPi, *vali);
+  // Compute gradient
+  _MM_DOT4_PS (da, bPr, *gradr0);
+  _MM_DOT4_PS (da, bPi, *gradr0);
+  _MM_DOT4_PS (a, dbPr, *gradi1);
+  _MM_DOT4_PS (a, dbPi, *gradi1);
+  // Compute laplacian
+  float d2x_r, d2y_r, d2x_i, d2y_i;
+  _MM_DOT4_PS (d2a, bPr, d2x_r);
+  _MM_DOT4_PS (d2a, bPi, d2x_i);
+  _MM_DOT4_PS (a, d2bPr, d2y_r);
+  _MM_DOT4_PS (a, d2bPi, d2y_i);
+  *lapl = (d2x_r + d2y_r) + 1.0if*(d2x_i + d2y_i);
+#undef P
 }
 
 /* Value, gradient, and Hessian */
@@ -479,120 +630,191 @@ eval_NUBspline_3d_c_vgh (NUBspline_3d_c * restrict spline,
 			 double x, double y, double z,
 			 complex_float* restrict val, complex_float* restrict grad, complex_float* restrict hess)
 {
-  float a[4], b[4], c[4], da[4], db[4], dc[4], 
-    d2a[4], d2b[4], d2c[4];
-  complex_float cP[16], dcP[16], d2cP[16], bcP[4], dbcP[4],
-    d2bcP[4], dbdcP[4], bd2cP[4], bdcP[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, b, db, d2b);
-  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, c, dc, d2c);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  __m128 a, b, c, da, db, dc, d2a, d2b, d2c,
+    cPr[4], dcPr[4], d2cPr[4], bcPr, dbcPr, bdcPr, d2bcPr, dbdcPr, bd2cPr,
+    cPi[4], dcPi[4], d2cPi[4], bcPi, dbcPi, bdcPi, d2bcPi, dbdcPi, bd2cPi,
+    tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, r0, r1, r2, r3,
+    i0, i1, i2, i3;
+  vec4 av, bv, cv, dav, dbv, dcv, d2av, d2bv, d2cv;
+ 
+  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, av.scalars, dav.scalars, d2av.scalars);
+  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bv.scalars, dbv.scalars, d2bv.scalars);
+  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, cv.scalars, dcv.scalars, d2cv.scalars);
+  a   =   av.v;   b =   bv.v;   c =   cv.v;
+  da  =  dav.v;  db =  dbv.v;  dc =  dcv.v;
+  d2a = d2av.v; d2b = d2bv.v; d2c = d2cv.v;
+
+  int xs  = spline->x_stride;
+  int ys  = spline->y_stride;
+  int ys2 = 2*ys;
+  int ys3 = 3*ys;
   complex_float* restrict coefs = spline->coefs;
-#define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
-  cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
-  cP[ 1] = (P(0,1,0)*c[0]+P(0,1,1)*c[1]+P(0,1,2)*c[2]+P(0,1,3)*c[3]);
-  cP[ 2] = (P(0,2,0)*c[0]+P(0,2,1)*c[1]+P(0,2,2)*c[2]+P(0,2,3)*c[3]);
-  cP[ 3] = (P(0,3,0)*c[0]+P(0,3,1)*c[1]+P(0,3,2)*c[2]+P(0,3,3)*c[3]);
-  cP[ 4] = (P(1,0,0)*c[0]+P(1,0,1)*c[1]+P(1,0,2)*c[2]+P(1,0,3)*c[3]);
-  cP[ 5] = (P(1,1,0)*c[0]+P(1,1,1)*c[1]+P(1,1,2)*c[2]+P(1,1,3)*c[3]);
-  cP[ 6] = (P(1,2,0)*c[0]+P(1,2,1)*c[1]+P(1,2,2)*c[2]+P(1,2,3)*c[3]);
-  cP[ 7] = (P(1,3,0)*c[0]+P(1,3,1)*c[1]+P(1,3,2)*c[2]+P(1,3,3)*c[3]);
-  cP[ 8] = (P(2,0,0)*c[0]+P(2,0,1)*c[1]+P(2,0,2)*c[2]+P(2,0,3)*c[3]);
-  cP[ 9] = (P(2,1,0)*c[0]+P(2,1,1)*c[1]+P(2,1,2)*c[2]+P(2,1,3)*c[3]);
-  cP[10] = (P(2,2,0)*c[0]+P(2,2,1)*c[1]+P(2,2,2)*c[2]+P(2,2,3)*c[3]);
-  cP[11] = (P(2,3,0)*c[0]+P(2,3,1)*c[1]+P(2,3,2)*c[2]+P(2,3,3)*c[3]);
-  cP[12] = (P(3,0,0)*c[0]+P(3,0,1)*c[1]+P(3,0,2)*c[2]+P(3,0,3)*c[3]);
-  cP[13] = (P(3,1,0)*c[0]+P(3,1,1)*c[1]+P(3,1,2)*c[2]+P(3,1,3)*c[3]);
-  cP[14] = (P(3,2,0)*c[0]+P(3,2,1)*c[1]+P(3,2,2)*c[2]+P(3,2,3)*c[3]);
-  cP[15] = (P(3,3,0)*c[0]+P(3,3,1)*c[1]+P(3,3,2)*c[2]+P(3,3,3)*c[3]);
+  // This macro is used to give the pointer to coefficient data.
+  // i and j should be in the range [0,3].  Coefficients are read four
+  // at a time, so no k value is needed.
+#define P(i,j,k) ((const float*)(spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz)+k))
+  complex_float *p = (complex_float*)P(0,0,0);
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  _mm_prefetch ((void*)p      , _MM_HINT_T0);  _mm_prefetch ((void*)(p    +2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ ys), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys +2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys2), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys2+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys3), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys3+2), _MM_HINT_T0);
+  p += xs;
+  _mm_prefetch ((void*)(p    ), _MM_HINT_T0);  _mm_prefetch ((void*)(p    +2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys ), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys +2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys2), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys2+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys3), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys3+2), _MM_HINT_T0);
+  p += xs;
+  _mm_prefetch ((void*)(p    ), _MM_HINT_T0);  _mm_prefetch ((void*)(p    +2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys ), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys +2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys2), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys2+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys3), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys3+2), _MM_HINT_T0);
+  p += xs;
+  _mm_prefetch ((void*)(p    ), _MM_HINT_T0);  _mm_prefetch ((void*)(p    +2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys ), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys +2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys2), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys2+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+ys3), _MM_HINT_T0);  _mm_prefetch ((void*)(p+ys3+2), _MM_HINT_T0);
 
-  dcP[ 0] = (P(0,0,0)*dc[0]+P(0,0,1)*dc[1]+P(0,0,2)*dc[2]+P(0,0,3)*dc[3]);
-  dcP[ 1] = (P(0,1,0)*dc[0]+P(0,1,1)*dc[1]+P(0,1,2)*dc[2]+P(0,1,3)*dc[3]);
-  dcP[ 2] = (P(0,2,0)*dc[0]+P(0,2,1)*dc[1]+P(0,2,2)*dc[2]+P(0,2,3)*dc[3]);
-  dcP[ 3] = (P(0,3,0)*dc[0]+P(0,3,1)*dc[1]+P(0,3,2)*dc[2]+P(0,3,3)*dc[3]);
-  dcP[ 4] = (P(1,0,0)*dc[0]+P(1,0,1)*dc[1]+P(1,0,2)*dc[2]+P(1,0,3)*dc[3]);
-  dcP[ 5] = (P(1,1,0)*dc[0]+P(1,1,1)*dc[1]+P(1,1,2)*dc[2]+P(1,1,3)*dc[3]);
-  dcP[ 6] = (P(1,2,0)*dc[0]+P(1,2,1)*dc[1]+P(1,2,2)*dc[2]+P(1,2,3)*dc[3]);
-  dcP[ 7] = (P(1,3,0)*dc[0]+P(1,3,1)*dc[1]+P(1,3,2)*dc[2]+P(1,3,3)*dc[3]);
-  dcP[ 8] = (P(2,0,0)*dc[0]+P(2,0,1)*dc[1]+P(2,0,2)*dc[2]+P(2,0,3)*dc[3]);
-  dcP[ 9] = (P(2,1,0)*dc[0]+P(2,1,1)*dc[1]+P(2,1,2)*dc[2]+P(2,1,3)*dc[3]);
-  dcP[10] = (P(2,2,0)*dc[0]+P(2,2,1)*dc[1]+P(2,2,2)*dc[2]+P(2,2,3)*dc[3]);
-  dcP[11] = (P(2,3,0)*dc[0]+P(2,3,1)*dc[1]+P(2,3,2)*dc[2]+P(2,3,3)*dc[3]);
-  dcP[12] = (P(3,0,0)*dc[0]+P(3,0,1)*dc[1]+P(3,0,2)*dc[2]+P(3,0,3)*dc[3]);
-  dcP[13] = (P(3,1,0)*dc[0]+P(3,1,1)*dc[1]+P(3,1,2)*dc[2]+P(3,1,3)*dc[3]);
-  dcP[14] = (P(3,2,0)*dc[0]+P(3,2,1)*dc[1]+P(3,2,2)*dc[2]+P(3,2,3)*dc[3]);
-  dcP[15] = (P(3,3,0)*dc[0]+P(3,3,1)*dc[1]+P(3,3,2)*dc[2]+P(3,3,3)*dc[3]);
-
-  d2cP[ 0] = (P(0,0,0)*d2c[0]+P(0,0,1)*d2c[1]+P(0,0,2)*d2c[2]+P(0,0,3)*d2c[3]);
-  d2cP[ 1] = (P(0,1,0)*d2c[0]+P(0,1,1)*d2c[1]+P(0,1,2)*d2c[2]+P(0,1,3)*d2c[3]);
-  d2cP[ 2] = (P(0,2,0)*d2c[0]+P(0,2,1)*d2c[1]+P(0,2,2)*d2c[2]+P(0,2,3)*d2c[3]);
-  d2cP[ 3] = (P(0,3,0)*d2c[0]+P(0,3,1)*d2c[1]+P(0,3,2)*d2c[2]+P(0,3,3)*d2c[3]);
-  d2cP[ 4] = (P(1,0,0)*d2c[0]+P(1,0,1)*d2c[1]+P(1,0,2)*d2c[2]+P(1,0,3)*d2c[3]);
-  d2cP[ 5] = (P(1,1,0)*d2c[0]+P(1,1,1)*d2c[1]+P(1,1,2)*d2c[2]+P(1,1,3)*d2c[3]);
-  d2cP[ 6] = (P(1,2,0)*d2c[0]+P(1,2,1)*d2c[1]+P(1,2,2)*d2c[2]+P(1,2,3)*d2c[3]);
-  d2cP[ 7] = (P(1,3,0)*d2c[0]+P(1,3,1)*d2c[1]+P(1,3,2)*d2c[2]+P(1,3,3)*d2c[3]);
-  d2cP[ 8] = (P(2,0,0)*d2c[0]+P(2,0,1)*d2c[1]+P(2,0,2)*d2c[2]+P(2,0,3)*d2c[3]);
-  d2cP[ 9] = (P(2,1,0)*d2c[0]+P(2,1,1)*d2c[1]+P(2,1,2)*d2c[2]+P(2,1,3)*d2c[3]);
-  d2cP[10] = (P(2,2,0)*d2c[0]+P(2,2,1)*d2c[1]+P(2,2,2)*d2c[2]+P(2,2,3)*d2c[3]);
-  d2cP[11] = (P(2,3,0)*d2c[0]+P(2,3,1)*d2c[1]+P(2,3,2)*d2c[2]+P(2,3,3)*d2c[3]);
-  d2cP[12] = (P(3,0,0)*d2c[0]+P(3,0,1)*d2c[1]+P(3,0,2)*d2c[2]+P(3,0,3)*d2c[3]);
-  d2cP[13] = (P(3,1,0)*d2c[0]+P(3,1,1)*d2c[1]+P(3,1,2)*d2c[2]+P(3,1,3)*d2c[3]);
-  d2cP[14] = (P(3,2,0)*d2c[0]+P(3,2,1)*d2c[1]+P(3,2,2)*d2c[2]+P(3,2,3)*d2c[3]);
-  d2cP[15] = (P(3,3,0)*d2c[0]+P(3,3,1)*d2c[1]+P(3,3,2)*d2c[2]+P(3,3,3)*d2c[3]);
-
-  bcP[0] = ( b[0]*cP[ 0] + b[1]*cP[ 1] + b[2]*cP[ 2] + b[3]*cP[ 3]);
-  bcP[1] = ( b[0]*cP[ 4] + b[1]*cP[ 5] + b[2]*cP[ 6] + b[3]*cP[ 7]);
-  bcP[2] = ( b[0]*cP[ 8] + b[1]*cP[ 9] + b[2]*cP[10] + b[3]*cP[11]);
-  bcP[3] = ( b[0]*cP[12] + b[1]*cP[13] + b[2]*cP[14] + b[3]*cP[15]);
-
-  dbcP[0] = ( db[0]*cP[ 0] + db[1]*cP[ 1] + db[2]*cP[ 2] + db[3]*cP[ 3]);
-  dbcP[1] = ( db[0]*cP[ 4] + db[1]*cP[ 5] + db[2]*cP[ 6] + db[3]*cP[ 7]);
-  dbcP[2] = ( db[0]*cP[ 8] + db[1]*cP[ 9] + db[2]*cP[10] + db[3]*cP[11]);
-  dbcP[3] = ( db[0]*cP[12] + db[1]*cP[13] + db[2]*cP[14] + db[3]*cP[15]);
-
-  bdcP[0] = ( b[0]*dcP[ 0] + b[1]*dcP[ 1] + b[2]*dcP[ 2] + b[3]*dcP[ 3]);
-  bdcP[1] = ( b[0]*dcP[ 4] + b[1]*dcP[ 5] + b[2]*dcP[ 6] + b[3]*dcP[ 7]);
-  bdcP[2] = ( b[0]*dcP[ 8] + b[1]*dcP[ 9] + b[2]*dcP[10] + b[3]*dcP[11]);
-  bdcP[3] = ( b[0]*dcP[12] + b[1]*dcP[13] + b[2]*dcP[14] + b[3]*dcP[15]);
-
-  bd2cP[0] = ( b[0]*d2cP[ 0] + b[1]*d2cP[ 1] + b[2]*d2cP[ 2] + b[3]*d2cP[ 3]);
-  bd2cP[1] = ( b[0]*d2cP[ 4] + b[1]*d2cP[ 5] + b[2]*d2cP[ 6] + b[3]*d2cP[ 7]);
-  bd2cP[2] = ( b[0]*d2cP[ 8] + b[1]*d2cP[ 9] + b[2]*d2cP[10] + b[3]*d2cP[11]);
-  bd2cP[3] = ( b[0]*d2cP[12] + b[1]*d2cP[13] + b[2]*d2cP[14] + b[3]*d2cP[15]);
-
-  d2bcP[0] = ( d2b[0]*cP[ 0] + d2b[1]*cP[ 1] + d2b[2]*cP[ 2] + d2b[3]*cP[ 3]);
-  d2bcP[1] = ( d2b[0]*cP[ 4] + d2b[1]*cP[ 5] + d2b[2]*cP[ 6] + d2b[3]*cP[ 7]);
-  d2bcP[2] = ( d2b[0]*cP[ 8] + d2b[1]*cP[ 9] + d2b[2]*cP[10] + d2b[3]*cP[11]);
-  d2bcP[3] = ( d2b[0]*cP[12] + d2b[1]*cP[13] + d2b[2]*cP[14] + d2b[3]*cP[15]);
+  // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
+  // register reuse and avoid rerereading from memory or cache.
+  // 1st quarter
+  p = (complex_float*)P(0,0,0);
+  tmp0 = _mm_loadu_ps ((float*)(p  ));    tmp1 = _mm_loadu_ps ((float*)(p+2));  
+  r0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps ((float*)(p+ys ));    tmp1 = _mm_loadu_ps ((float*)(p+ys+2));  
+  r1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps ((float*)(p+ys2 ));    tmp1 = _mm_loadu_ps ((float*)(p+ys2+2));  
+  r2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps ((float*)(p+ys3 ));    tmp1 = _mm_loadu_ps ((float*)(p+ys3+2));  
+  r3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  _MM_MATVEC4_PS (r0, r1, r2, r3,   c,   cPr[0]);
+  _MM_MATVEC4_PS (r0, r1, r2, r3,  dc,  dcPr[0]);
+  _MM_MATVEC4_PS (r0, r1, r2, r3, d2c, d2cPr[0]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,   c,   cPi[0]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,  dc,  dcPi[0]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3, d2c, d2cPi[0]);
+  p += xs;
+  // 2nd quarter
+  tmp0 = _mm_loadu_ps (P(1,0,0));  tmp1 = _mm_loadu_ps (P(1,0,2));
+  r0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(1,1,0));  tmp1 = _mm_loadu_ps (P(1,1,2));
+  r1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(1,2,0));  tmp1 = _mm_loadu_ps (P(1,2,2));
+  r2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(1,3,0));  tmp1 = _mm_loadu_ps (P(1,3,2));
+  r3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  _MM_MATVEC4_PS (r0, r1, r2, r3,   c,   cPr[1]);
+  _MM_MATVEC4_PS (r0, r1, r2, r3,  dc,  dcPr[1]);
+  _MM_MATVEC4_PS (r0, r1, r2, r3, d2c, d2cPr[1]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,   c,   cPi[1]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,  dc,  dcPi[1]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3, d2c, d2cPi[1]);
+  // 3rd quarter
+  tmp0 = _mm_loadu_ps (P(2,0,0));  tmp1 = _mm_loadu_ps (P(2,0,2));
+  r0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(2,1,0));  tmp1 = _mm_loadu_ps (P(2,1,2));
+  r1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(2,2,0));  tmp1 = _mm_loadu_ps (P(2,2,2));
+  r2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(2,3,0));  tmp1 = _mm_loadu_ps (P(2,3,2));
+  r3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  _MM_MATVEC4_PS (r0, r1, r2, r3,   c,   cPr[2]);
+  _MM_MATVEC4_PS (r0, r1, r2, r3,  dc,  dcPr[2]);
+  _MM_MATVEC4_PS (r0, r1, r2, r3, d2c, d2cPr[2]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,   c,   cPi[2]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,  dc,  dcPi[2]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3, d2c, d2cPi[2]);
+  // 4th quarter
+  tmp0 = _mm_loadu_ps (P(3,0,0));  tmp1 = _mm_loadu_ps (P(3,0,2));
+  r0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i0   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(3,1,0));  tmp1 = _mm_loadu_ps (P(3,1,2));
+  r1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i1   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(3,2,0));  tmp1 = _mm_loadu_ps (P(3,2,2));
+  r2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i2   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  tmp0 = _mm_loadu_ps (P(3,3,0));  tmp1 = _mm_loadu_ps (P(3,3,2));
+  r3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (2, 0, 2, 0));
+  i3   = _mm_shuffle_ps (tmp0, tmp1, _MM_SHUFFLE (3, 1, 3, 1));
+  _MM_MATVEC4_PS (r0, r1, r2, r3,   c,   cPr[3]);
+  _MM_MATVEC4_PS (r0, r1, r2, r3,  dc,  dcPr[3]);
+  _MM_MATVEC4_PS (r0, r1, r2, r3, d2c, d2cPr[3]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,   c,   cPi[3]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3,  dc,  dcPi[3]);
+  _MM_MATVEC4_PS (i0, i1, i2, i3, d2c, d2cPi[3]);
   
-  dbdcP[0] = ( db[0]*dcP[ 0] + db[1]*dcP[ 1] + db[2]*dcP[ 2] + db[3]*dcP[ 3]);
-  dbdcP[1] = ( db[0]*dcP[ 4] + db[1]*dcP[ 5] + db[2]*dcP[ 6] + db[3]*dcP[ 7]);
-  dbdcP[2] = ( db[0]*dcP[ 8] + db[1]*dcP[ 9] + db[2]*dcP[10] + db[3]*dcP[11]);
-  dbdcP[3] = ( db[0]*dcP[12] + db[1]*dcP[13] + db[2]*dcP[14] + db[3]*dcP[15]);
+  // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
+  _MM_MATVEC4_PS (  cPr[0],   cPr[1],   cPr[2],   cPr[3],   b,   bcPr);
+  _MM_MATVEC4_PS (  cPr[0],   cPr[1],   cPr[2],   cPr[3],  db,  dbcPr);
+  _MM_MATVEC4_PS ( dcPr[0],  dcPr[1],  dcPr[2],  dcPr[3],   b,  bdcPr);
+  _MM_MATVEC4_PS (  cPr[0],   cPr[1],   cPr[2],   cPr[3], d2b, d2bcPr);
+  _MM_MATVEC4_PS (d2cPr[0], d2cPr[1], d2cPr[2], d2cPr[3],   b, bd2cPr);
+  _MM_MATVEC4_PS ( dcPr[0],  dcPr[1],  dcPr[2],  dcPr[3],  db, dbdcPr);
 
-  *val = a[0]*bcP[0] + a[1]*bcP[1] + a[2]*bcP[2] + a[3]*bcP[3];
-  grad[0] = (da[0] *bcP[0] + da[1]*bcP[1] + da[2]*bcP[2] + da[3]*bcP[3]);
-  grad[1] = (a[0]*dbcP[0] + a[1]*dbcP[1] + a[2]*dbcP[2] + a[3]*dbcP[3]);
-  grad[2] = (a[0]*bdcP[0] + a[1]*bdcP[1] + a[2]*bdcP[2] + a[3]*bdcP[3]);
-  // d2x
-  hess[0] = (d2a[0]*bcP[0] + d2a[1]*bcP[1] + d2a[2]*bcP[2] + d2a[3]*bcP[3]);
-  // dx dy
-  hess[1] = (da[0]*dbcP[0] + da[1]*dbcP[1] + da[1]*dbcP[1] + da[1]*dbcP[1]);
+  _MM_MATVEC4_PS (  cPi[0],   cPi[1],   cPi[2],   cPi[3],   b,   bcPi);
+  _MM_MATVEC4_PS (  cPi[0],   cPi[1],   cPi[2],   cPi[3],  db,  dbcPi);
+  _MM_MATVEC4_PS ( dcPi[0],  dcPi[1],  dcPi[2],  dcPi[3],   b,  bdcPi);
+  _MM_MATVEC4_PS (  cPi[0],   cPi[1],   cPi[2],   cPi[3], d2b, d2bcPi);
+  _MM_MATVEC4_PS (d2cPi[0], d2cPi[1], d2cPi[2], d2cPi[3],   b, bd2cPi);
+  _MM_MATVEC4_PS ( dcPi[0],  dcPi[1],  dcPi[2],  dcPi[3],  db, dbdcPi);
+
+  float *valr   = ((float*)val)  +0;
+  float *vali   = ((float*)val)  +1;
+  float *gradr0 = ((float *)grad)+0;
+  float *gradi0 = ((float *)grad)+1;
+  float *gradr1 = ((float *)grad)+2;
+  float *gradi1 = ((float *)grad)+3;
+  float *gradr2 = ((float *)grad)+4;
+  float *gradi2 = ((float *)grad)+5;
+  
+  // Compute value
+  _MM_DOT4_PS (a, bcPr, *valr);
+  _MM_DOT4_PS (a, bcPi, *vali);
+  // Compute gradient
+  _MM_DOT4_PS (da, bcPr, *gradr0);
+  _MM_DOT4_PS (a, dbcPr, *gradr1);
+  _MM_DOT4_PS (a, bdcPr, *gradr2);
+  _MM_DOT4_PS (da, bcPi, *gradi0);
+  _MM_DOT4_PS (a, dbcPi, *gradi1);
+  _MM_DOT4_PS (a, bdcPi, *gradi2);
+  // Compute hessian
+  _MM_DOT4_PS (d2a, bcPr, *(float*)(&hess[0]));
+  _MM_DOT4_PS (a, d2bcPr, *(float*)(&hess[4]));
+  _MM_DOT4_PS (a, bd2cPr, *(float*)(&hess[8]));
+  _MM_DOT4_PS (da, dbcPr, *(float*)(&hess[1]));
+  _MM_DOT4_PS (da, bdcPr, *(float*)(&hess[2]));
+  _MM_DOT4_PS (a, dbdcPr, *(float*)(&hess[5]));
+
+  _MM_DOT4_PS (d2a, bcPi, *((float*)(&hess[0])+1));
+  _MM_DOT4_PS (a, d2bcPi, *((float*)(&hess[4])+1));
+  _MM_DOT4_PS (a, bd2cPi, *((float*)(&hess[8])+1));
+  _MM_DOT4_PS (da, dbcPi, *((float*)(&hess[1])+1));
+  _MM_DOT4_PS (da, bdcPi, *((float*)(&hess[2])+1));
+  _MM_DOT4_PS (a, dbdcPi, *((float*)(&hess[5])+1));
+
+
+  // Multiply gradients and hessians by appropriate grid inverses
+  // Copy hessian elements into lower half of 3x3 matrix
   hess[3] = hess[1];
-  // dx dz;
-  hess[2] = (da[0]*bdcP[0] + da[1]*bdcP[1] + da[1]*bdcP[1] + da[1]*bdcP[1]);
   hess[6] = hess[2];
-  // d2y
-  hess[4] = (a[0]*d2bcP[0] + a[1]*d2bcP[1] + a[2]*d2bcP[2] + a[3]*d2bcP[3]);
-  // dy dz
-  hess[5] = (a[0]*dbdcP[0] + a[1]*dbdcP[1] + a[2]*dbdcP[2] + a[3]*dbdcP[3]);
   hess[7] = hess[5];
-  // d2z
-  hess[8] = (a[0]*bd2cP[0] + a[1]*bd2cP[1] + a[2]*bd2cP[2] + a[3]*bd2cP[3]);
-#undef P
 
+#undef P
 }
 #undef _MM_MATVEC4_PS
 #undef _MM_DOT4_PS
