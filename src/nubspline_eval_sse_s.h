@@ -133,11 +133,9 @@ inline void
 eval_NUBspline_2d_s (NUBspline_2d_s * restrict spline, 
 		    double x, double y, float* restrict val)
 {
-  float af[4], bf[4];
   __m128 a, b, bP, tmp0, tmp1, tmp2, tmp3;
-  int ix = get_NUBasis_funcs_s (spline->x_basis, x, af);
-  int iy = get_NUBasis_funcs_s (spline->y_basis, y, bf);
-
+  int ix = get_NUBasis_funcs_sse_s (spline->x_basis, x, &a);
+  int iy = get_NUBasis_funcs_sse_s (spline->y_basis, y, &b);
   float* restrict coefs = spline->coefs;
   int xs = spline->x_stride;
   #define P(i) (spline->coefs+(ix+(i))*xs+iy)
@@ -147,9 +145,6 @@ eval_NUBspline_2d_s (NUBspline_2d_s * restrict spline,
   _mm_prefetch ((void*)P(1), _MM_HINT_T0);
   _mm_prefetch ((void*)P(2), _MM_HINT_T0);
   _mm_prefetch ((void*)P(3), _MM_HINT_T0);
-
-  a = _mm_loadu_ps (af);
-  b = _mm_loadu_ps (bf);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -169,10 +164,9 @@ eval_NUBspline_2d_s_vg (NUBspline_2d_s * restrict spline,
 		       double x, double y, 
 		       float* restrict val, float* restrict grad)
 {
-  float af[4], bf[4], daf[4], dbf[4];
   __m128 a, b, da, db, bP, dbP, tmp0, tmp1, tmp2, tmp3;
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, af, daf);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, bf, dbf);
+  int ix = get_NUBasis_dfuncs_sse_s (spline->x_basis, x, &a, &da);
+  int iy = get_NUBasis_dfuncs_sse_s (spline->y_basis, y, &b, &db);
   float* restrict coefs = spline->coefs;
   int xs = spline->x_stride;
 #define P(i) (spline->coefs+(ix+(i))*xs+iy)
@@ -183,11 +177,6 @@ eval_NUBspline_2d_s_vg (NUBspline_2d_s * restrict spline,
   _mm_prefetch ((void*)P(1), _MM_HINT_T0);
   _mm_prefetch ((void*)P(2), _MM_HINT_T0);
   _mm_prefetch ((void*)P(3), _MM_HINT_T0);
-
-  a  = _mm_loadu_ps (af);
-  b  = _mm_loadu_ps (bf);
-  da = _mm_loadu_ps (daf);
-  db = _mm_loadu_ps (dbf);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -209,10 +198,9 @@ eval_NUBspline_2d_s_vgl (NUBspline_2d_s * restrict spline,
 			double x, double y, float* restrict val, 
 			float* restrict grad, float* restrict lapl)
 {
-  float af[4], bf[4], daf[4], dbf[4], d2af[4], d2bf[4];
   __m128 a, b, da, db, d2a, d2b, bP, dbP, d2bP, tmp0, tmp1, tmp2, tmp3;
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2af);
+  int ix = get_NUBasis_d2funcs_sse_s (spline->x_basis, x, &a, &da, &d2a);
+  int iy = get_NUBasis_d2funcs_sse_s (spline->y_basis, y, &b, &db, &d2b);
   float* restrict coefs = spline->coefs;
   int xs = spline->x_stride;
 #define P(i) (spline->coefs+(ix+(i))*xs+iy)
@@ -223,13 +211,6 @@ eval_NUBspline_2d_s_vgl (NUBspline_2d_s * restrict spline,
   _mm_prefetch ((void*)P(1), _MM_HINT_T0);
   _mm_prefetch ((void*)P(2), _MM_HINT_T0);
   _mm_prefetch ((void*)P(3), _MM_HINT_T0);
-
-  a   = _mm_loadu_ps (af);
-  b   = _mm_loadu_ps (bf);
-  da  = _mm_loadu_ps (daf);
-  db  = _mm_loadu_ps (dbf);
-  d2a = _mm_loadu_ps (d2af);
-  d2b = _mm_loadu_ps (d2bf);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -257,27 +238,20 @@ eval_NUBspline_2d_s_vgh (NUBspline_2d_s * restrict spline,
 			double x, double y, float* restrict val, 
 			float* restrict grad, float* restrict hess)
 {
-  float af[4], bf[4], daf[4], dbf[4], d2af[4], d2bf[4];
   __m128 a, b, da, db, d2a, d2b, bP, dbP, d2bP, tmp0, tmp1, tmp2, tmp3;
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2af);
+  int ix = get_NUBasis_d2funcs_sse_s (spline->x_basis, x, &a, &da, &d2a);
+  int iy = get_NUBasis_d2funcs_sse_s (spline->y_basis, y, &b, &db, &d2b);
   float* restrict coefs = spline->coefs;
   int xs = spline->x_stride;
 #define P(i) (spline->coefs+(ix+(i))*xs+iy)
+  float *restrict p = P(0);
   
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3), _MM_HINT_T0);
-
-  a   = _mm_loadu_ps (af);
-  b   = _mm_loadu_ps (bf);
-  da  = _mm_loadu_ps (daf);
-  db  = _mm_loadu_ps (dbf);
-  d2a = _mm_loadu_ps (d2af);
-  d2b = _mm_loadu_ps (d2bf);
+  _mm_prefetch ((void*)(p     ), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+  xs), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+2*xs), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+3*xs), _MM_HINT_T0);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -313,63 +287,56 @@ eval_NUBspline_3d_s (NUBspline_3d_s * restrict spline,
 		    double x, double y, double z,
 		    float* restrict val)
 {
-  float af[4], bf[4], cf[4];
-  
   __m128 a, b, c, cP[4], bcP, tmp0, tmp1, tmp2, tmp3;
-  int ix = get_NUBasis_funcs_s (spline->x_basis, x, af);
-  int iy = get_NUBasis_funcs_s (spline->y_basis, y, bf);
-  int iz = get_NUBasis_funcs_s (spline->z_basis, z, cf);
-  
+  int ix = get_NUBasis_funcs_sse_s (spline->x_basis, x, &a);
+  int iy = get_NUBasis_funcs_sse_s (spline->y_basis, y, &b);
+  int iz = get_NUBasis_funcs_sse_s (spline->z_basis, z, &c);
+
   int xs = spline->x_stride;
   int ys = spline->y_stride;
+  int ys2 = 2*ys;
+  int ys3 = 3*ys;
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
-  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
-  
-  a   = _mm_loadu_ps (af);
-  b   = _mm_loadu_ps (bf);
-  c   = _mm_loadu_ps (cf);
-  
+  float *restrict p = P(0,0);
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
-  tmp0 = _mm_loadu_ps (P(0,0));
-  tmp1 = _mm_loadu_ps (P(0,1));
-  tmp2 = _mm_loadu_ps (P(0,2));
-  tmp3 = _mm_loadu_ps (P(0,3));
+  p = P(0,0);
+  tmp0 = _mm_loadu_ps (p    );  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
   // 2nd quarter
-  tmp0 = _mm_loadu_ps (P(1,0));
-  tmp1 = _mm_loadu_ps (P(1,1));
-  tmp2 = _mm_loadu_ps (P(1,2));
-  tmp3 = _mm_loadu_ps (P(1,3));
+  tmp0 = _mm_loadu_ps (p    );  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[1]);
   // 3rd quarter
-  tmp0 = _mm_loadu_ps (P(2,0));
-  tmp1 = _mm_loadu_ps (P(2,1));
-  tmp2 = _mm_loadu_ps (P(2,2));
-  tmp3 = _mm_loadu_ps (P(2,3));
+  tmp0 = _mm_loadu_ps (p    );  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[2]);
   // 4th quarter
-  tmp0 = _mm_loadu_ps (P(3,0));
-  tmp1 = _mm_loadu_ps (P(3,1));
-  tmp2 = _mm_loadu_ps (P(3,2));
-  tmp3 = _mm_loadu_ps (P(3,3));
+  tmp0 = _mm_loadu_ps (p    );  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);  tmp3 = _mm_loadu_ps (p+ys3);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[3]);
   
   // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
@@ -386,73 +353,70 @@ eval_NUBspline_3d_s_vg (NUBspline_3d_s * restrict spline,
 			double x, double y, double z,
 			float* restrict val, float* restrict grad)
 {
-  float af[4], bf[4], cf[4], daf[4], dbf[4], dcf[4];
-  
   __m128 a, b, c, da, db, dc, cP[4], dcP[4], bcP, dbcP, 
     dbP, bdcP, tmp0, tmp1, tmp2, tmp3;
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, af, daf);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, bf, dbf);
-  int iz = get_NUBasis_dfuncs_s (spline->z_basis, z, cf, dcf);
+  int ix = get_NUBasis_dfuncs_sse_s (spline->x_basis, x, &a, &da);
+  int iy = get_NUBasis_dfuncs_sse_s (spline->y_basis, y, &b, &db);
+  int iz = get_NUBasis_dfuncs_sse_s (spline->z_basis, z, &c, &dc);
   
   int xs = spline->x_stride;
   int ys = spline->y_stride;
+  int ys2 = 2*ys;
+  int ys3 = 3*ys;
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
-  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
-  
-  a   = _mm_loadu_ps (af);
-  b   = _mm_loadu_ps (bf);
-  c   = _mm_loadu_ps (cf);
-  da  = _mm_loadu_ps (daf);
-  db  = _mm_loadu_ps (dbf);
-  dc  = _mm_loadu_ps (dcf);
-  
+  float *restrict p = P(0,0);
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
-  tmp0 = _mm_loadu_ps (P(0,0));
-  tmp1 = _mm_loadu_ps (P(0,1));
-  tmp2 = _mm_loadu_ps (P(0,2));
-  tmp3 = _mm_loadu_ps (P(0,3));
+  p = P(0,0);
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[0]);
   // 2nd quarter
-  tmp0 = _mm_loadu_ps (P(1,0));
-  tmp1 = _mm_loadu_ps (P(1,1));
-  tmp2 = _mm_loadu_ps (P(1,2));
-  tmp3 = _mm_loadu_ps (P(1,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[1]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[1]);
   // 3rd quarter
-  tmp0 = _mm_loadu_ps (P(2,0));
-  tmp1 = _mm_loadu_ps (P(2,1));
-  tmp2 = _mm_loadu_ps (P(2,2));
-  tmp3 = _mm_loadu_ps (P(2,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[2]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[2]);
   // 4th quarter
-  tmp0 = _mm_loadu_ps (P(3,0));
-  tmp1 = _mm_loadu_ps (P(3,1));
-  tmp2 = _mm_loadu_ps (P(3,2));
-  tmp3 = _mm_loadu_ps (P(3,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[3]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[3]);
-  
   // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
   _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],   b,   bcP);
   _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],  db,  dbcP);
@@ -482,62 +446,69 @@ eval_NUBspline_3d_s_vgl (NUBspline_3d_s * restrict spline,
   int iy = get_NUBasis_d2funcs_sse_s (spline->y_basis, y, &b, &db, &d2b);
   int iz = get_NUBasis_d2funcs_sse_s (spline->z_basis, z, &c, &dc, &d2c);
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  int xs  = spline->x_stride;
+  int ys  = spline->y_stride;
+  int ys2 = 2*ys;
+  int ys3 = 3*ys;
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
-  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3), _MM_HINT_T0);
-  
+  float *restrict p = P(0,0);
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
-  tmp0 = _mm_loadu_ps (P(0,0));
-  tmp1 = _mm_loadu_ps (P(0,1));
-  tmp2 = _mm_loadu_ps (P(0,2));
-  tmp3 = _mm_loadu_ps (P(0,3));
+  p = P(0,0);
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[0]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[0]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[0]);
   // 2nd quarter
-  tmp0 = _mm_loadu_ps (P(1,0));
-  tmp1 = _mm_loadu_ps (P(1,1));
-  tmp2 = _mm_loadu_ps (P(1,2));
-  tmp3 = _mm_loadu_ps (P(1,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[1]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[1]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[1]);
   // 3rd quarter
-  tmp0 = _mm_loadu_ps (P(2,0));
-  tmp1 = _mm_loadu_ps (P(2,1));
-  tmp2 = _mm_loadu_ps (P(2,2));
-  tmp3 = _mm_loadu_ps (P(2,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
+  p += xs;
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[2]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[2]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[2]);
   // 4th quarter
-  tmp0 = _mm_loadu_ps (P(3,0));
-  tmp1 = _mm_loadu_ps (P(3,1));
-  tmp2 = _mm_loadu_ps (P(3,2));
-  tmp3 = _mm_loadu_ps (P(3,3));
+  tmp0 = _mm_loadu_ps (p    );
+  tmp1 = _mm_loadu_ps (p+ys );
+  tmp2 = _mm_loadu_ps (p+ys2);
+  tmp3 = _mm_loadu_ps (p+ys3);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,   c,   cP[3]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3,  dc,  dcP[3]);
   _MM_MATVEC4_PS (tmp0, tmp1, tmp2, tmp3, d2c, d2cP[3]);
-  
+
   // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
   _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],   b,   bcP);
   _MM_MATVEC4_PS (  cP[0],   cP[1],   cP[2],   cP[3],  db,  dbcP);
