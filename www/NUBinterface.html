@@ -69,6 +69,12 @@ spacing, it has the disadvantage that a bisection search must be
 performed to find the nearest grid point. 
 
 <h3> <font color="Blue"> Spline creation </font></h3>
+After the necessary grids have been created, a nonuniform spline can
+be created using a very similar routines to the uniform ones.  The
+most apparent difference is that the nonuniform grids are passed
+through pointers.  Note that the nonuniform grids should not be
+destroyed until after the splines which use them.
+
 <h4> Function prototypes: </h4>
 <u>Single-precision real: </u><br>
 <PRE>
@@ -104,7 +110,16 @@ NUBspline_3d_z * <font color="blue">create_NUBspline_3d_z</font> (NUgrid* <i>x_g
                                         BCtype_z  <i>xBC</i>,  BCtype_z   <i>yBC</i>, BCtype_z   <i>zBC</i>, 
                                         complex_double *<i>data</i>);
 </PRE>
-<hr>
+<hr/>
+<h3> <font color="Blue"> Spline destruction </font></h3>
+The memory used for spline storage can be freed simply by a call to
+<pre>
+void
+destroy_Bspline (void *<i>spline</i>);
+</pre>
+The <i>spline</i> parameter can be a spline of any type and dimension,
+uniform or nonuniform.
+<hr/> 
 <h3> <font color="Blue"> Spline evaluation </font></h3>
 For each of the four datatypes, there are four evaluation routines, depending on
 which quantities need to be computed:

@@ -83,7 +83,7 @@ typedef struct
 } Bspline;
 
 void
-destroy_Bspline (Bspline *spline);
+destroy_Bspline (void *spline);
 
 
 #endif

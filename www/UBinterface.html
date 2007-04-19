@@ -67,7 +67,16 @@ UBspline_3d_z * create_UBspline_3d_z (Ugrid x_grid,   Ugrid y_grid, Ugrid z_grid
                                       BCtype_z  xBC,  BCtype_z   yBC, BCtype_z   zBC, 
                                       complex_double *data);
 </PRE>
-<hr>
+<hr/>
+<h3> <font color="Blue"> Spline destruction </font></h3>
+The memory used for spline storage can be freed simply by a call to
+<pre>
+void
+destroy_Bspline (void *<i>spline</i>);
+</pre>
+The <i>spline</i> parameter can be a spline of any type and dimension,
+uniform or nonuniform.
+<hr/>
 <h3> <font color="Blue"> Spline evaluation </font> </h3>
 For each of the four datatypes, there are four evaluation routines, depending on
 which quantities need to be computed:

@@ -37,7 +37,4 @@
   #include "nubspline_eval_std_z.h"
 #endif
 
-void
-destroy_Bspline (Bspline *ptr);
-
 #endif
