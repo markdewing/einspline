@@ -120,20 +120,64 @@ inline void
 eval_NUBspline_2d_z (NUBspline_2d_z * restrict spline, 
 		    double x, double y, complex_double* restrict val)
 {
-  double a[4], b[4];
-  int ix = get_NUBasis_funcs_d (spline->x_basis, x, a);
-  int iy = get_NUBasis_funcs_d (spline->y_basis, y, b);
+  __m128d
+    a01, b01, a23, b23, bP01r, bP23r, bP01i, bP23i, 
+    tmp0, tmp1, tmp2, tmp3, r0, r1, r2, r3, i0, i1, i2, i3;
   
-  complex_double* restrict coefs = spline->coefs;
+  int ix = get_NUBasis_funcs_sse_d (spline->x_basis, x, &a01, &a23);
+  int iy = get_NUBasis_funcs_sse_d (spline->y_basis, y, &b01, &b23);
+  int xs   = spline->x_stride;
+  // This macro is used to give the pointer to coefficient data.
+  // i and j should be in the range [0,3].  Coefficients are read four
+  // at a time, so no k value is needed.
+#define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  double *restrict p = (double*)P(0,0);
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
 
-  int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  *val = (a[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
-	  a[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
-	  a[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
-	  a[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-#undef C
+  tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(0,2));  tmp1 = _mm_load_pd (P(0,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,0));  tmp1 = _mm_load_pd (P(1,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,2));  tmp1 = _mm_load_pd (P(1,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP01i);
 
+  tmp0 = _mm_load_pd (P(2,0));  tmp1 = _mm_load_pd (P(2,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(2,2));  tmp1 = _mm_load_pd (P(2,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,0));  tmp1 = _mm_load_pd (P(3,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,2));  tmp1 = _mm_load_pd (P(3,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP23i);
+
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01r, bP23r, *((double*)val+0));
+  _MM_DOT4_PD (a01, a23, bP01i, bP23i, *((double*)val+1));
+
+#undef P
 }
 
 
@@ -143,27 +187,78 @@ eval_NUBspline_2d_z_vg (NUBspline_2d_z * restrict spline,
 		       double x, double y, 
 		       complex_double* restrict val, complex_double* restrict grad)
 {
-  double a[4], b[4], da[4], db[4];
-  int ix = get_NUBasis_dfuncs_d (spline->x_basis, x, a, da);
-  int iy = get_NUBasis_dfuncs_d (spline->y_basis, y, b, db);
+  __m128d
+    a01, b01, da01, db01, 
+    a23, b23, da23, db23, 
+    bP01r, dbP01r, bP23r, dbP23r, 
+    bP01i, dbP01i, bP23i, dbP23i, 
+    tmp0, tmp1, tmp2, tmp3, r0, r1, r2, r3, i0, i1, i2, i3;
   
-  complex_double* restrict coefs = spline->coefs;
+  int ix = get_NUBasis_dfuncs_sse_d (spline->x_basis, x, &a01, &a23, &da01, &da23);
+  int iy = get_NUBasis_dfuncs_sse_d (spline->y_basis, y, &b01, &b23, &db01, &db23);
+  int xs   = spline->x_stride;
+  // This macro is used to give the pointer to coefficient data.
+  // i and j should be in the range [0,3].  Coefficients are read four
+  // at a time, so no k value is needed.
+#define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  double *restrict p = (double*)P(0,0);
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
 
-  int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  *val = (a[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
-	  a[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
-	  a[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
-	  a[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[0] = (da[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
-	     da[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
-	     da[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
-	     da[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-#undef C
+  tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(0,2));  tmp1 = _mm_load_pd (P(0,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,0));  tmp1 = _mm_load_pd (P(1,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,2));  tmp1 = _mm_load_pd (P(1,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP01i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,    db01,   db23,   db01,   db23,   dbP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,    db01,   db23,   db01,   db23,   dbP01i);
+
+  tmp0 = _mm_load_pd (P(2,0));  tmp1 = _mm_load_pd (P(2,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(2,2));  tmp1 = _mm_load_pd (P(2,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,0));  tmp1 = _mm_load_pd (P(3,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,2));  tmp1 = _mm_load_pd (P(3,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP23i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,    db01,   db23,   db01,   db23,   dbP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,    db01,   db23,   db01,   db23,   dbP23i);
+
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01r, bP23r, *((double*)val+0));
+  _MM_DOT4_PD (a01, a23, bP01i, bP23i, *((double*)val+1));
+
+  double *dgrad = (double*) grad;
+  // Compute gradient
+  _MM_DOT4_PD (da01, da23,  bP01r,  bP23r, dgrad[0]);
+  _MM_DOT4_PD (da01, da23,  bP01i,  bP23i, dgrad[1]);
+  _MM_DOT4_PD ( a01,  a23, dbP01r, dbP23r, dgrad[2]);
+  _MM_DOT4_PD ( a01,  a23, dbP01i, dbP23i, dgrad[3]);
+
+#undef P
 }
 
 /* Value, gradient, and laplacian */
@@ -172,32 +267,90 @@ eval_NUBspline_2d_z_vgl (NUBspline_2d_z * restrict spline,
 			double x, double y, complex_double* restrict val, 
 			complex_double* restrict grad, complex_double* restrict lapl)
 {
-  double a[4], b[4], da[4], db[4], d2a[4], d2b[4];
-  complex_double bc[4];
-  int ix = get_NUBasis_d2funcs_d (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_d (spline->y_basis, y, b, db, d2b);
+ __m128d
+    a01, b01, da01, db01, d2a01, d2b01,
+    a23, b23, da23, db23, d2a23, d2b23,
+    bP01r, dbP01r, d2bP01r, 
+    bP23r, dbP23r, d2bP23r, 
+    bP01i, dbP01i, d2bP01i, 
+    bP23i, dbP23i, d2bP23i, 
+    tmp0, tmp1, tmp2, tmp3, r0, r1, r2, r3, i0, i1, i2, i3;
   
-  complex_double* restrict coefs = spline->coefs;
+  int ix = get_NUBasis_d2funcs_sse_d (spline->x_basis, x, &a01, &a23, &da01, &da23, &d2a01, &d2a23);
+  int iy = get_NUBasis_d2funcs_sse_d (spline->y_basis, y, &b01, &b23, &db01, &db23, &d2b01, &d2b23);
+  int xs   = spline->x_stride;
+  // This macro is used to give the pointer to coefficient data.
+  // i and j should be in the range [0,3].  Coefficients are read four
+  // at a time, so no k value is needed.
+#define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  double *restrict p = (double*)P(0,0);
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
 
-  int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  bc[0] = (C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3]);
-  bc[1] = (C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3]);
-  bc[2] = (C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3]);
-  bc[3] = (C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]);
-  *val = (a[0]*bc[0] + a[1]*bc[1] + a[2]*bc[2] + a[3]*bc[3]);
-  grad[0] = (da[0]*bc[0] + da[1]*bc[1] + da[2]*bc[2] + da[3]*bc[3]);
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  *lapl   = (d2a[0]*bc[0] + d2a[1]*bc[1] + d2a[2]*bc[2] + d2a[3]*bc[3]+
-	     a[0]*(C(0,0)*d2b[0]+C(0,1)*d2b[1]+C(0,2)*d2b[2]+C(0,3)*d2b[3])+
-	     a[1]*(C(1,0)*d2b[0]+C(1,1)*d2b[1]+C(1,2)*d2b[2]+C(1,3)*d2b[3])+
-	     a[2]*(C(2,0)*d2b[0]+C(2,1)*d2b[1]+C(2,2)*d2b[2]+C(2,3)*d2b[3])+
-	     a[3]*(C(3,0)*d2b[0]+C(3,1)*d2b[1]+C(3,2)*d2b[2]+C(3,3)*d2b[3]));
-  
-#undef C
+  tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(0,2));  tmp1 = _mm_load_pd (P(0,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,0));  tmp1 = _mm_load_pd (P(1,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,2));  tmp1 = _mm_load_pd (P(1,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP01i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,    db01,   db23,   db01,   db23,   dbP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,    db01,   db23,   db01,   db23,   dbP01i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP01i);
+
+  tmp0 = _mm_load_pd (P(2,0));  tmp1 = _mm_load_pd (P(2,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(2,2));  tmp1 = _mm_load_pd (P(2,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,0));  tmp1 = _mm_load_pd (P(3,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,2));  tmp1 = _mm_load_pd (P(3,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP23i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,    db01,   db23,   db01,   db23,   dbP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,    db01,   db23,   db01,   db23,   dbP23i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP23i);
+
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01r, bP23r, *((double*)val+0));
+  _MM_DOT4_PD (a01, a23, bP01i, bP23i, *((double*)val+1));
+
+  double *dgrad = (double*) grad;
+  // Compute gradient
+  _MM_DOT4_PD (da01, da23,  bP01r,  bP23r, dgrad[0]);
+  _MM_DOT4_PD (da01, da23,  bP01i,  bP23i, dgrad[1]);
+  _MM_DOT4_PD ( a01,  a23, dbP01r, dbP23r, dgrad[2]);
+  _MM_DOT4_PD ( a01,  a23, dbP01i, dbP23i, dgrad[3]);
+  // Compute Laplacian
+  double d2x_r, d2x_i, d2y_r, d2y_i;
+  _MM_DOT4_PD (d2a01, d2a23, bP01r, bP23r, d2x_r);
+  _MM_DOT4_PD (d2a01, d2a23, bP01i, bP23i, d2x_i);
+  _MM_DOT4_PD (a01, a23, d2bP01r, d2bP23r, d2y_r);
+  _MM_DOT4_PD (a01, a23, d2bP01i, d2bP23i, d2y_i);
+  *lapl = (d2x_r + d2y_r) + 1.0i*(d2x_i + d2y_i);
+#undef P
 }
 
 /* Value, gradient, and Hessian */
@@ -206,37 +359,93 @@ eval_NUBspline_2d_z_vgh (NUBspline_2d_z * restrict spline,
 			double x, double y, complex_double* restrict val, 
 			complex_double* restrict grad, complex_double* restrict hess)
 {
-  double a[4], b[4], da[4], db[4], d2a[4], d2b[4];
-  complex_double bc[4];
-  int ix = get_NUBasis_d2funcs_d (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_d (spline->y_basis, y, b, db, d2b);
+  __m128d
+    a01, b01, da01, db01, d2a01, d2b01,
+    a23, b23, da23, db23, d2a23, d2b23,
+    bP01r, dbP01r, d2bP01r, 
+    bP23r, dbP23r, d2bP23r, 
+    bP01i, dbP01i, d2bP01i, 
+    bP23i, dbP23i, d2bP23i, 
+    tmp0, tmp1, tmp2, tmp3, r0, r1, r2, r3, i0, i1, i2, i3;
   
-  complex_double* restrict coefs = spline->coefs;
+  int ix = get_NUBasis_d2funcs_sse_d (spline->x_basis, x, &a01, &a23, &da01, &da23, &d2a01, &d2a23);
+  int iy = get_NUBasis_d2funcs_sse_d (spline->y_basis, y, &b01, &b23, &db01, &db23, &d2b01, &d2b23);
+  int xs   = spline->x_stride;
+  // This macro is used to give the pointer to coefficient data.
+  // i and j should be in the range [0,3].  Coefficients are read four
+  // at a time, so no k value is needed.
+#define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Prefetch the data from main memory into cache so it's available
+  // when we need to use it.
+  double *restrict p = (double*)P(0,0);
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
 
-  int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  bc[0] = (C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3]);
-  bc[1] = (C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3]);
-  bc[2] = (C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3]);
-  bc[3] = (C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]);
-  *val = (a[0]*bc[0] + a[1]*bc[1] + a[2]*bc[2] + a[3]*bc[3]);
-  grad[0] = (da[0]*bc[0] + da[1]*bc[1] + da[2]*bc[2] + da[3]*bc[3]);
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  hess[0] = (d2a[0]*bc[0] + d2a[1]*bc[1] + d2a[2]*bc[2] + d2a[3]*bc[3]);
-  hess[1] = (da[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     da[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     da[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     da[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  hess[3] = (a[0]*(C(0,0)*d2b[0]+C(0,1)*d2b[1]+C(0,2)*d2b[2]+C(0,3)*d2b[3])+
-	     a[1]*(C(1,0)*d2b[0]+C(1,1)*d2b[1]+C(1,2)*d2b[2]+C(1,3)*d2b[3])+
-	     a[2]*(C(2,0)*d2b[0]+C(2,1)*d2b[1]+C(2,2)*d2b[2]+C(2,3)*d2b[3])+
-	     a[3]*(C(3,0)*d2b[0]+C(3,1)*d2b[1]+C(3,2)*d2b[2]+C(3,3)*d2b[3]));
-  hess[2] = hess[1];
+  tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(0,2));  tmp1 = _mm_load_pd (P(0,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,0));  tmp1 = _mm_load_pd (P(1,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(1,2));  tmp1 = _mm_load_pd (P(1,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP01i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,    db01,   db23,   db01,   db23,   dbP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,    db01,   db23,   db01,   db23,   dbP01i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP01r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP01i);
+
+  tmp0 = _mm_load_pd (P(2,0));  tmp1 = _mm_load_pd (P(2,1));
+  r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(2,2));  tmp1 = _mm_load_pd (P(2,3));
+  r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,0));  tmp1 = _mm_load_pd (P(3,1));
+  r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  tmp0 = _mm_load_pd (P(3,2));  tmp1 = _mm_load_pd (P(3,3));
+  r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+  i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+  _MM_DDOT4_PD(r0, r1, r2, r3,     b01,    b23,    b01,    b23,    bP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,     b01,    b23,    b01,    b23,    bP23i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,    db01,   db23,   db01,   db23,   dbP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,    db01,   db23,   db01,   db23,   dbP23i);
+  _MM_DDOT4_PD(r0, r1, r2, r3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP23r);
+  _MM_DDOT4_PD(i0, i1, i2, i3,   d2b01,  d2b23,  d2b01,  d2b23,  d2bP23i);
+
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01r, bP23r, *((double*)val+0));
+  _MM_DOT4_PD (a01, a23, bP01i, bP23i, *((double*)val+1));
+
+  double *dgrad = (double*) grad;
+  double *dhess = (double*) hess;
+  // Compute gradient
+  _MM_DOT4_PD (da01, da23,  bP01r,  bP23r, dgrad[0]);
+  _MM_DOT4_PD (da01, da23,  bP01i,  bP23i, dgrad[1]);
+  _MM_DOT4_PD ( a01,  a23, dbP01r, dbP23r, dgrad[2]);
+  _MM_DOT4_PD ( a01,  a23, dbP01i, dbP23i, dgrad[3]);
+  // Compute Hessian
+  _MM_DOT4_PD (d2a01, d2a23, bP01r, bP23r, dhess[0]);
+  _MM_DOT4_PD (d2a01, d2a23, bP01i, bP23i, dhess[1]);
+  _MM_DOT4_PD (a01, a23, d2bP01r, d2bP23r, dhess[6]);
+  _MM_DOT4_PD (a01, a23, d2bP01i, d2bP23i, dhess[7]);
+  _MM_DOT4_PD (da01, da23, dbP01r, dbP23r, dhess[2]);
+  _MM_DOT4_PD (da01, da23, dbP01i, dbP23i, dhess[3]);
   
-#undef C
+  hess[2] = hess[1];
+#undef P
 }
 
 
