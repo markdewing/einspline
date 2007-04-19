@@ -357,6 +357,7 @@ TestNUB_3d_s()
     fprintf (fout, "\n");
   }
   fclose (fout);
+  destroy_Bspline (spline);
 }
 
 void
@@ -502,10 +503,10 @@ int main()
   // TestNUBspline();
   // TestNUB_2d_s();
   //  TestNUB_2d_c();
-  TestNUB_3d_c();
+  // TestNUB_3d_c();
   //  SpeedNUB_3d_s();
   // TestNUB_2d_d();
-  // TestNUB_3d_s();
+  TestNUB_3d_s();
   bool passed = TestNUB_1d_s();
 }
 
