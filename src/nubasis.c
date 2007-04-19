@@ -455,7 +455,7 @@ typedef union
 typedef union
 {
   double s[2];
-  __m128 v;
+  __m128d v;
 } uvec2;
 
 int
@@ -572,7 +572,7 @@ get_NUBasis_d2funcs_sse_s (NUBasis* restrict basis, double x,
 //////////////////////////////
 int
 get_NUBasis_funcs_sse_d (NUBasis* restrict basis, double x,
-			  __m128 *restrict   f01, __m128 *restrict   f23)
+			  __m128d *restrict   f01, __m128d *restrict   f23)
 {
   double b1[2], b2[3];
   int i = (*basis->grid->reverse_map)(basis->grid, x);
@@ -600,8 +600,8 @@ get_NUBasis_funcs_sse_d (NUBasis* restrict basis, double x,
 
 int
 get_NUBasis_dfuncs_sse_d (NUBasis* restrict basis, double x,
-			  __m128 *restrict   f01, __m128 *restrict   f23,
-			  __m128 *restrict  df01, __m128 *restrict  df23)
+			  __m128d *restrict   f01, __m128d *restrict   f23,
+			  __m128d *restrict  df01, __m128d *restrict  df23)
 
 {
   double b1[2], b2[3];
@@ -637,9 +637,9 @@ get_NUBasis_dfuncs_sse_d (NUBasis* restrict basis, double x,
 
 int
 get_NUBasis_d2funcs_sse_d (NUBasis* restrict basis, double x,
-			   __m128 *restrict   f01, __m128 *restrict   f23,
-			   __m128 *restrict  df01, __m128 *restrict  df23,
-			   __m128 *restrict d2f01, __m128 *restrict d2f23)
+			   __m128d *restrict   f01, __m128d *restrict   f23,
+			   __m128d *restrict  df01, __m128d *restrict  df23,
+			   __m128d *restrict d2f01, __m128d *restrict d2f23)
 {
   double b1[2], b2[3];
   int i = (*basis->grid->reverse_map)(basis->grid, x);

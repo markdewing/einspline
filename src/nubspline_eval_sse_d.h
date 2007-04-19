@@ -25,6 +25,36 @@
 #include <stdio.h>
 #include "nubspline_structs.h"
 
+#ifdef __SSE3__
+#define _MM_DDOT4_PD(a0, a1, a2, a3, b0, b1, b2, b3, r)               \
+do {                                                                  \
+   __m128d t0 = _mm_add_pd(_mm_mul_pd (a0, b0),_mm_mul_pd (a1, b1));  \
+   __m128d t1 = _mm_add_pd(_mm_mul_pd (a2, b2),_mm_mul_pd (a3, b3));  \
+   r = _mm_hadd_pd (t0, t1);                                          \
+ } while(0);
+#define _MM_DOT4_PD(a0, a1, b0, b1, p)                                \
+do {                                                                  \
+  __m128d t0 = _mm_add_pd(_mm_mul_pd (a0, b0),_mm_mul_pd (a1, b1));   \
+  __m128d t1 = _mm_hadd_pd (t0,t0);                                   \
+  _mm_store_sd (&(p), t1);                                            \
+ } while (0);
+#else
+#define _MM_DDOT4_PD(a0, a1, a2, a3, b0, b1, b2, b3, r)               \
+do {                                                                  \
+   __m128d t0 = _mm_add_pd(_mm_mul_pd (a0, b0),_mm_mul_pd (a1, b1));  \
+   __m128d t1 = _mm_add_pd(_mm_mul_pd (a2, b2),_mm_mul_pd (a3, b3));  \
+   r = _mm_add_pd(_mm_unpacklo_pd(t0,t1),_mm_unpackhi_pd(t0,t1));     \
+ } while(0);
+#define _MM_DOT4_PD(a0, a1, b0, b1, p)                                \
+do {                                                                  \
+  __m128d t0 = _mm_add_pd(_mm_mul_pd (a0, b0),_mm_mul_pd (a1, b1));   \
+  __m128d t1 =                                                        \
+      _mm_add_pd (_mm_unpacklo_pd(t0,t0), _mm_unpackhi_pd(t0,t0));    \
+  _mm_store_sd (&(p), t1);                                            \
+ } while (0);
+#endif
+
+
 /************************************************************/
 /* 1D single-precision, real evaulation functions           */
 /************************************************************/
@@ -90,20 +120,24 @@ inline void
 eval_NUBspline_2d_d (NUBspline_2d_d * restrict spline, 
 		    double x, double y, double* restrict val)
 {
-  double a[4], b[4];
-  int ix = get_NUBasis_funcs_d (spline->x_basis, x, a);
-  int iy = get_NUBasis_funcs_d (spline->y_basis, y, b);
-  
-  double* restrict coefs = spline->coefs;
-
+  __m128d a01, b01, bP01,
+          a23, b23, bP23,
+          tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_funcs_sse_d (spline->x_basis, x, &a01, &a23);
+  int iy = get_NUBasis_funcs_sse_d (spline->y_basis, y, &b01, &b23);
   int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  *val = (a[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
-	  a[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
-	  a[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
-	  a[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-#undef C
-
+#define P(i,j) (spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Now compute bP, dbP, d2bP products
+  tmp0 = _mm_loadu_pd (P(0,0)); tmp1 = _mm_loadu_pd(P(0,2));
+  tmp2 = _mm_loadu_pd (P(1,0)); tmp3 = _mm_loadu_pd(P(1,2));
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,   b01,   b23,   b01,   b23,   bP01);
+  tmp0 = _mm_loadu_pd (P(2,0)); tmp1 = _mm_loadu_pd(P(2,2));
+  tmp2 = _mm_loadu_pd (P(3,0)); tmp3 = _mm_loadu_pd(P(3,2));
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,   b01,   b23,   b01,   b23,   bP23);
+  
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01, bP23, *val);
+#undef P
 }
 
 
@@ -113,27 +147,31 @@ eval_NUBspline_2d_d_vg (NUBspline_2d_d * restrict spline,
 		       double x, double y, 
 		       double* restrict val, double* restrict grad)
 {
-  double a[4], b[4], da[4], db[4];
-  int ix = get_NUBasis_dfuncs_d (spline->x_basis, x, a, da);
-  int iy = get_NUBasis_dfuncs_d (spline->y_basis, y, b, db);
-  
-  double* restrict coefs = spline->coefs;
-
+  __m128d a01, b01, da01, db01, bP01, dbP01, 
+          a23, b23, da23, db23, bP23, dbP23, 
+          tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_dfuncs_sse_d (spline->x_basis, x, 
+				      &a01, &a23, &da01, &da23);
+  int iy = get_NUBasis_dfuncs_sse_d (spline->y_basis, y, 
+				      &b01, &b23, &db01, &db23);
   int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  *val = (a[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
-	  a[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
-	  a[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
-	  a[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[0] = (da[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
-	     da[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
-	     da[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
-	     da[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-#undef C
+#define P(i,j) (spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Now compute bP, dbP, d2bP products
+  tmp0 = _mm_loadu_pd (P(0,0)); tmp1 = _mm_loadu_pd(P(0,2));
+  tmp2 = _mm_loadu_pd (P(1,0)); tmp3 = _mm_loadu_pd(P(1,2));
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,   b01,   b23,   b01,   b23,   bP01);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,  db01,  db23,  db01,  db23,  dbP01);
+  tmp0 = _mm_loadu_pd (P(2,0)); tmp1 = _mm_loadu_pd(P(2,2));
+  tmp2 = _mm_loadu_pd (P(3,0)); tmp3 = _mm_loadu_pd(P(3,2));
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,   b01,   b23,   b01,   b23,   bP23);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,  db01,  db23,  db01,  db23,  dbP23);
+  
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01, bP23, *val);
+  // Compute gradient
+  _MM_DOT4_PD (da01, da23, bP01, bP23, grad[0]);
+  _MM_DOT4_PD (a01, a23, dbP01, dbP23, grad[1]);
+#undef P
 }
 
 /* Value, gradient, and laplacian */
@@ -142,31 +180,40 @@ eval_NUBspline_2d_d_vgl (NUBspline_2d_d * restrict spline,
 			double x, double y, double* restrict val, 
 			double* restrict grad, double* restrict lapl)
 {
-  double a[4], b[4], da[4], db[4], d2a[4], d2b[4], bc[4];
-  int ix = get_NUBasis_d2funcs_d (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_d (spline->y_basis, y, b, db, d2b);
-  
-  double* restrict coefs = spline->coefs;
-
+  __m128d a01, b01, da01, db01, d2a01, d2b01,
+          a23, b23, da23, db23, d2a23, d2b23,
+          bP01, dbP01, d2bP01, 
+          bP23, dbP23, d2bP23,
+          tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_d2funcs_sse_d (spline->x_basis, x, 
+				      &a01, &a23, &da01, &da23, &d2a01, &d2a23);
+  int iy = get_NUBasis_d2funcs_sse_d (spline->y_basis, y, 
+				      &b01, &b23, &db01, &db23, &d2b01, &d2b23);
   int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  bc[0] = (C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3]);
-  bc[1] = (C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3]);
-  bc[2] = (C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3]);
-  bc[3] = (C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]);
-  *val = (a[0]*bc[0] + a[1]*bc[1] + a[2]*bc[2] + a[3]*bc[3]);
-  grad[0] = (da[0]*bc[0] + da[1]*bc[1] + da[2]*bc[2] + da[3]*bc[3]);
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  *lapl   = (d2a[0]*bc[0] + d2a[1]*bc[1] + d2a[2]*bc[2] + d2a[3]*bc[3]+
-	     a[0]*(C(0,0)*d2b[0]+C(0,1)*d2b[1]+C(0,2)*d2b[2]+C(0,3)*d2b[3])+
-	     a[1]*(C(1,0)*d2b[0]+C(1,1)*d2b[1]+C(1,2)*d2b[2]+C(1,3)*d2b[3])+
-	     a[2]*(C(2,0)*d2b[0]+C(2,1)*d2b[1]+C(2,2)*d2b[2]+C(2,3)*d2b[3])+
-	     a[3]*(C(3,0)*d2b[0]+C(3,1)*d2b[1]+C(3,2)*d2b[2]+C(3,3)*d2b[3]));
+#define P(i,j) (spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Now compute bP, dbP, d2bP products
+  tmp0 = _mm_loadu_pd (P(0,0)); tmp1 = _mm_loadu_pd(P(0,2));
+  tmp2 = _mm_loadu_pd (P(1,0)); tmp3 = _mm_loadu_pd(P(1,2));
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,   b01,   b23,   b01,   b23,   bP01);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,  db01,  db23,  db01,  db23,  dbP01);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3, d2b01, d2b23, d2b01, d2b23, d2bP01);
+  tmp0 = _mm_loadu_pd (P(2,0)); tmp1 = _mm_loadu_pd(P(2,2));
+  tmp2 = _mm_loadu_pd (P(3,0)); tmp3 = _mm_loadu_pd(P(3,2));
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,   b01,   b23,   b01,   b23,   bP23);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,  db01,  db23,  db01,  db23,  dbP23);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3, d2b01, d2b23, d2b01, d2b23, d2bP23);
   
-#undef C
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01, bP23, *val);
+  // Compute gradient
+  _MM_DOT4_PD (da01, da23, bP01, bP23, grad[0]);
+  _MM_DOT4_PD (a01, a23, dbP01, dbP23, grad[1]);
+  // Compute laplacian
+  double d2x, d2y;
+  _MM_DOT4_PD (d2a01, d2a23,   bP01,   bP23, d2x);
+  _MM_DOT4_PD (  a01,   a23, d2bP01, d2bP23, d2y);
+  *lapl = d2x + d2y;
+#undef P
 }
 
 /* Value, gradient, and Hessian */
@@ -175,36 +222,40 @@ eval_NUBspline_2d_d_vgh (NUBspline_2d_d * restrict spline,
 			double x, double y, double* restrict val, 
 			double* restrict grad, double* restrict hess)
 {
-  double a[4], b[4], da[4], db[4], d2a[4], d2b[4], bc[4];
-  int ix = get_NUBasis_d2funcs_d (spline->x_basis, x, a, da, d2a);
-  int iy = get_NUBasis_d2funcs_d (spline->y_basis, y, b, db, d2b);
-  
-  double* restrict coefs = spline->coefs;
-
+  __m128d a01, b01, da01, db01, d2a01, d2b01,
+          a23, b23, da23, db23, d2a23, d2b23,
+          bP01, dbP01, d2bP01, 
+          bP23, dbP23, d2bP23,
+          tmp0, tmp1, tmp2, tmp3;
+  int ix = get_NUBasis_d2funcs_sse_d (spline->x_basis, x, 
+				      &a01, &a23, &da01, &da23, &d2a01, &d2a23);
+  int iy = get_NUBasis_d2funcs_sse_d (spline->y_basis, y, 
+				      &b01, &b23, &db01, &db23, &d2b01, &d2b23);
   int xs = spline->x_stride;
-#define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
-  bc[0] = (C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3]);
-  bc[1] = (C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3]);
-  bc[2] = (C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3]);
-  bc[3] = (C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]);
-  *val = (a[0]*bc[0] + a[1]*bc[1] + a[2]*bc[2] + a[3]*bc[3]);
-  grad[0] = (da[0]*bc[0] + da[1]*bc[1] + da[2]*bc[2] + da[3]*bc[3]);
-  grad[1] = (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  hess[0] = (d2a[0]*bc[0] + d2a[1]*bc[1] + d2a[2]*bc[2] + d2a[3]*bc[3]);
-  hess[1] = (da[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
-	     da[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
-	     da[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
-	     da[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
-  hess[3] = (a[0]*(C(0,0)*d2b[0]+C(0,1)*d2b[1]+C(0,2)*d2b[2]+C(0,3)*d2b[3])+
-	     a[1]*(C(1,0)*d2b[0]+C(1,1)*d2b[1]+C(1,2)*d2b[2]+C(1,3)*d2b[3])+
-	     a[2]*(C(2,0)*d2b[0]+C(2,1)*d2b[1]+C(2,2)*d2b[2]+C(2,3)*d2b[3])+
-	     a[3]*(C(3,0)*d2b[0]+C(3,1)*d2b[1]+C(3,2)*d2b[2]+C(3,3)*d2b[3]));
-  hess[2] = hess[1];
+#define P(i,j) (spline->coefs+(ix+(i))*xs+(iy+(j)))
+  // Now compute bP, dbP, d2bP products
+  tmp0 = _mm_loadu_pd (P(0,0)); tmp1 = _mm_loadu_pd(P(0,2));
+  tmp2 = _mm_loadu_pd (P(1,0)); tmp3 = _mm_loadu_pd(P(1,2));
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,   b01,   b23,   b01,   b23,   bP01);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,  db01,  db23,  db01,  db23,  dbP01);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3, d2b01, d2b23, d2b01, d2b23, d2bP01);
+  tmp0 = _mm_loadu_pd (P(2,0)); tmp1 = _mm_loadu_pd(P(2,2));
+  tmp2 = _mm_loadu_pd (P(3,0)); tmp3 = _mm_loadu_pd(P(3,2));
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,   b01,   b23,   b01,   b23,   bP23);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3,  db01,  db23,  db01,  db23,  dbP23);
+  _MM_DDOT4_PD (tmp0, tmp1, tmp2, tmp3, d2b01, d2b23, d2b01, d2b23, d2bP23);
   
-#undef C
+  // Compute value
+  _MM_DOT4_PD (a01, a23, bP01, bP23, *val);
+  // Compute gradient
+  _MM_DOT4_PD (da01, da23, bP01, bP23, grad[0]);
+  _MM_DOT4_PD (a01, a23, dbP01, dbP23, grad[1]);
+  // Compute hessian
+  _MM_DOT4_PD (d2a01, d2a23,   bP01,   bP23, hess[0]);
+  _MM_DOT4_PD (  a01,   a23, d2bP01, d2bP23, hess[3]);
+  _MM_DOT4_PD ( da01,  da23,  dbP01,  dbP23, hess[1]);
+  hess[2] = hess[1];
+#undef P
 }
 
 
@@ -545,5 +596,8 @@ eval_NUBspline_3d_d_vgh (NUBspline_3d_d * restrict spline,
 #undef P
 
 }
+
+#undef _MM_DDOT4_PD
+#undef _MM_DOT4_PD
 
 #endif

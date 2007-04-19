@@ -113,16 +113,16 @@ get_NUBasis_d2funcs_sse_s (NUBasis* restrict basis, double x,
 
 int
 get_NUBasis_funcs_sse_d (NUBasis* restrict basis, double x,
-			 __m128 *restrict f01, __m128 *restrict f23);
+			 __m128d *restrict f01, __m128d *restrict f23);
 int
 get_NUBasis_dfuncs_sse_d (NUBasis* restrict basis, double x,
-			  __m128 *restrict   f01, __m128 *restrict   f23,
-			  __m128 *restrict  df01, __m128 *restrict  df23);
+			  __m128d *restrict   f01, __m128d *restrict   f23,
+			  __m128d *restrict  df01, __m128d *restrict  df23);
 int
 get_NUBasis_d2funcs_sse_d (NUBasis* restrict basis, double x,
-			   __m128 *restrict   f01, __m128 *restrict   f23,
-			   __m128 *restrict  df01, __m128 *restrict  df23,
-			   __m128 *restrict d2f01, __m128 *restrict d2f23);
+			   __m128d *restrict   f01, __m128d *restrict   f23,
+			   __m128d *restrict  df01, __m128d *restrict  df23,
+			   __m128d *restrict d2f01, __m128d *restrict d2f23);
 #endif // #ifdef __SSE2__
 
 #endif // #ifdef NUBASIS_H
