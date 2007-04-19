@@ -130,17 +130,14 @@ inline void
 eval_NUBspline_2d_c (NUBspline_2d_c * restrict spline, 
 		     double x, double y, complex_float* restrict val)
 {
-  float af[4], bf[4];
-  complex_float bc[4];
-  int ix = get_NUBasis_funcs_s (spline->x_basis, x, af);
-  int iy = get_NUBasis_funcs_s (spline->y_basis, y, bf);
-  
+  __m128 a, b, bPr, bPi, r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
   complex_float* restrict coefs = spline->coefs;
+  int ix = get_NUBasis_funcs_sse_s (spline->x_basis, x, &a);
+  int iy = get_NUBasis_funcs_sse_s (spline->y_basis, y, &b);
 
   int xs = spline->x_stride;
   int xs2 = 2*xs;
 
-  __m128 a, b, bPr, bPi, r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
   #define P(i,j) (const float*)(spline->coefs+(ix+(i))*xs+iy+j)
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
@@ -149,8 +146,6 @@ eval_NUBspline_2d_c (NUBspline_2d_c * restrict spline,
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);
-  a=_mm_loadu_ps (af);  
-  b=_mm_loadu_ps (bf);  
 
   p = (float *)P(0,0);
   tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
@@ -186,18 +181,16 @@ eval_NUBspline_2d_c_vg (NUBspline_2d_c * restrict spline,
 		       double x, double y, 
 		       complex_float* restrict val, complex_float* restrict grad)
 {
-  float af[4], bf[4], daf[4], dbf[4];
-  complex_float bc[4];
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, af, daf);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, bf, dbf);
+  __m128 a, b, da, db, 
+    bPr, dbPr, bPi, dbPi, r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
+  int ix = get_NUBasis_dfuncs_sse_s (spline->x_basis, x, &a, &da);
+  int iy = get_NUBasis_dfuncs_sse_s (spline->y_basis, y, &b, &db);
   
   complex_float* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
   int xs2 = 2*xs;
 
-  __m128 a, b, da, db, 
-    bPr, dbPr, bPi, dbPi, r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
   #define P(i,j) (const float*)(spline->coefs+(ix+(i))*xs+iy+j)
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
@@ -206,8 +199,6 @@ eval_NUBspline_2d_c_vg (NUBspline_2d_c * restrict spline,
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);
-  a=_mm_loadu_ps (af);  da=_mm_loadu_ps (daf);
-  b=_mm_loadu_ps (bf);  db=_mm_loadu_ps (dbf);
 
   p = (float *)P(0,0);
   tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
@@ -252,19 +243,17 @@ eval_NUBspline_2d_c_vgl (NUBspline_2d_c * restrict spline,
 			double x, double y, complex_float* restrict val, 
 			complex_float* restrict grad, complex_float* restrict lapl)
 {
-  float af[4], bf[4], daf[4], dbf[4], d2af[4], d2bf[4];
-  complex_float bc[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2bf);
-  
+  __m128 a, b, da, db, d2a, d2b, 
+    bPr, dbPr, d2bPr, bPi, dbPi, d2bPi,
+    r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
+  int ix = get_NUBasis_d2funcs_sse_s (spline->x_basis, x, &a, &da, &d2a);
+  int iy = get_NUBasis_d2funcs_sse_s (spline->y_basis, y, &b, &db, &d2b);
+
   complex_float* restrict coefs = spline->coefs;
 
   int xs = spline->x_stride;
   int xs2 = 2*xs;
 
-  __m128 a, b, da, db, d2a, d2b, 
-    bPr, dbPr, d2bPr, bPi, dbPi, d2bPi,
-    r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
   #define P(i,j) (const float*)(spline->coefs+(ix+(i))*xs+iy+j)
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
@@ -273,8 +262,6 @@ eval_NUBspline_2d_c_vgl (NUBspline_2d_c * restrict spline,
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);
-  a=_mm_loadu_ps (af);  da=_mm_loadu_ps (daf);  d2a=_mm_loadu_ps (d2af);
-  b=_mm_loadu_ps (bf);  db=_mm_loadu_ps (dbf);  d2b=_mm_loadu_ps (d2bf);
 
   p = (float *)P(0,0);
   tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
@@ -328,19 +315,16 @@ eval_NUBspline_2d_c_vgh (NUBspline_2d_c * restrict spline,
 			double x, double y, complex_float* restrict val, 
 			complex_float* restrict grad, complex_float* restrict hess)
 {
-  float af[4], bf[4], daf[4], dbf[4], d2af[4], d2bf[4];
-  complex_float bc[4];
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, af, daf, d2af);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bf, dbf, d2bf);
-  
-  complex_float* restrict coefs = spline->coefs;
-
-  int xs = spline->x_stride;
-  int xs2 = 2*xs;
-
   __m128 a, b, da, db, d2a, d2b, 
     bPr, dbPr, d2bPr, bPi, dbPi, d2bPi,
     r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
+
+  int ix = get_NUBasis_d2funcs_sse_s (spline->x_basis, x, &a, &da, &d2a);
+  int iy = get_NUBasis_d2funcs_sse_s (spline->y_basis, y, &b, &db, &d2b);
+
+  complex_float* restrict coefs = spline->coefs;
+  int xs = spline->x_stride;
+  int xs2 = 2*xs;
   #define P(i,j) (const float*)(spline->coefs+(ix+(i))*xs+iy+j)
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
@@ -349,8 +333,6 @@ eval_NUBspline_2d_c_vgh (NUBspline_2d_c * restrict spline,
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  p += xs2;
   _mm_prefetch ((void*)p, _MM_HINT_T0);  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);
-  a=_mm_loadu_ps (af);  da=_mm_loadu_ps (daf);  d2a=_mm_loadu_ps (d2af);
-  b=_mm_loadu_ps (bf);  db=_mm_loadu_ps (dbf);  d2b=_mm_loadu_ps (d2bf);
 
   p = (float *)P(0,0);
   tmp0 = _mm_loadu_ps (p);    tmp1 = _mm_loadu_ps (p+4); p+= xs2;
@@ -418,12 +400,9 @@ eval_NUBspline_3d_c (NUBspline_3d_c * restrict spline,
 __m128 a, b, c, cPr[4], bcPr, cPi[4], bcPi,
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, r0, r1, r2, r3,
     i0, i1, i2, i3;
-  vec4 av, bv, cv, dav, dbv, dcv;
- 
-  int ix = get_NUBasis_funcs_s (spline->x_basis, x, av.scalars);
-  int iy = get_NUBasis_funcs_s (spline->y_basis, y, bv.scalars);
-  int iz = get_NUBasis_funcs_s (spline->z_basis, z, cv.scalars);
-  a   =   av.v;   b =   bv.v;   c =   cv.v;
+  int ix = get_NUBasis_funcs_sse_s (spline->x_basis, x, &a);
+  int iy = get_NUBasis_funcs_sse_s (spline->y_basis, y, &b);
+  int iz = get_NUBasis_funcs_sse_s (spline->z_basis, z, &c);
 
   int xs  = spline->x_stride;
   int ys  = spline->y_stride;
@@ -549,13 +528,10 @@ eval_NUBspline_3d_c_vg (NUBspline_3d_c * restrict spline,
     cPi[4], dcPi[4],  bcPi, dbcPi, bdcPi, 
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, r0, r1, r2, r3,
     i0, i1, i2, i3;
-  vec4 av, bv, cv, dav, dbv, dcv;
- 
-  int ix = get_NUBasis_dfuncs_s (spline->x_basis, x, av.scalars, dav.scalars);
-  int iy = get_NUBasis_dfuncs_s (spline->y_basis, y, bv.scalars, dbv.scalars);
-  int iz = get_NUBasis_dfuncs_s (spline->z_basis, z, cv.scalars, dcv.scalars);
-  a   =   av.v;   b =   bv.v;   c =   cv.v;
-  da  =  dav.v;  db =  dbv.v;  dc =  dcv.v;
+
+  int ix = get_NUBasis_dfuncs_sse_s (spline->x_basis, x, &a, &da);
+  int iy = get_NUBasis_dfuncs_sse_s (spline->y_basis, y, &b, &db);
+  int iz = get_NUBasis_dfuncs_sse_s (spline->z_basis, z, &c, &dc);
 
   int xs  = spline->x_stride;
   int ys  = spline->y_stride;
@@ -709,14 +685,10 @@ eval_NUBspline_3d_c_vgl (NUBspline_3d_c * restrict spline,
     cPi[4], dcPi[4], d2cPi[4], bcPi, dbcPi, bdcPi, d2bcPi, bd2cPi,
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, r0, r1, r2, r3,
     i0, i1, i2, i3;
-  vec4 av, bv, cv, dav, dbv, dcv, d2av, d2bv, d2cv;
- 
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, av.scalars, dav.scalars, d2av.scalars);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bv.scalars, dbv.scalars, d2bv.scalars);
-  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, cv.scalars, dcv.scalars, d2cv.scalars);
-  a   =   av.v;   b =   bv.v;   c =   cv.v;
-  da  =  dav.v;  db =  dbv.v;  dc =  dcv.v;
-  d2a = d2av.v; d2b = d2bv.v; d2c = d2cv.v;
+
+  int ix = get_NUBasis_d2funcs_sse_s (spline->x_basis, x, &a, &da, &d2a);
+  int iy = get_NUBasis_d2funcs_sse_s (spline->y_basis, y, &b, &db, &d2b);
+  int iz = get_NUBasis_d2funcs_sse_s (spline->z_basis, z, &c, &dc, &d2c);
 
   int xs  = spline->x_stride;
   int ys  = spline->y_stride;
@@ -893,14 +865,10 @@ eval_NUBspline_3d_c_vgh (NUBspline_3d_c * restrict spline,
     cPi[4], dcPi[4], d2cPi[4], bcPi, dbcPi, bdcPi, d2bcPi, dbdcPi, bd2cPi,
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, r0, r1, r2, r3,
     i0, i1, i2, i3;
-  vec4 av, bv, cv, dav, dbv, dcv, d2av, d2bv, d2cv;
- 
-  int ix = get_NUBasis_d2funcs_s (spline->x_basis, x, av.scalars, dav.scalars, d2av.scalars);
-  int iy = get_NUBasis_d2funcs_s (spline->y_basis, y, bv.scalars, dbv.scalars, d2bv.scalars);
-  int iz = get_NUBasis_d2funcs_s (spline->z_basis, z, cv.scalars, dcv.scalars, d2cv.scalars);
-  a   =   av.v;   b =   bv.v;   c =   cv.v;
-  da  =  dav.v;  db =  dbv.v;  dc =  dcv.v;
-  d2a = d2av.v; d2b = d2bv.v; d2c = d2cv.v;
+
+  int ix = get_NUBasis_d2funcs_sse_s (spline->x_basis, x, &a, &da, &d2a);
+  int iy = get_NUBasis_d2funcs_sse_s (spline->y_basis, y, &b, &db, &d2b);
+  int iz = get_NUBasis_d2funcs_sse_s (spline->z_basis, z, &c, &dc, &d2c);
 
   int xs  = spline->x_stride;
   int ys  = spline->y_stride;
