@@ -1252,22 +1252,38 @@ eval_UBspline_3d_z_vgl (UBspline_3d_z * restrict spline,
 #define P(i,j,k) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz+k))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,3,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,0,0), _MM_HINT_T0);    _mm_prefetch ((void*)P(0,0,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(0,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,1,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(0,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,2,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(0,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,3,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(0,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,3,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,0,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(1,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,1,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(1,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,2,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(1,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,3,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(1,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,3,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,0,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(2,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,1,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(2,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,2,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(2,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,3,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(2,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,3,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,0,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(3,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,1,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(3,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,2,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(3,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,3,1), _MM_HINT_T0);  
+  _mm_prefetch ((void*)P(3,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,3,3), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -1592,38 +1608,38 @@ eval_UBspline_3d_z_vgh (UBspline_3d_z * restrict spline,
 #define P(i,j,k) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz+k))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3,2), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,0,0), _MM_HINT_T0);    _mm_prefetch ((void*)P(0,0,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,1,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,2,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,3,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(0,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,3,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,0,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,1,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,2,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,3,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(1,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,3,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,0,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,1,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,2,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,3,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(2,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,3,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,0,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,0,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,1,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,1,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,2,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,2,3), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,3,1), _MM_HINT_T0);
+  _mm_prefetch ((void*)P(3,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,3,3), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]

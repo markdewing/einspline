@@ -771,11 +771,11 @@ int main()
   // Test_2d_z();
   // Speed_2d_z();
   // Test_3d_s();
-  Speed_3d_s();
+  // Speed_3d_s();
   // Test_3d_d();
   // Speed_3d_d();
   // Test_3d_c();
   // Speed_3d_c();
   // Test_3d_z();
-  // Speed_3d_z();
+  Speed_3d_z();
 }
