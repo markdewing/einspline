@@ -1234,9 +1234,9 @@ destroy_NUBspline (Bspline *spline);
 void
 destroy_Bspline (Bspline *spline)
 {
-  if (spline->sp_code <= U3D)
+  if (spline->sp_code <= U3D) 
     destroy_UBspline (spline);
-  else if (spline->sp_code <= NU3D)
+  else if (spline->sp_code <= NU3D) 
     destroy_NUBspline (spline);
   else
     fprintf (stderr, "Error in destroy_Bspline:  invalide spline code %d.\n",

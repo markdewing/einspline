@@ -357,6 +357,7 @@ TestNUB_3d_s()
     fprintf (fout, "\n");
   }
   fclose (fout);
+  fprintf (stderr, "spline->sp_code = %d\n", spline->sp_code);
   destroy_Bspline (spline);
 }
 
