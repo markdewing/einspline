@@ -112,7 +112,4 @@
 
 // Similarly for the rest of the types.
 
-void
-destroy_Bspline (Bspline *ptr);
-
 #endif

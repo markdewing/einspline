@@ -1,7 +1,7 @@
 #!/bin/env python
 from pylab import *
 
-data = load ('3d_s.dat');
+data = load ('3d_d.dat');
 d3 = reshape (data, (200, 200, 200));
 
 #pcolor (d3[:,:,0], shading='flat');

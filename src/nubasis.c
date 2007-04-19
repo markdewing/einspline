@@ -629,8 +629,8 @@ get_NUBasis_dfuncs_sse_d (NUBasis* restrict basis, double x,
   dbf23.s[0] =  3.0 * (dxInv[3*(i+1)+2] * b2[1] - dxInv[3*(i+2)+2] * b2[2]);
   dbf23.s[1] =  3.0 * (dxInv[3*(i+2)+2] * b2[2]);
 
-  *f01   =   bf01.v;  *f23 =   bf23.v;
-  *df01  =  dbf01.v;  *f23 =  dbf23.v;
+  *f01   =   bf01.v;   *f23 =   bf23.v;
+  *df01  =  dbf01.v;  *df23 =  dbf23.v;
 
   return i;
 }
@@ -673,9 +673,9 @@ get_NUBasis_d2funcs_sse_d (NUBasis* restrict basis, double x,
 		       dxInv[3*(i+2)+1]*(dxInv[3*(i+1)+2] + dxInv[3*(i+2)+2])*b1[1]);
   d2bf23.s[1] = 6.0 * (+dxInv[3*(i+2)+2]* dxInv[3*(i+2)+1]*b1[1]);
   
-  *f01   =   bf01.v;  *f23 =   bf23.v;
-  *df01  =  dbf01.v;  *f23 =  dbf23.v;
-  *d2f01 = d2bf01.v;  *f23 = d2bf23.v;
+  *f01   =   bf01.v;    *f23 =   bf23.v;
+  *df01  =  dbf01.v;   *df23 =  dbf23.v;
+  *d2f01 = d2bf01.v;  *d2f23 = d2bf23.v;
   
   return i;
 }
