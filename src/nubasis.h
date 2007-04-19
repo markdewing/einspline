@@ -97,4 +97,32 @@ get_NUBasis_d2funcs_di (NUBasis* restrict basis, int i,
 			double bfuncs[4], double dbfuncs[4], 
 			double d2bfuncs[4]);
 
-#endif
+#ifdef __SSE2__
+#include <xmmintrin.h>
+int
+get_NUBasis_funcs_sse_s (NUBasis* restrict basis, double x,
+			 __m128 *restrict funcs);
+int
+get_NUBasis_dfuncs_sse_s (NUBasis* restrict basis, double x,
+			  __m128 *restrict funcs, __m128 *restrict dfuncs);
+int
+get_NUBasis_d2funcs_sse_s (NUBasis* restrict basis, double x,
+			   __m128 *restrict funcs, 
+			   __m128 *restrict dfuncs, 
+			   __m128 *restrict d2funcs);
+
+int
+get_NUBasis_funcs_sse_d (NUBasis* restrict basis, double x,
+			 __m128 *restrict f01, __m128 *restrict f23);
+int
+get_NUBasis_dfuncs_sse_d (NUBasis* restrict basis, double x,
+			  __m128 *restrict   f01, __m128 *restrict   f23,
+			  __m128 *restrict  df01, __m128 *restrict  df23);
+int
+get_NUBasis_d2funcs_sse_d (NUBasis* restrict basis, double x,
+			   __m128 *restrict   f01, __m128 *restrict   f23,
+			   __m128 *restrict  df01, __m128 *restrict  df23,
+			   __m128 *restrict d2f01, __m128 *restrict d2f23);
+#endif // #ifdef __SSE2__
+
+#endif // #ifdef NUBASIS_H
