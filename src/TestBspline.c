@@ -775,7 +775,7 @@ int main()
   // Test_3d_d();
   // Speed_3d_d();
   // Test_3d_c();
-  // Speed_3d_c();
+  Speed_3d_c();
   // Test_3d_z();
-  Speed_3d_z();
+  //Speed_3d_z();
 }
