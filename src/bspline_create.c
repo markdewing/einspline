@@ -31,11 +31,13 @@
 ////       Helper functions for spline creation         ////
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
-#ifdef __SSE2__
+#ifdef __SSE__
 #include <xmmintrin.h>
-
 // Single-precision version of matrices
 extern __m128  A0, A1, A2, A3, dA0, dA1, dA2, dA3, d2A0, d2A1, d2A2, d2A3;
+#endif
+#ifdef __SSE2__
+#include <emmintrin.h>
 extern __m128d A0_01, A0_23, A1_01, A1_23, A2_01, A2_23, A3_01, A3_23,
   dA0_01, dA0_23, dA1_01, dA1_23, dA2_01, dA2_23, dA3_01, dA3_23,
   d2A0_01, d2A0_23, d2A1_01, d2A1_23, d2A2_01, d2A2_23, d2A3_01, d2A3_23;
