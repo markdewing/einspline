@@ -27,9 +27,9 @@
 #include <stdio.h>
 #include <math.h>
 
-extern __m128   A0,   A1,   A2,   A3;
-extern __m128  dA0,  dA1,  dA2,  dA3;
-extern __m128 d2A0, d2A1, d2A2, d2A3;
+// extern __m128   A0,   A1,   A2,   A3;
+// extern __m128  dA0,  dA1,  dA2,  dA3;
+// extern __m128 d2A0, d2A1, d2A2, d2A3;
 extern __m128* restrict A_s;
 
 extern const float* restrict   Af;
@@ -148,7 +148,7 @@ eval_UBspline_1d_s_vgl (UBspline_1d_s * restrict spline, double x,
   // It turns out that std version is faster than SSE in 1D
 //   __m128 tp = _mm_set_ps (t*t*t, t*t, t, 1.0);
 //   __m128 a, da, d2a;
-//   _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tp,   a);
+//   _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[ 2],   A_s[ 3], tp,   a);
 //   _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tp,  da);
 //   _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tp, d2a);
 //   __m128 cf  = _mm_loadu_ps (&(coefs[i]));
@@ -193,7 +193,7 @@ eval_UBspline_2d_s (UBspline_2d_s * restrict spline,
 		    double x, double y, float* restrict val)
 {
   _mm_prefetch ((void*)  &A_s[0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A2,_MM_HINT_T0);  _mm_prefetch ((void*)  &A3,_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[2],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[3],_MM_HINT_T0);
   /// SSE mesh point determination
   __m128 xy        = _mm_set_ps (x, y, 0.0, 0.0);
   __m128 x0y0      = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 0.0, 0.0);
@@ -239,12 +239,12 @@ eval_UBspline_2d_s (UBspline_2d_s * restrict spline,
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
-  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A2, A3
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
   __m128 a, b, bP, tmp0, tmp1, tmp2, tmp3;
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpx,   a);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpx,   a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpy,   b);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpy,   b);
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
@@ -266,7 +266,9 @@ eval_UBspline_2d_s_vg (UBspline_2d_s * restrict spline,
 		       float* restrict val, float* restrict grad)
 {
   _mm_prefetch ((void*)  &A_s[0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A2,_MM_HINT_T0);  _mm_prefetch ((void*)  &A3,_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[2],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[3],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[4],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[6],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[7],_MM_HINT_T0);
   /// SSE mesh point determination
   __m128 xy        = _mm_set_ps (x, y, 0.0, 0.0);
   __m128 x0y0      = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 0.0, 0.0);
@@ -312,14 +314,14 @@ eval_UBspline_2d_s_vg (UBspline_2d_s * restrict spline,
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
-  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A2, A3
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
   __m128 a, b, da, db, bP, dbP, tmp0, tmp1, tmp2, tmp3;
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpx,  da);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpy,  db);
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
   // 1st quarter
@@ -348,8 +350,12 @@ eval_UBspline_2d_s_vgl (UBspline_2d_s * restrict spline,
 			double x, double y, float* restrict val, 
 			float* restrict grad, float* restrict lapl)
 {
-  _mm_prefetch ((void*)  &A_s[0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A2,_MM_HINT_T0);  _mm_prefetch ((void*)  &A3,_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 7],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 8],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[10],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[11],_MM_HINT_T0);  
   /// SSE mesh point determination
   __m128 xy        = _mm_set_ps (x, y, 0.0, 0.0);
   __m128 x0y0      = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 0.0, 0.0);
@@ -395,16 +401,16 @@ eval_UBspline_2d_s_vgl (UBspline_2d_s * restrict spline,
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
-  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A2, A3
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
   __m128 a, b, da, db, d2a, d2b, bP, dbP, d2bP, 
     tmp0, tmp1, tmp2, tmp3;
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[ 2], A_s[ 3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[ 6], A_s[ 7], tpx,  da);
   _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpx, d2a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[ 2], A_s[ 3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[ 6], A_s[ 7], tpy,  db);
   _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpy, d2b);
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -444,8 +450,12 @@ eval_UBspline_2d_s_vgh (UBspline_2d_s * restrict spline,
 			double x, double y, float* restrict val, 
 			float* restrict grad, float* restrict hess)
 {
-  _mm_prefetch ((void*)  &A_s[0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A2,_MM_HINT_T0);  _mm_prefetch ((void*)  &A3,_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 7],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 8],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[10],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[11],_MM_HINT_T0);  
   /// SSE mesh point determination
   __m128 xy        = _mm_set_ps (x, y, 0.0, 0.0);
   __m128 x0y0      = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 0.0, 0.0);
@@ -491,18 +501,18 @@ eval_UBspline_2d_s_vgh (UBspline_2d_s * restrict spline,
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
-  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A2, A3
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
   __m128 a, b, da, db, d2a, d2b, bP, dbP, d2bP, 
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 
   
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[ 2], A_s[ 3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[ 6], A_s[ 7], tpx,  da);
   _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpx, d2a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[ 2], A_s[ 3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[ 6], A_s[ 7], tpy,  db);
   _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpy, d2b);
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -550,8 +560,8 @@ eval_UBspline_3d_s (UBspline_3d_s * restrict spline,
 		    double x, double y, double z,
 		    float* restrict val)
 {
-  _mm_prefetch ((void*)  &A_s[0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A2,_MM_HINT_T0);  _mm_prefetch ((void*)  &A3,_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 3],_MM_HINT_T0);
 
   /// SSE mesh point determination
   __m128 xyz       = _mm_set_ps (x, y, z, 0.0);
@@ -615,16 +625,16 @@ eval_UBspline_3d_s (UBspline_3d_s * restrict spline,
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
-  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A2, A3
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
   __m128 a, b, c, cP[4],bcP,
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpx,   a);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpx,   a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpy,   b);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpy,   b);
   // z-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpz,   c);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpz,   c);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -660,8 +670,10 @@ eval_UBspline_3d_s_vg (UBspline_3d_s * restrict spline,
 			double x, double y, double z,
 			float* restrict val, float* restrict grad)
 {
-  _mm_prefetch ((void*)  &A_s[0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A2,_MM_HINT_T0);  _mm_prefetch ((void*)  &A3,_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 7],_MM_HINT_T0);
 
   /// SSE mesh point determination
   __m128 xyz       = _mm_set_ps (x, y, z, 0.0);
@@ -725,21 +737,21 @@ eval_UBspline_3d_s_vg (UBspline_3d_s * restrict spline,
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
-  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A2, A3
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
   __m128 a, b, c, da, db, dc,
     cP[4], dcP[4], d2cP[4], bcP, dbcP, bdcP,
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 
   
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpx,  da);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpy,  db);
   // z-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpz,   c);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpz,  dc);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpz,   c);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpz,  dc);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -794,8 +806,12 @@ eval_UBspline_3d_s_vgl (UBspline_3d_s * restrict spline,
 			double x, double y, double z,
 			float* restrict val, float* restrict grad, float* restrict lapl)
 {
-  _mm_prefetch ((void*)  &A_s[0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A2,_MM_HINT_T0);  _mm_prefetch ((void*)  &A3,_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 7],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 8],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[10],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[11],_MM_HINT_T0);  
 
   /// SSE mesh point determination
   __m128 xyz       = _mm_set_ps (x, y, z, 0.0);
@@ -859,24 +875,24 @@ eval_UBspline_3d_s_vgl (UBspline_3d_s * restrict spline,
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
-  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A2, A3
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
   __m128 a, b, c, da, db, dc, d2a, d2b, d2c,
     cP[4], dcP[4], d2cP[4], bcP, dbcP, bdcP, d2bcP, dbdcP, bd2cP,
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 
   
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpx, d2a);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpy, d2b);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2b);
   // z-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpz,   c);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpz,  dc);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpz, d2c);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpz,   c);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpz,  dc);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpz, d2c);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -949,8 +965,12 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
 			float* restrict val, float* restrict grad, 
 			float* restrict hess)
 {
-  _mm_prefetch ((void*)  &A_s[0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A2,_MM_HINT_T0);  _mm_prefetch ((void*)  &A3,_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 7],_MM_HINT_T0);
+  _mm_prefetch ((void*)  &A_s[ 8],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_s[10],_MM_HINT_T0);  _mm_prefetch ((void*)  &A_s[11],_MM_HINT_T0);  
 
   /// SSE mesh point determination
   __m128 xyz       = _mm_set_ps (x, y, z, 0.0);
@@ -1014,24 +1034,24 @@ eval_UBspline_3d_s_vgh (UBspline_3d_s * restrict spline,
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
-  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A2, A3
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
   __m128 a, b, c, da, db, dc, d2a, d2b, d2c,
     cP[4], dcP[4], d2cP[4], bcP, dbcP, bdcP, d2bcP, dbdcP, bd2cP,
     tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 
   
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpx, d2a);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpy, d2b);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2b);
   // z-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A2,   A3, tpz,   c);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpz,  dc);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpz, d2c);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpz,   c);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpz,  dc);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpz, d2c);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.

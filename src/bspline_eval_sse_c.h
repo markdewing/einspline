@@ -27,9 +27,9 @@
 #include <stdio.h>
 #include <math.h>
 
-extern __m128   A0,   A1,   A2,   A3;
-extern __m128  dA0,  dA1,  dA2,  dA3;
-extern __m128 d2A0, d2A1, d2A2, d2A3;
+// extern __m128   A0,   A1,   A2,   A3;
+// extern __m128  dA0,  dA1,  dA2,  dA3;
+// extern __m128 d2A0, d2A1, d2A2, d2A3;
 extern __m128* restrict A_s;
 
 
@@ -249,9 +249,9 @@ eval_UBspline_2d_c (UBspline_2d_c * restrict spline,
     r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpx,   a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpy,   b);
 
   tmp0 = _mm_loadu_ps (P(0,0));  
   tmp1 = _mm_loadu_ps (P(0,2));
@@ -340,11 +340,11 @@ eval_UBspline_2d_c_vg (UBspline_2d_c * restrict spline,
     r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpx,  da);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpy,  db);
 
   tmp0 = _mm_loadu_ps (P(0,0));  
   tmp1 = _mm_loadu_ps (P(0,2));
@@ -451,13 +451,13 @@ eval_UBspline_2d_c_vgl (UBspline_2d_c * restrict spline,
     r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpx, d2a);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpy, d2b);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2b);
 
   tmp0 = _mm_loadu_ps (P(0,0));  
   tmp1 = _mm_loadu_ps (P(0,2));
@@ -578,13 +578,13 @@ eval_UBspline_2d_c_vgh (UBspline_2d_c * restrict spline,
     r0, r1, r2, r3, i0, i1, i2, i3, tmp0, tmp1;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpx, d2a);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpy, d2b);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2b);
 
   tmp0 = _mm_loadu_ps (P(0,0));  
   tmp1 = _mm_loadu_ps (P(0,2));
@@ -748,11 +748,11 @@ eval_UBspline_3d_c (UBspline_3d_c * restrict spline,
     tmp0, tmp1, r0, r1, r2, r3, i0, i1, i2, i3;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpx,   a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpy,   b);
   // z-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpz,   c);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpz,   c);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -928,14 +928,14 @@ eval_UBspline_3d_c_vg (UBspline_3d_c * restrict spline,
     i0, i1, i2, i3;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpx,  da);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpy,  db);
   // z-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpz,   c);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpz,  dc);
+  _MM_MATVEC4_PS (A_s[0], A_s[1], A_s[2], A_s[3], tpz,   c);
+  _MM_MATVEC4_PS (A_s[4], A_s[5], A_s[6], A_s[7], tpz,  dc);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -1149,17 +1149,17 @@ eval_UBspline_3d_c_vgl (UBspline_3d_c * restrict spline,
     i0, i1, i2, i3;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpx, d2a);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpy, d2b);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2b);
   // z-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpz,   c);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpz,  dc);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpz, d2c);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpz,   c);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpz,  dc);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpz, d2c);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -1402,17 +1402,17 @@ eval_UBspline_3d_c_vgh (UBspline_3d_c * restrict spline,
     i0, i1, i2, i3;
 
   // x-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpx,   a);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpx,  da);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpx, d2a);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a);
   // y-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpy,   b);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpy,  db);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpy, d2b);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2b);
   // z-dependent vectors
-  _MM_MATVEC4_PS (  A_s[0],   A_s[1],   A_s[2],   A_s[3], tpz,   c);
-  _MM_MATVEC4_PS ( A_s[4],  A_s[5],  A_s[6],  A_s[7], tpz,  dc);
-  _MM_MATVEC4_PS (A_s[8], A_s[9], A_s[10], A_s[11], tpz, d2c);
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpz,   c);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpz,  dc);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpz, d2c);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
