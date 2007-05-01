@@ -71,8 +71,8 @@ do {                                                                \
   __m128 a    = _mm_add_ps (alo, ahi);                              \
   __m128 rlo  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(0,0,0,0));	    \
   __m128 rhi  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(1,1,1,1));	    \
-  __m128 r    = _mm_add_ps (rlo, rhi);                              \
-  _mm_store_ss (&(p), r);                                           \
+  __m128 _r   = _mm_add_ps (rlo, rhi);                              \
+  _mm_store_ss (&(p), _r);                                          \
 } while(0);
 #endif
 
