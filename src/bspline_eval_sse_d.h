@@ -208,11 +208,11 @@ eval_UBspline_2d_d (UBspline_2d_d * restrict spline,
   tpy23 = _mm_set_pd (ty, 1.0);
   
   // x-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[0], A_d[1], A_d[2], A_d[3], tpx01, tpx23, tpx01, tpx23, a01);
+  _MM_DDOT4_PD (A_d[4], A_d[5], A_d[6], A_d[7], tpx01, tpx23, tpx01, tpx23, a23);
   // y-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[0], A_d[1], A_d[2], A_d[3], tpy01, tpy23, tpy01, tpy23, b01);
+  _MM_DDOT4_PD (A_d[4], A_d[5], A_d[6], A_d[7], tpy01, tpy23, tpy01, tpy23, b23);
   
   // Now compute bP, dbP, d2bP products
   tmp0 = _mm_loadu_pd (P(0,0)); tmp1 = _mm_loadu_pd(P(0,2));
@@ -263,15 +263,15 @@ eval_UBspline_2d_d_vg (UBspline_2d_d * restrict spline,
   tpy23 = _mm_set_pd (ty, 1.0);
   
   // x-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
   // y-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
   
   // Now compute bP, dbP, d2bP products
   tmp0 = _mm_loadu_pd (P(0,0)); tmp1 = _mm_loadu_pd(P(0,2));
@@ -333,17 +333,17 @@ eval_UBspline_2d_d_vgl (UBspline_2d_d * restrict spline,
   tpy23 = _mm_set_pd (ty, 1.0);
   
   // x-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpx01, tpx23, tpx01, tpx23, d2a01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpx01, tpx23, tpx01, tpx23, d2a23);
   // y-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpy01, tpy23, tpy01, tpy23, d2b01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpy01, tpy23, tpy01, tpy23, d2b23);
   
@@ -427,17 +427,17 @@ eval_UBspline_2d_d_vgh (UBspline_2d_d * restrict spline,
 
   
   // x-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpx01, tpx23, tpx01, tpx23, d2a01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpx01, tpx23, tpx01, tpx23, d2a23);
   // y-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpy01, tpy23, tpy01, tpy23, d2b01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpy01, tpy23, tpy01, tpy23, d2b23);
   
@@ -484,14 +484,10 @@ eval_UBspline_3d_d (UBspline_3d_d * restrict spline,
 		    double x, double y, double z,
 		    double* restrict val)
 {
-  _mm_prefetch ((void*)  &A_d[0],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[2],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[4],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[6],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[7],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[0],_MM_HINT_T0); _mm_prefetch ((void*)  &A_d[1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[2],_MM_HINT_T0); _mm_prefetch ((void*)  &A_d[3],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[4],_MM_HINT_T0); _mm_prefetch ((void*)  &A_d[5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[6],_MM_HINT_T0); _mm_prefetch ((void*)  &A_d[7],_MM_HINT_T0);  
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -571,14 +567,14 @@ eval_UBspline_3d_d (UBspline_3d_d * restrict spline,
   tpz23 = _mm_set_pd (tz, 1.0);
 
   // x-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[0], A_d[1], A_d[2], A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[4], A_d[5], A_d[6], A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
   // y-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[0], A_d[1], A_d[2], A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[4], A_d[5], A_d[6], A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
   // z-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpz01, tpz23, tpz01, tpz23,   c01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpz01, tpz23, tpz01, tpz23,   c23);
+  _MM_DDOT4_PD (A_d[0], A_d[1], A_d[2], A_d[3], tpz01, tpz23, tpz01, tpz23,   c01);
+  _MM_DDOT4_PD (A_d[4], A_d[5], A_d[6], A_d[7], tpz01, tpz23, tpz01, tpz23,   c23);
 
   // Compute cP product 1/8 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -631,14 +627,14 @@ eval_UBspline_3d_d_vg (UBspline_3d_d * restrict spline,
 			double x, double y, double z,
 			double* restrict val, double* restrict grad)
 {
-  _mm_prefetch ((void*)  &A_d[0],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[2],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[4],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[6],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[7],_MM_HINT_T0);  
+  _mm_prefetch((void*) &A_d[ 0],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);
+  _mm_prefetch((void*) &A_d[ 2],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);
+  _mm_prefetch((void*) &A_d[ 4],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);
+  _mm_prefetch((void*) &A_d[ 6],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);
+  _mm_prefetch((void*) &A_d[ 8],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);
+  _mm_prefetch((void*) &A_d[10],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);
+  _mm_prefetch((void*) &A_d[12],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);
+  _mm_prefetch((void*) &A_d[14],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -718,22 +714,22 @@ eval_UBspline_3d_d_vg (UBspline_3d_d * restrict spline,
   tpz23 = _mm_set_pd (tz, 1.0);
 
   // x-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
 
   // y-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
 
   // z-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpz01, tpz23, tpz01, tpz23,   c01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpz01, tpz23, tpz01, tpz23,   c23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpz01, tpz23, tpz01, tpz23,  dc01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpz01, tpz23, tpz01, tpz23,  dc23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpz01, tpz23, tpz01, tpz23,   c01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpz01, tpz23, tpz01, tpz23,   c23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpz01, tpz23, tpz01, tpz23,  dc01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpz01, tpz23, tpz01, tpz23,  dc23);
 
   // Compute cP, dcP, and d2cP products 1/8 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -835,14 +831,18 @@ eval_UBspline_3d_d_vgl (UBspline_3d_d * restrict spline,
 			double x, double y, double z,
 			double* restrict val, double* restrict grad, double* restrict lapl)
 {
-  _mm_prefetch ((void*)  &A_d[0],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[2],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[4],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[6],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[7],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[17],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[19],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[21],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[23],_MM_HINT_T0);  
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -924,27 +924,26 @@ eval_UBspline_3d_d_vgl (UBspline_3d_d * restrict spline,
   tpz23 = _mm_set_pd (tz, 1.0);
 
   // x-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpx01, tpx23, tpx01, tpx23, d2a01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpx01, tpx23, tpx01, tpx23, d2a23);
 
   // y-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpy01, tpy23, tpy01, tpy23, d2b01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpy01, tpy23, tpy01, tpy23, d2b23);
 
-
   // z-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpz01, tpz23, tpz01, tpz23,   c01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpz01, tpz23, tpz01, tpz23,   c23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpz01, tpz23, tpz01, tpz23,  dc01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpz01, tpz23, tpz01, tpz23,  dc23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpz01, tpz23, tpz01, tpz23,   c01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpz01, tpz23, tpz01, tpz23,   c23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpz01, tpz23, tpz01, tpz23,  dc01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpz01, tpz23, tpz01, tpz23,  dc23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpz01, tpz23, tpz01, tpz23, d2c01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpz01, tpz23, tpz01, tpz23, d2c23);
 
@@ -1072,14 +1071,18 @@ eval_UBspline_3d_d_vgh (UBspline_3d_d * restrict spline,
 			double* restrict val, double* restrict grad, 
 			double* restrict hess)
 {
-  _mm_prefetch ((void*)  &A_d[0],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[2],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[4],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[6],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[7],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[17],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[19],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[21],_MM_HINT_T0);  
+  _mm_prefetch ((void*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[23],_MM_HINT_T0);  
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -1162,27 +1165,27 @@ eval_UBspline_3d_d_vgh (UBspline_3d_d * restrict spline,
 
   
   // x-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpx01, tpx23, tpx01, tpx23,   a01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpx01, tpx23, tpx01, tpx23,   a23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpx01, tpx23, tpx01, tpx23, d2a01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpx01, tpx23, tpx01, tpx23, d2a23);
 
   // y-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpy01, tpy23, tpy01, tpy23,   b01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpy01, tpy23, tpy01, tpy23,   b23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpy01, tpy23, tpy01, tpy23, d2b01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpy01, tpy23, tpy01, tpy23, d2b23);
 
 
   // z-dependent vectors
-  _MM_DDOT4_PD (  A_d[0],   A_d[1],   A_d[2],   A_d[3], tpz01, tpz23, tpz01, tpz23,   c01);
-  _MM_DDOT4_PD (  A_d[4],   A_d[5],   A_d[6],   A_d[7], tpz01, tpz23, tpz01, tpz23,   c23);
-  _MM_DDOT4_PD ( A_d[8],  A_d[9],  A_d[10],  A_d[11], tpz01, tpz23, tpz01, tpz23,  dc01);
-  _MM_DDOT4_PD ( A_d[12],  A_d[13],  A_d[14],  A_d[15], tpz01, tpz23, tpz01, tpz23,  dc23);
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpz01, tpz23, tpz01, tpz23,   c01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpz01, tpz23, tpz01, tpz23,   c23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpz01, tpz23, tpz01, tpz23,  dc01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpz01, tpz23, tpz01, tpz23,  dc23);
   _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpz01, tpz23, tpz01, tpz23, d2c01);
   _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpz01, tpz23, tpz01, tpz23, d2c23);
 
