@@ -85,7 +85,7 @@ void init_sse_data()
 #endif
 #ifdef __SSE2__
   if (A_d == 0) {
-    posix_memalign ((void**)&A_s, 16, (sizeof(__m128d)*24));
+    posix_memalign ((void**)&A_d, 16, (sizeof(__m128d)*24));
     A_d[ 0] = _mm_setr_pd (  3.0/6.0, -1.0/6.0 );	   
     A_d[ 1] = _mm_setr_pd (  1.0/6.0, -3.0/6.0 );	   
     A_d[ 2] = _mm_setr_pd ( -6.0/6.0,  3.0/6.0 );	   
