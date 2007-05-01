@@ -56,12 +56,12 @@ do {                                                                \
 // Use plain-old SSE instructions
 #define _MM_MATVEC4_PS(M0, M1, M2, M3, v, r)                        \
 do {                                                                \
-  __m128 r0 = _mm_mul_ps (M0, v);                                   \
-  __m128 r1 = _mm_mul_ps (M1, v);				    \
-  __m128 r2 = _mm_mul_ps (M2, v);                                   \
-  __m128 r3 = _mm_mul_ps (M3, v);				    \
-  _MM_TRANSPOSE4_PS (r0, r1, r2, r3);                               \
-  r = _mm_add_ps (_mm_add_ps (r0, r1), _mm_add_ps (r2, r3));        \
+  __m128 _r0 = _mm_mul_ps (M0, v);                                   \
+  __m128 _r1 = _mm_mul_ps (M1, v);				    \
+  __m128 _r2 = _mm_mul_ps (M2, v);                                   \
+  __m128 _r3 = _mm_mul_ps (M3, v);				    \
+  _MM_TRANSPOSE4_PS (_r0, _r1, _r2, _r3);                               \
+  r = _mm_add_ps (_mm_add_ps (_r0, _r1), _mm_add_ps (_r2, _r3));        \
  } while (0);
 #define _MM_DOT4_PS(A, B, p)                                        \
 do {                                                                \

@@ -54,39 +54,39 @@ print__m128 (__m128 val)
 /// SSE3 adds "horizontal add" instructions, which makes things
 /// simpler and faster
 #ifdef __SSE3__
-#define _MM_MATVEC4_PS(M0, M1, M2, M3, v, r)                        \
-do {                                                                \
+#define _MM_MATVEC4_PS(M0, M1, M2, M3, v, r)                         \
+do {                                                                 \
   __m128 _r0 = _mm_hadd_ps (_mm_mul_ps (M0, v), _mm_mul_ps (M1, v)); \
   __m128 _r1 = _mm_hadd_ps (_mm_mul_ps (M2, v), _mm_mul_ps (M3, v)); \
-  r = _mm_hadd_ps (_r0, _r1);                                         \
+  r = _mm_hadd_ps (_r0, _r1);                                        \
  } while (0);
-#define _MM_DOT4_PS(_A, _B, _p)                                       \
-do {                                                                \
-  __m128 t  = _mm_mul_ps (_A, _B);                                    \
-  __m128 t1 = _mm_hadd_ps (t,t);                                    \
-  __m128 r  = _mm_hadd_ps (t1, t1);                                 \
+#define _MM_DOT4_PS(_A, _B, _p)                                      \
+do {                                                                 \
+  __m128 t  = _mm_mul_ps (_A, _B);                                   \
+  __m128 t1 = _mm_hadd_ps (t,t);                                     \
+  __m128 r  = _mm_hadd_ps (t1, t1);                                  \
   _mm_store_ss (&(_p), r);                                           \
 } while(0);
 #else
 // Use plain-old SSE instructions
-#define _MM_MATVEC4_PS(_M0, _M1, _M2, _M3, _v, _r)                        \
-do {                                                                \
-  __m128 _r0 = _mm_mul_ps (_M0, _v);                                   \
-  __m128 _r1 = _mm_mul_ps (_M1, _v);				    \
-  __m128 _r2 = _mm_mul_ps (_M2, _v);                                   \
-  __m128 _r3 = _mm_mul_ps (_M3, _v);				    \
-  _MM_TRANSPOSE4_PS (_r0, _r1, _r2, _r3);                               \
-  _r = _mm_add_ps (_mm_add_ps (r0, r1), _mm_add_ps (r2, r3));        \
+#define _MM_MATVEC4_PS(_M0, _M1, _M2, _M3, _v, _r)                   \
+do {                                                                 \
+  __m128 _r0 = _mm_mul_ps (_M0, _v);                                 \
+  __m128 _r1 = _mm_mul_ps (_M1, _v);				     \
+  __m128 _r2 = _mm_mul_ps (_M2, _v);                                 \
+  __m128 _r3 = _mm_mul_ps (_M3, _v);				     \
+  _MM_TRANSPOSE4_PS (_r0, _r1, _r2, _r3);                            \
+  _r = _mm_add_ps (_mm_add_ps (_r0, _r1), _mm_add_ps (_r2, _r3));    \
  } while (0);
-#define _MM_DOT4_PS(_A, _B, _p)                                        \
-do {                                                                \
-  __m128 t    = _mm_mul_ps (_A, _B);                                  \
-  __m128 alo  = _mm_shuffle_ps (t, t, _MM_SHUFFLE(0,1,0,1));	    \
-  __m128 ahi  = _mm_shuffle_ps (t, t, _MM_SHUFFLE(2,3,2,3));	    \
-  __m128 a    = _mm_add_ps (alo, ahi);                              \
-  __m128 rlo  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(0,0,0,0));	     \
-  __m128 rhi  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(1,1,1,1));	     \
-  __m128 r    = _mm_add_ps (rlo, rhi);                              \
+#define _MM_DOT4_PS(_A, _B, _p)                                      \
+do {                                                                 \
+  __m128 _t   = _mm_mul_ps (_A, _B);                                 \
+  __m128 alo  = _mm_shuffle_ps (_t, _t, _MM_SHUFFLE(0,1,0,1));	     \
+  __m128 ahi  = _mm_shuffle_ps (_t, _t, _MM_SHUFFLE(2,3,2,3));	     \
+  __m128 _a   = _mm_add_ps (alo, ahi);                               \
+  __m128 rlo  = _mm_shuffle_ps (_a, _a, _MM_SHUFFLE(0,0,0,0));	     \
+  __m128 rhi  = _mm_shuffle_ps (_a, _a, _MM_SHUFFLE(1,1,1,1));	     \
+  __m128 r    = _mm_add_ps (rlo, rhi);                               \
   _mm_store_ss (&(_p), r);                                           \
 } while(0);
 #endif
