@@ -45,23 +45,23 @@ do {                                                                \
   __m128 r1 = _mm_hadd_ps (_mm_mul_ps (M2, v), _mm_mul_ps (M3, v)); \
   r = _mm_hadd_ps (r0, r1);                                         \
  } while (0);
-#define _MM_DOT4_PS(A, B, p)                                       \
+#define _MM_DOT4_PS(A, B, _p)                                       \
 do {                                                                \
   __m128 t  = _mm_mul_ps (A, B);                                    \
   __m128 t1 = _mm_hadd_ps (t,t);                                    \
   __m128 r  = _mm_hadd_ps (t1, t1);                                 \
-  _mm_store_ss (&(p), r);                                           \
+  _mm_store_ss (&(_p), r);                                          \
 } while(0);
 #else
 // Use plain-old SSE instructions
 #define _MM_MATVEC4_PS(M0, M1, M2, M3, v, r)                        \
 do {                                                                \
-  __m128 _r0 = _mm_mul_ps (M0, v);                                   \
+  __m128 _r0 = _mm_mul_ps (M0, v);                                  \
   __m128 _r1 = _mm_mul_ps (M1, v);				    \
-  __m128 _r2 = _mm_mul_ps (M2, v);                                   \
+  __m128 _r2 = _mm_mul_ps (M2, v);                                  \
   __m128 _r3 = _mm_mul_ps (M3, v);				    \
-  _MM_TRANSPOSE4_PS (_r0, _r1, _r2, _r3);                               \
-  r = _mm_add_ps (_mm_add_ps (_r0, _r1), _mm_add_ps (_r2, _r3));        \
+  _MM_TRANSPOSE4_PS (_r0, _r1, _r2, _r3);                           \
+  r = _mm_add_ps (_mm_add_ps (_r0, _r1), _mm_add_ps (_r2, _r3));    \
  } while (0);
 #define _MM_DOT4_PS(A, B, p)                                        \
 do {                                                                \
@@ -69,8 +69,8 @@ do {                                                                \
   __m128 alo  = _mm_shuffle_ps (t, t, _MM_SHUFFLE(0,1,0,1));	    \
   __m128 ahi  = _mm_shuffle_ps (t, t, _MM_SHUFFLE(2,3,2,3));	    \
   __m128 a    = _mm_add_ps (alo, ahi);                              \
-  __m128 rlo  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(0,0,0,0));	     \
-  __m128 rhi  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(1,1,1,1));	     \
+  __m128 rlo  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(0,0,0,0));	    \
+  __m128 rhi  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(1,1,1,1));	    \
   __m128 r    = _mm_add_ps (rlo, rhi);                              \
   _mm_store_ss (&(p), r);                                           \
 } while(0);
