@@ -1,0 +1,6 @@
+Known issues:
+   GCC 4.0.2 (and perhaps earlier versions) has a known bug in
+generating optimized SSE code on 32-bit machines.  The results of
+using the SSE version may not be correct.  We suggest upgrading to the
+4.1 or 4.2 line of gcc or using the Intel compiler, which is free on
+Linux for noncommercial use.  Alternatively, disable the SSE routines.
