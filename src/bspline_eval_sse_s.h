@@ -38,7 +38,7 @@ extern const float* restrict d2Af;
 
 /// SSE3 add "horizontal add" instructions, which makes things
 /// simpler and faster
-#ifdef __SSE3__
+#ifdef __SSE9__
 #define _MM_MATVEC4_PS(M0, M1, M2, M3, v, r)                        \
 do {                                                                \
   __m128 r0 = _mm_hadd_ps (_mm_mul_ps (M0, v), _mm_mul_ps (M1, v)); \
@@ -68,9 +68,9 @@ do {                                                                \
   __m128 t    = _mm_mul_ps (A, B);                                  \
   __m128 alo  = _mm_shuffle_ps (t, t, _MM_SHUFFLE(0,1,0,1));	    \
   __m128 ahi  = _mm_shuffle_ps (t, t, _MM_SHUFFLE(2,3,2,3));	    \
-  __m128 a    = _mm_add_ps (alo, ahi);                              \
-  __m128 rlo  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(0,0,0,0));	    \
-  __m128 rhi  = _mm_shuffle_ps (a, a, _MM_SHUFFLE(1,1,1,1));	    \
+  __m128 _a    = _mm_add_ps (alo, ahi);                              \
+  __m128 rlo  = _mm_shuffle_ps (_a, _a, _MM_SHUFFLE(0,0,0,0));	    \
+  __m128 rhi  = _mm_shuffle_ps (_a, _a, _MM_SHUFFLE(1,1,1,1));	    \
   __m128 _r   = _mm_add_ps (rlo, rhi);                              \
   _mm_store_ss (&(p), _r);                                          \
 } while(0);
