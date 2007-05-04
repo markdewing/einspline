@@ -131,4 +131,9 @@ create_general_grid (double *points, int num_points)
   return grid;
 }
 
-
+void
+destroy_grid (NUgrid *grid)
+{
+  free (grid->points);
+  free (grid);
+}

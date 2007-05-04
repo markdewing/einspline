@@ -58,4 +58,7 @@ typedef struct
 NUgrid*
 create_center_grid (double start, double end, double ratio, 
 		    int num_points);
+
+void
+destroy_grid (NUgrid *grid);
 #endif

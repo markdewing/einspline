@@ -13,10 +13,10 @@
 <div align=center>
 <TABLE CELLSPACING=20 CELLPADDING=1>
 <TR>
+	<TD><A HREF="index.html">About</A></TD>
 	<TD><A HREF="download.html">Download</A></TD>
 	<TD><A HREF="benchmark.html">Benchmark</A></TD>
-	<TD><A HREF="index.html'#features">Features</A></TD>
-	<TD><A HREF="Cinterface.html">Documentation</A></TD>
+	<TD><A HREF="doc.html">Documentation</A></TD>
 	<TD><A HREF="faq.html">FAQ</A></TD>
 	<TD><A HREF="links.html">Links</A></TD>
 </TR>
@@ -67,6 +67,14 @@ sorted in assending order.  <i>num_points</i> is
 self-explanatory.  While general_grid can be used for any type of grid
 spacing, it has the disadvantage that a bisection search must be
 performed to find the nearest grid point. 
+
+<h3> <font color="Blue"> Grid destruction </font></h3>
+Grids created with <font color="blue">create_<i>x</i>_grid</font> can
+be destroyed with a call to
+<pre>
+void
+<font color="blue">destroy_grid</font> (NUgrid* <i>grid</i>);
+</pre>
 
 <h3> <font color="Blue"> Spline creation </font></h3>
 After the necessary grids have been created, a nonuniform spline can
