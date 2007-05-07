@@ -78,15 +78,21 @@ parts:
   <tr> <td>Type</td> <td> Name </td> <td> Description </td> </tr>
   <tr> <td>bc_code </td> <td> lCode </td> <td> "left"  boundary condition code </td> </tr>
   <tr> <td>bc_code </td> <td> lCode </td> <td> "right" boundary condition code </td> </tr>
-  <tr> <td>d_type  </td> <td> lVal  </td> <td> "left"  boundary condition real part </td> </tr>
-  <tr> <td>d_type  </td> <td> lVal  </td> <td> "left"  boundary condition imag part </td> </tr>
-  <tr> <td>d_type  </td> <td> rVal  </td> <td> "right"  boundary condition real part </td> </tr>
-  <tr> <td>d_type  </td> <td> rVal  </td> <td> "right"  boundary condition imag part </td> </tr>
+  <tr> <td>d_type  </td> <td> lVal_r  </td> <td> "left"  boundary condition real part </td> </tr>
+  <tr> <td>d_type  </td> <td> lVal_i  </td> <td> "left"  boundary condition imag part </td> </tr>
+  <tr> <td>d_type  </td> <td> rVal_r  </td> <td> "right"  boundary condition real part </td> </tr>
+  <tr> <td>d_type  </td> <td> rVal_i  </td> <td> "right"  boundary condition imag part </td> </tr>
   </tr>
   <caption> <font color="blue"> BCtype_s and BCtype_d data structure elements</font></caption>
 </table>
 
 <h4> Data to be interpolated </h4>
+The data to be interpolated should have
+<i>N<sub>x</sub</i> <i>N<sub>y</sub</i> <i>N<sub>z</sub</i> contiguous
+elements, arranged is row-order (C-style) format.  That is, the offset
+of the (ix,iy,iz) element is (ix*(Ny+iy)*Nz+iz).  Complex numbers are
+stored in the standard format of (real,imaginary) pairs, which the
+real element first.
 
 <h4> Function prototypes: </h4>
 <u>Single-precision real: </u><br>
