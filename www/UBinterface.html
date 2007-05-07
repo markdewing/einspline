@@ -28,8 +28,64 @@
 Each B-spline object type has an associated creation routine, to the
 user must pass the dimensions of the data, the boundary conditions to
 use, and a pointer to the mesh data.  
+<h4> Base data types </h4>
+Each spline creation and evaluation routines have four versions,
+corresponding to the four support base data types.  Following the
+LAPACK naming convention, these types are specified by single-letter
+codes:
+<ul>
+  <li> <font color="blue"> s</font>: single-precision real <font color="blue">(float)</font>   </li>
+  <li> <font color="blue"> d</font>: double-precision real <font color="blue">(double)</font>   </li>
+  <li> <font color="blue"> c</font>: single-precision complex <font color="blue">(complex_float)</font></li>
+  <li> <font color="blue"> z</font>: double-precision complex
+  <font color="blue">(complex_double)</font> </li>
+</ul>
 <h4> Grid dimensions </h4>
+The uniform grid structure, has the following elements, which must be specified:
+<ul>
+  <li> <font color="blue"> double <i>start</i> </font>:  
+       the first grid point </li>
+  <li> <font color="blue"> double <i>end</i>   </font>:  
+       the last grid point  </li>
+  <li> <font color="blue"> int <i>numpoints</i> </font>:  
+        the number of grid points </li>
+</ul>
 <h4> Boundary conditions </h4>
+The boundary conditions at the first and last grid point must be specified.  They are
+specifed with BCtype_<i>x</i> structures, where <i>x</i> is one of {s,
+d, c, z}, as described above.  For the real types (s and d) the
+structure contains the following elements
+<table CELLPADDING=3 frame=border rules=all bordercolor="gray" >
+  <tr> <td>Type</td> <td> Name </td> <td> Description </td> </tr>
+  <tr> <td>bc_code </td> <td> lCode </td> <td> "left"  boundary condition code </td> </tr>
+  <tr> <td>bc_code </td> <td> lCode </td> <td> "right" boundary condition code </td> </tr>
+  <tr> <td>d_type  </td> <td> lVal  </td> <td> "left"  boundary condition value </td> </tr>
+  <tr> <td>d_type  </td> <td> rVal  </td> <td> "right"  boundary condition value </td> </tr>
+  </tr>
+  <caption> <font color="blue"> BCtype_s and BCtype_d data structure elements</font></caption>
+</table>
+<font color="blue">bc_code</font> is one of the enumerated value,
+{<font color="blue">PERIODIC</font>, <font color="blue">DERIV1</font>,
+<font color="blue">DERIV2</font>, <font color="blue">FLAT</font>,
+<font color="blue">NATURAL</font> }. <br/>
+<font color="blue">d_type</font> is the the C type corresponding to
+{s, d, c, z}, i.e. {float, double, complex_float, complex_double}
+<br/> 
+
+For the complex types, we must specify both the real and imaginary
+parts:
+<table CELLPADDING=3 frame=border rules=all bordercolor="gray" >
+  <tr> <td>Type</td> <td> Name </td> <td> Description </td> </tr>
+  <tr> <td>bc_code </td> <td> lCode </td> <td> "left"  boundary condition code </td> </tr>
+  <tr> <td>bc_code </td> <td> lCode </td> <td> "right" boundary condition code </td> </tr>
+  <tr> <td>d_type  </td> <td> lVal  </td> <td> "left"  boundary condition real part </td> </tr>
+  <tr> <td>d_type  </td> <td> lVal  </td> <td> "left"  boundary condition imag part </td> </tr>
+  <tr> <td>d_type  </td> <td> rVal  </td> <td> "right"  boundary condition real part </td> </tr>
+  <tr> <td>d_type  </td> <td> rVal  </td> <td> "right"  boundary condition imag part </td> </tr>
+  </tr>
+  <caption> <font color="blue"> BCtype_s and BCtype_d data structure elements</font></caption>
+</table>
+
 <h4> Data to be interpolated </h4>
 
 <h4> Function prototypes: </h4>
