@@ -1,13 +1,15 @@
-check_PROGRAMS =  TestBspline TestNUBspline
+check_PROGRAMS =  TestBspline TestNUBspline test_fbspline
 
 TestBspline_SOURCES   = TestBspline.c
 TestNUBspline_SOURCES = TestNUBspline.c
+test_fbspline_SOURCES = test_fbspline.f
 
 LDADD = 
 AM_CCFLAGS = -g 
 
 TestBspline_LDADD   = libeinspline.la $(FLIBS)
 TestNUBspline_LDADD = libeinspline.la $(FLIBS)
+test_fbspline_LDADD = libeinspline.la $(FLIBS)
 
 lib_LTLIBRARIES = libeinspline.la
 libeinspline_la_SOURCES =                               \

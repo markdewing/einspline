@@ -1,8 +1,7 @@
 #include "bspline_create.h"
+#include "bspline.h"
 #include "fbspline.h"
-
-Bspline** SplinePointers;
-int NumPointers=0, MaxPointers=0;
+#include "config.h"
 
 #ifdef __cplusplus
 #define CFUNC "C" /* Avoid name mangling in C++ */
@@ -31,4 +30,12 @@ F77_FUNC(fcreate_ubspline_1d_s,FCREATE_UBSPLINE_1D_S)
   xBC.rVal  = *x1_val;
 
   *spline = create_UBspline_1d_s (xgrid, xBC, data);
+}
+
+
+CFUNC void
+F77_FUNC (feval_ubspline_1d_s,FEVAL_UBSPLINE_1D_S)
+  (UBspline_1d_s **spline, double *x, float *val)
+{
+  eval_UBspline_1d_s (*spline, *x, val);
 }
