@@ -36,7 +36,9 @@ libeinspline_la_SOURCES =                               \
                        nubasis.h                      \
                        nubasis.c                      \
                        nugrid.h                       \
-                       nugrid.c
+                       nugrid.c                       \
+                       fbspline.c                     \
+                       fbspline.h                     
 
 
 libeinspline_la_LIBADD = $(FLIBS)
