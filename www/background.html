@@ -96,7 +96,11 @@ The einspline library solves these equations efficiently using
 row-reduction and back substitution.
 
 <h2> Multi-dimensional B-splines</h2>
-<h3> Tensor-product bases </h3>
+<center><h3> Tensor-product bases </h3></center>
+<table border="0" width="100%" cellpadding="15">
+<tr>
+<td width="50%" valign="top">
+<p align="justify">
 The one-dimensional B-spline can be generalized to two or more
 dimensions.  To do this, we can construct a two-dimensional basis
 consisting of the tensor product of one-dimensional basis functions in
@@ -108,14 +112,29 @@ functions.  Thus, for each point in the 2D space, their are 16 nonzero
 product basis functions.  Similarly, in 3D, there are 64 nonzero basis
 functions which contribute a <i>tricubic</i> B-spline.  4D B-splines
 could also be constructed, but are not implemented in the einspline
-library at this time.
-
+library at this time.</p>
+<p align="justify">
 The great advantage of B-splines is that the number of floating point
 value which needs to be stored per mesh point does not increase with
 dimensionality.  In contrast, the more commonly used splines required 2<sup>d</sup>
 floating point values per mesh point.  Thus, we save a factor of 8 in
 storage in 3D.  Furthermore, the B-splines can be made to give exactly
-the same result as standard splines, within numerical round-off error.
+the same result as standard splines, within numerical round-off
+error.</p>
+</td>
+<td width="50%" valign="top">
+<p align="justify">
+A multi-dimensional interpolating B-spline can be constructed solving
+the interpolating equations for each direction in sequence.  That is,
+for a 2D spline, we first solve the interpolating equations in the
+<i>x</i> direction for each value of <i>y</i>, using the data to be
+ interpolated, <i> F(x<sub>i</sub>, y<sub>j</sub>)</i>, as the
+ right-hand-sides (RHS) of the equations.  This yields of set of
+ coefficients, F<sup>x</sup>(x<sub>i</sub>, y<sub>j</sub>).  We then
+ solve the interpolating equations in the <i>y</i> direction, using
+ these F<sup>x</sup> coefficients as the RHS, yielding the final 2D
+ B-spline coefficients. </p> 
+ </td> </tr> </table>
 
 <hr/>
 <a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=195939&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a>
