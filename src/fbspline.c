@@ -403,9 +403,417 @@ F77_FUNC_(fcreate_ubspline_3d_z,FCREATE_UBSPLINE_3D_Z)
 // Evaluation routines //
 /////////////////////////
 
+//////////////////////////////
+// 1D single-precision real //
+//////////////////////////////
 CFUNC void
 F77_FUNC_(feval_ubspline_1d_s,FEVAL_UBSPLINE_1D_S)
   (UBspline_1d_s **spline, double *x, float *val)
 {
   eval_UBspline_1d_s (*spline, *x, val);
 }
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_s_vg,FEVAL_UBSPLINE_1D_S_VG)
+  (UBspline_1d_s **spline, double *x, float *val, float *grad)
+{
+  eval_UBspline_1d_s_vg (*spline, *x, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_s_vgl,FEVAL_UBSPLINE_1D_S_VGL)
+  (UBspline_1d_s **spline, double *x, 
+   float *val, float *grad, float *lapl)
+{
+  eval_UBspline_1d_s_vgl (*spline, *x, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_s_vgh,FEVAL_UBSPLINE_1D_S_VGH)
+  (UBspline_1d_s **spline, double *x, 
+   float *val, float *grad, float *hess)
+{
+  eval_UBspline_1d_s_vgh (*spline, *x, val, grad, hess);
+}
+
+//////////////////////////////
+// 1D double-precision real //
+//////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_d,FEVAL_UBSPLINE_1D_D)
+  (UBspline_1d_d **spline, double *x, double *val)
+{
+  eval_UBspline_1d_d (*spline, *x, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_d_vg,FEVAL_UBSPLINE_1D_D_VG)
+  (UBspline_1d_d **spline, double *x, 
+   double *val, double *grad)
+{
+  eval_UBspline_1d_d_vg (*spline, *x, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_d_vgl,FEVAL_UBSPLINE_1D_D_VGL)
+  (UBspline_1d_d **spline, double *x, 
+   double *val, double *grad, double *lapl)
+{
+  eval_UBspline_1d_d_vgl (*spline, *x, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_d_vgh,FEVAL_UBSPLINE_1D_D_VGH)
+  (UBspline_1d_d **spline, double *x, 
+   double *val, double *grad, double *hess)
+{
+  eval_UBspline_1d_d_vgh (*spline, *x, val, grad, hess);
+}
+
+/////////////////////////////////
+// 1D single-precision complex //
+/////////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_c,FEVAL_UBSPLINE_1D_C)
+  (UBspline_1d_c **spline, double *x, complex_float *val)
+{
+  eval_UBspline_1d_c (*spline, *x, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_c_vg,FEVAL_UBSPLINE_1D_C_VG)
+  (UBspline_1d_c **spline, double *x, 
+   complex_float *val, complex_float *grad)
+{
+  eval_UBspline_1d_c_vg (*spline, *x, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_c_vgl,FEVAL_UBSPLINE_1D_C_VGL)
+  (UBspline_1d_c **spline, double *x, 
+   complex_float *val, complex_float *grad, complex_float *lapl)
+{
+  eval_UBspline_1d_c_vgl (*spline, *x, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_c_vgh,FEVAL_UBSPLINE_1D_C_VGH)
+  (UBspline_1d_c **spline, double *x, 
+   complex_float *val, complex_float *grad, complex_float *hess)
+{
+  eval_UBspline_1d_c_vgh (*spline, *x, val, grad, hess);
+}
+
+/////////////////////////////////
+// 1D double-precision complex //
+/////////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_z,FEVAL_UBSPLINE_1D_Z)
+  (UBspline_1d_z **spline, double *x, complex_double *val)
+{
+  eval_UBspline_1d_z (*spline, *x, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_z_vg,FEVAL_UBSPLINE_1D_Z_VG)
+  (UBspline_1d_z **spline, double *x, 
+   complex_double *val, complex_double *grad)
+{
+  eval_UBspline_1d_z_vg (*spline, *x, val, grad);
+}
+ 
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_z_vgl,FEVAL_UBSPLINE_1D_Z_VGL)
+  (UBspline_1d_z **spline, double *x, 
+   complex_double *val, complex_double *grad, complex_double *lapl)
+{
+  eval_UBspline_1d_z_vgl (*spline, *x, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_1d_z_vgh,FEVAL_UBSPLINE_1D_Z_VGH)
+  (UBspline_1d_z **spline, double *x, 
+   complex_double *val, complex_double *grad, complex_double *hess)
+{
+  eval_UBspline_1d_z_vgh (*spline, *x, val, grad, hess);
+}
+
+//////////////////////////////
+// 2D single-precision real //
+//////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_s,FEVAL_UBSPLINE_2D_S)
+  (UBspline_2d_s **spline, double *x, double *y, float *val)
+{
+  eval_UBspline_2d_s (*spline, *x, *y, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_s_vg,FEVAL_UBSPLINE_2D_S_VG)
+  (UBspline_2d_s **spline, double *x, double *y, 
+   float *val, float *grad)
+{
+  eval_UBspline_2d_s_vg (*spline, *x, *y, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_s_vgl,FEVAL_UBSPLINE_2D_S_VGL)
+  (UBspline_2d_s **spline, double *x, double *y, 
+   float *val, float *grad, float* lapl)
+{
+  eval_UBspline_2d_s_vgl (*spline, *x, *y, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_s_vgh,FEVAL_UBSPLINE_2D_S_VGH)
+  (UBspline_2d_s **spline, double *x, double *y, 
+   float *val, float *grad, float *hess)
+{
+  eval_UBspline_2d_s_vgh (*spline, *x, *y, val, grad, hess);
+}
+
+//////////////////////////////
+// 2D double-precision real //
+//////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_d,FEVAL_UBSPLINE_2D_D)
+  (UBspline_2d_d **spline, double *x, double *y, double *val)
+{
+  eval_UBspline_2d_d (*spline, *x, *y, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_d_vg,FEVAL_UBSPLINE_2D_D_VG)
+  (UBspline_2d_d **spline, double *x, double *y, 
+   double *val, double *grad)
+{
+  eval_UBspline_2d_d_vg (*spline, *x, *y, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_d_vgl,FEVAL_UBSPLINE_2D_D_VGL)
+  (UBspline_2d_d **spline, double *x, double *y, 
+   double *val, double *grad, double *lapl)
+{
+  eval_UBspline_2d_d_vgl (*spline, *x, *y, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_d_vgh,FEVAL_UBSPLINE_2D_D_VGH)
+  (UBspline_2d_d **spline, double *x, double *y, 
+   double *val, double *grad, double *hess)
+{
+  eval_UBspline_2d_d_vgl (*spline, *x, *y, val, grad, hess);
+}
+
+/////////////////////////////////
+// 2D single-precision complex //
+/////////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_c,FEVAL_UBSPLINE_2D_C)
+  (UBspline_2d_c **spline, double *x, double *y, complex_float *val)
+{
+  eval_UBspline_2d_c (*spline, *x, *y, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_c_vg,FEVAL_UBSPLINE_2D_C_VG)
+  (UBspline_2d_c **spline, double *x, double *y, 
+   complex_float *val, complex_float *grad)
+{
+  eval_UBspline_2d_c_vg (*spline, *x, *y, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_c_vgl,FEVAL_UBSPLINE_2D_C_VGL)
+  (UBspline_2d_c **spline, double *x, double *y, 
+   complex_float *val, complex_float *grad, complex_float *lapl)
+{
+  eval_UBspline_2d_c_vgl (*spline, *x, *y, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_c_vgh,FEVAL_UBSPLINE_2D_C_VGH)
+  (UBspline_2d_c **spline, double *x, double *y, 
+   complex_float *val, complex_float *grad, complex_float *hess)
+{
+  eval_UBspline_2d_c_vgh (*spline, *x, *y, val, grad, hess);
+}
+
+/////////////////////////////////
+// 2D double-precision complex //
+/////////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_z,FEVAL_UBSPLINE_2D_Z)
+  (UBspline_2d_z **spline, double *x, double *y, complex_double *val)
+{
+  eval_UBspline_2d_z (*spline, *x, *y, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_z_vg,FEVAL_UBSPLINE_2D_Z_VG)
+  (UBspline_2d_z **spline, double *x, double *y, 
+   complex_double *val, complex_double *grad)
+{
+  eval_UBspline_2d_z_vg (*spline, *x, *y, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_z_vgl,FEVAL_UBSPLINE_2D_Z_VGL)
+  (UBspline_2d_z **spline, double *x, double *y, 
+   complex_double *val, complex_double *grad, complex_double *lapl)
+{
+  eval_UBspline_2d_z_vgl (*spline, *x, *y, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_2d_z_vgh,FEVAL_UBSPLINE_2D_Z_VGH)
+  (UBspline_2d_z **spline, double *x, double *y, 
+   complex_double *val, complex_double *grad, complex_double *hess)
+{
+  eval_UBspline_2d_z_vgh (*spline, *x, *y, val, grad, hess);
+}
+
+
+
+//////////////////////////////
+// 3D single-precision real //
+//////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_s,FEVAL_UBSPLINE_3D_S)
+  (UBspline_3d_s **spline, double *x, double *y, double *z,
+   float *val)
+{
+  eval_UBspline_3d_s (*spline, *x, *y, *z, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_s_vg,FEVAL_UBSPLINE_3D_S_VG)
+  (UBspline_3d_s **spline, double *x, double *y, double *z,
+   float *val, float *grad)
+{
+  eval_UBspline_3d_s_vg (*spline, *x, *y, *z, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_s_vgl,FEVAL_UBSPLINE_3D_S_VGL)
+  (UBspline_3d_s **spline, double *x, double *y, double *z,
+   float *val, float *grad, float* lapl)
+{
+  eval_UBspline_3d_s_vgl (*spline, *x, *y, *z, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_s_vgh,FEVAL_UBSPLINE_3D_S_VGH)
+  (UBspline_3d_s **spline, double *x, double *y, double *z, 
+   float *val, float *grad, float *hess)
+{
+  eval_UBspline_3d_s_vgh (*spline, *x, *y, *z, val, grad, hess);
+}
+
+//////////////////////////////
+// 3D double-precision real //
+//////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_d,FEVAL_UBSPLINE_3D_D)
+  (UBspline_3d_d **spline, double *x, double *y, double *z,
+   double *val)
+{
+  eval_UBspline_3d_d (*spline, *x, *y, *z, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_d_vg,FEVAL_UBSPLINE_3D_D_VG)
+  (UBspline_3d_d **spline, double *x, double *y, double *z,
+   double *val, double *grad)
+{
+  eval_UBspline_3d_d_vg (*spline, *x, *y, *z, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_d_vgl,FEVAL_UBSPLINE_3D_D_VGL)
+  (UBspline_3d_d **spline, double *x, double *y, double *z,  
+   double *val, double *grad, double *lapl)
+{
+  eval_UBspline_3d_d_vgl (*spline, *x, *y, *z, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_d_vgh,FEVAL_UBSPLINE_3D_D_VGH)
+  (UBspline_3d_d **spline, double *x, double *y, double *z,
+   double *val, double *grad, double *hess)
+{
+  eval_UBspline_3d_d_vgl (*spline, *x, *y, *z, val, grad, hess);
+}
+
+/////////////////////////////////
+// 3D single-precision complex //
+/////////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_c,FEVAL_UBSPLINE_3D_C)
+  (UBspline_3d_c **spline, double *x, double *y, double *z,
+   complex_float *val)
+{
+  eval_UBspline_3d_c (*spline, *x, *y, *z, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_c_vg,FEVAL_UBSPLINE_3D_C_VG)
+  (UBspline_3d_c **spline, double *x, double *y, double *z, 
+   complex_float *val, complex_float *grad)
+{
+  eval_UBspline_3d_c_vg (*spline, *x, *y, *z, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_c_vgl,FEVAL_UBSPLINE_3D_C_VGL)
+  (UBspline_3d_c **spline, double *x, double *y, double *z,
+   complex_float *val, complex_float *grad, complex_float *lapl)
+{
+  eval_UBspline_3d_c_vgl (*spline, *x, *y, *z, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_c_vgh,FEVAL_UBSPLINE_3D_C_VGH)
+  (UBspline_3d_c **spline, double *x, double *y, double *z,
+   complex_float *val, complex_float *grad, complex_float *hess)
+{
+  eval_UBspline_3d_c_vgh (*spline, *x, *y, *z, val, grad, hess);
+}
+
+/////////////////////////////////
+// 3D double-precision complex //
+/////////////////////////////////
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_z,FEVAL_UBSPLINE_3D_Z)
+  (UBspline_3d_z **spline, double *x, double *y, double *z,
+   complex_double *val)
+{
+  eval_UBspline_3d_z (*spline, *x, *y, *z, val);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_z_vg,FEVAL_UBSPLINE_3D_Z_VG)
+  (UBspline_3d_z **spline, double *x, double *y, double *z, 
+   complex_double *val, complex_double *grad)
+{
+  eval_UBspline_3d_z_vg (*spline, *x, *y, *z, val, grad);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_z_vgl,FEVAL_UBSPLINE_3D_Z_VGL)
+  (UBspline_3d_z **spline, double *x, double *y, double *z,
+   complex_double *val, complex_double *grad, complex_double *lapl)
+{
+  eval_UBspline_3d_z_vgl (*spline, *x, *y, *z, val, grad, lapl);
+}
+
+CFUNC void
+F77_FUNC_(feval_ubspline_3d_z_vgh,FEVAL_UBSPLINE_3D_Z_VGH)
+  (UBspline_3d_z **spline, double *x, double *y, double *z,
+   complex_double *val, complex_double *grad, complex_double *hess)
+{
+  eval_UBspline_3d_z_vgh (*spline, *x, *y, *z, val, grad, hess);
+}
+
+
