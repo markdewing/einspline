@@ -23,31 +23,21 @@
 </TABLE>
 </div>
 
-<center>
-<h1><a href="background.html">B-spline Background</a></h1>
-</center>
-
-<center>
-<h1> C interface </h1>
-</center>
-libbspline organizes spline routines into two groups:  those which are
-specified on a uniform grid (or multidimensional mesh), and those on
-nonuniform grids.  The uniform versions of the routines are documented
-below, followed by the nonuniform versions.
-
-<h2><a href="UBinterface.html"> Uniform Splines </a></h2>
-<h2><a href="NUBinterface.html"> Nonuniform Splines </a></h2>
-
-<center>
-<h1> FORTRAN 77 interface </h1>
-</center>
-<h3><a href="F77uniform.html">    Uniform splines    </a></h3>
-<h3><a href="F77nonuniform.html"> Nonuniform splines </a></h3>
-
-<center>
-<h1> Python interface </h1>
-</center>
-This interface has not yet been coded.
+<center><h1> Fortran 77 interface </h1></center>
+The Fortran 77 wrappers provide a very similar interface to the
+einspline library as in C, with a few exceptions:
+<ul>
+  <li> The fortran routine names are the C names, prefixed by an "f".</li>
+  <li> The spline object pointers are passed as INTEGER*8 arguments,
+  to ensure proper functioning on 64-bit platforms.  </li>
+  <li> Since F77 has no concept of structures, uniform grid objects
+  have been replaced by extra parameters to the
+  create_UBspline_<i>x</i> routines.
+  <li> For 2D and 3D splines, data is assumed to be stored in
+  contiguous, row-order format (C-style).  If the data is statically
+  allocated in F77, care must be take to ensure all element data is
+  contiguous in memory.  
+</ul>
 
 <hr/>
 <a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=195939&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a>
