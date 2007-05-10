@@ -36,30 +36,41 @@ F77_FUNC_(fdestroy_grid,FDESTROY_GRID)
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
+////////
+// 1D //
+////////
 CFUNC void
 F77_FUNC_(fcreate_nubspline_1d_s,FCREATE_NUBSPLINE_1D_S)
   (NUgrid **x_grid, 
    int *x0_code, float *x0_val, int *x1_code, float *x1_val,
-   float *data, NUBspline_2d_s **spline);
+   float *data, NUBspline_1d_s **spline);
 
 CFUNC void
 F77_FUNC_(fcreate_nubspline_1d_d,FCREATE_NUBSPLINE_1D_D)
   (NUgrid **x_grid, 
    int *x0_code, double *x0_val, int *x1_code, double *x1_val,
-   double *data, NUBspline_2d_d **spline);
+   double *data, NUBspline_1d_d **spline);
 
 CFUNC void
 F77_FUNC_(fcreate_nubspline_1d_c,FCREATE_NUBSPLINE_1D_C)
   (NUgrid **x_grid, 
    int *x0_code, complex_float *x0_val, 
    int *x1_code, complex_float *x1_val,
-   complex_float *data, NUBspline_2d_c **spline);
+   complex_float *data, NUBspline_1d_c **spline);
 
 CFUNC void
 F77_FUNC_(fcreate_nubspline_1d_z,FCREATE_NUBSPLINE_1D_Z)
   (NUgrid **x_grid, 
    int *x0_code, complex_double *x0_val, 
    int *x1_code, complex_double *x1_val,
-   complex_double *data, NUBspline_2d_z **spline);
+   complex_double *data, NUBspline_1d_z **spline);
+
+////////
+// 2D //
+////////
+
+////////
+// 3D //
+////////
 
 #endif
