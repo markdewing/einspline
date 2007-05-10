@@ -38,6 +38,26 @@ einspline library as in C, with a few exceptions:
   allocated in F77, care must be take to ensure all element data is
   contiguous in memory.  
 </ul>
+Please see the documentation for the C routines for more information.
+The subroutine names and parameters are given below:
+
+<pre>
+<font color="blue">SUBROUTINE FCREATE_UBSPLINE_1D_S (x0, x1, num_x, x0_code, x0_val, x1_code, x1_val, data, spline)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> x0       </td> <td> IN     </td> <td> REAL*8    </td> <td> First grid point         </td> </tr>
+<tr> <td> x1       </td> <td> IN     </td> <td> REAL*8    </td> <td> Last grid point          </td> </tr>
+<tr> <td> num_x    </td> <td> IN     </td> <td> INTEGER   </td> <td> # of grid points         </td> </tr>
+<tr> <td> x0_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Left BC type             </td> </tr>
+<tr> <td> x0_val   </td> <td> IN     </td> <td> REAL      </td> <td> Left BC value            </td> </tr>
+<tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
+<tr> <td> x1_val   </td> <td> IN     </td> <td> REAL      </td> <td> Right BC value           </td> </tr>
+<tr> <td> data     </td> <td> IN     </td> <td> REAL      </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+
+</table>
+
 
 <hr/>
 <a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=195939&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a>
