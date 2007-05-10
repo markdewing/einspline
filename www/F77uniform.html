@@ -362,6 +362,114 @@ The subroutine names and parameters are given below:
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
+
+<center> <h2><u> Uniform spline evaulation routines </u></h2> </center>
+<h3><u> One-dimensional </u></h3>
+<pre>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S     (spline, x, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_D     (spline, x, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_C     (spline, x, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_Z     (spline, x, val)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S_VG  (spline, x, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_D_VG  (spline, x, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_C_VG  (spline, x, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_Z_VG  (spline, x, val, grad)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S_VGL (spline, x, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_D_VGL (spline, x, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_C_VGL (spline, x, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_Z_VGL (spline, x, val, grad, lapl)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S_VGH (spline, x, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_D_VGH (spline, x, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_C_VGH (spline, x, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_Z_VGH (spline, x, val, grad, hess)</font>
+</pre>
+
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument </td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                   </td> </tr>
+<tr> <td> spline   </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                 </td> </tr>
+<tr> <td> x        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> Interpolation position        </td> </tr>
+<tr> <td> val      </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value            </td> </tr>
+<tr> <td> grad     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated first derivative </td> </tr>
+<tr> <td> lapl     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated second derivative </td> </tr>
+<tr> <td> hess     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated second derivative </td> </tr>
+</table>
+<br/>
+
+<h3><u> Two-dimensional </u></h3>
+<pre>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_S     (spline, x, y, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_D     (spline, x, y, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_C     (spline, x, y, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_Z     (spline, x, y, val)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_S_VG  (spline, x, y, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_D_VG  (spline, x, y, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_C_VG  (spline, x, y, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_Z_VG  (spline, x, y, val, grad)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_S_VGL (spline, x, y, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_D_VGL (spline, x, y, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_C_VGL (spline, x, y, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_Z_VGL (spline, x, y, val, grad, lapl)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_S_VGH (spline, x, y, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_D_VGH (spline, x, y, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_C_VGH (spline, x, y, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_Z_VGH (spline, x, y, val, grad, hess)</font>
+</pre>
+
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument </td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                        </td> </tr>
+<tr> <td> spline   </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                      </td> </tr>
+<tr> <td> x        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> x coordinate for interpolation     </td> </tr>
+<tr> <td> y        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> y coordinate for interpolation     </td> </tr>
+<tr> <td> val      </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value                 </td> </tr>
+<tr> <td> grad     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated gradient (2 elements) </td> </tr>
+<tr> <td> lapl     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Laplacian             </td> </tr>
+<tr> <td> hess     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Hessian (4 elements)  </td> </tr>
+</table>
+<br/>
+
+<h3><u> Three-dimensional </u></h3>
+<pre>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_S     (spline, x, y, z, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_D     (spline, x, y, z, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_C     (spline, x, y, z, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_Z     (spline, x, y, z, val)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_S_VG  (spline, x, y, z, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_D_VG  (spline, x, y, z, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_C_VG  (spline, x, y, z, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_Z_VG  (spline, x, y, z, val, grad)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_S_VGL (spline, x, y, z, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_D_VGL (spline, x, y, z, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_C_VGL (spline, x, y, z, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_Z_VGL (spline, x, y, z, val, grad, lapl)</font>
+
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_S_VGH (spline, x, y, z, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_D_VGH (spline, x, y, z, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_C_VGH (spline, x, y, z, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_Z_VGH (spline, x, y, z, val, grad, hess)</font>
+</pre>
+
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument </td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                        </td> </tr>
+<tr> <td> spline   </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                      </td> </tr>
+<tr> <td> x        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> x coordinate for interpolation     </td> </tr>
+<tr> <td> y        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> y coordinate for interpolation     </td> </tr>
+<tr> <td> z        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> z coordinate for interpolation     </td> </tr>
+<tr> <td> val      </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value                 </td> </tr>
+<tr> <td> grad     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated gradient (3 elements) </td> </tr>
+<tr> <td> lapl     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Laplacian             </td> </tr>
+<tr> <td> hess     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Hessian (9 elements)  </td> </tr>
+</table>
+To avoid excessive repetition,
+
+
 <hr/>
 <a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=195939&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a>
 </body>
