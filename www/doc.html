@@ -23,24 +23,48 @@
 </TABLE>
 </div>
 
-<center>
 <h1><a href="background.html">B-spline Background</a></h1>
-</center>
+The above link gives some introductory background on interpolating B-splines and their construction.  
 
-<center>
-<h1> C interface </h1>
-</center>
+<h1> Installation </h1>
+<p><font color="blue"> einspline</font> is written in standard C
+conforming to the C99 standard.  To install it, you will need a
+compiler which supports this standard.  It uses
+autoconf/automake/libtool for installation, but these are not required
+to build the library.  The following is a quick set of instructions
+for installing einspline.</p>
+<ol>
+  <li> Download the source from <a
+  href="http://einspline.sourceforge.net"> here </a>. </li>
+  <li> Unpack the tarball with a command such as <br>
+       <pre> tar xvpzf einspline-0.5.tar.gz </pre> </li>
+  <li> <b>cd</b> to the einspline root directory.
+  <li> Automatically configure for your machine by running the
+       <b>configure</b> script. <br/>
+       <pre>  ./configure</pre>
+  <li> For more configuration options run: <br/>
+       <pre>  ./configure --help</pre>
+       For example, to configure the library to be installed in your
+       home directory (such as on a supercomputer where you do not
+       have root access), run
+       <pre>  ./configure --prefix=$HOME </pre>
+  <li> Build the library with 
+       <pre>  make </pre>
+  <li> Finally, install the library with
+       <pre>  make install </pre>
+</ol>
+      
+<h1> Library API </h1>     
+<h2> C interface </h2>
 libbspline organizes spline routines into two groups:  those which are
 specified on a uniform grid (or multidimensional mesh), and those on
 nonuniform grids.  The uniform versions of the routines are documented
 below, followed by the nonuniform versions.
 
-<h2><a href="UBinterface.html"> Uniform Splines </a></h2>
-<h2><a href="NUBinterface.html"> Nonuniform Splines </a></h2>
+<h3><a href="UBinterface.html"> Uniform Splines </a></h3>
+<h3><a href="NUBinterface.html"> Nonuniform Splines </a></h3>
 
-<center>
-<h1> FORTRAN 77 interface </h1>
-</center>
+<h2> FORTRAN 77 interface </h2>
 <h3><a href="F77uniform.html">    Uniform splines    </a></h3>
 <h3><a href="F77nonuniform.html"> Nonuniform splines </a></h3>
 
