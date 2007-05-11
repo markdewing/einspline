@@ -11,6 +11,10 @@ TestBspline_LDADD   = libeinspline.la $(FLIBS)
 TestNUBspline_LDADD = libeinspline.la $(FLIBS)
 test_fbspline_LDADD = libeinspline.la $(FLIBS)
 
+if WANT_BLIPS
+   MAYBE_BLIPS = blip_create.c blip_create.h
+endif
+
 lib_LTLIBRARIES = libeinspline.la
 libeinspline_la_SOURCES =                               \
                        bspline_base.h                 \
@@ -45,7 +49,8 @@ libeinspline_la_SOURCES =                               \
                        fbspline.c                     \
                        fbspline.h                     \
                        fnubspline.c                   \
-                       fnubspline.h 
+                       fnubspline.h                   \
+                       $(MAYBE_BLIPS)
 
 
 libeinspline_la_LIBADD = $(FLIBS)
