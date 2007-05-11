@@ -8,6 +8,7 @@
 
 #define _XOPEN_SOURCE 600
 #include <stdlib.h>
+#include <math.h>
 
 
 inline double dot (double a[3], double b[3])
@@ -27,7 +28,7 @@ inline double dot (double a[3], double b[3])
 // factor of 1.0 uses the minimum density to avoid aliasing.  Finally,
 // the last parameter specifies whether to take the real or imaginary part.
 // The spline is constructed to have domain [0,1) for x, y, and z coordinates. 
-UBspline_3d_s
+UBspline_3d_s*
 create_blip_3d_s (double *lattice, double *Gvecs, 
 		  complex_float *coefs, int numG,
 		  double factor, bool useReal)
@@ -44,9 +45,9 @@ create_blip_3d_s (double *lattice, double *Gvecs,
     if (abs(iy) > max_iy)   max_iy = iy;
     if (abs(iz) > max_iz)   max_iz = iz;
   }
-  Mx = 2*max_ix + 1;
-  My = 2*max_ix + 1;
-  Mz = 2*max_ix + 1;
+  Mx = 4*max_ix + 1;
+  My = 4*max_iy + 1;
+  Mz = 4*max_iz + 1;
   Mx = (int) ceil(factor*Mx);
   My = (int) ceil(factor*My);
   Mz = (int) ceil(factor*Mz);
@@ -56,6 +57,8 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   if ((My%2)==1) My++;
   if ((Mz%2)==1) Mz++;
 
+  fprintf (stderr, "(Mx, My, Mz) = (%d, %d, %d)\n", Mx, My, Mz);
+
   // Now allocate space for FFT box
   complex_float *fft_box;
   posix_memalign ((void**)&fft_box, (size_t)16, sizeof(complex_float)*Mx*My*Mz);
@@ -64,35 +67,41 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   fftwf_plan plan = 
   fftwf_plan_dft_3d (Mx, My, Mz, (fftwf_complex*)fft_box, (fftwf_complex*)fft_box, 1,
 		     FFTW_ESTIMATE);
-
   
   // Zero-out fft-box
   for (int i=0; i<Mx*My*Mz; i++)
     fft_box[i] = (complex_float)0.0f;
   
   // Now fill in fft box with coefficients in the right places
+  double MxInv = 1.0/(double)Mx;
+  double MyInv = 1.0/(double)My;
+  double MzInv = 1.0/(double)Mz;
   for (int i=0; i<numG; i++) {
-    double *G = Gvecs+3*i;
-    int ix = round (twoPiInv * dot (lattice+0, G));
-    int iy = round (twoPiInv * dot (lattice+3, G));
-    int iz = round (twoPiInv * dot (lattice+6, G));
+    double *g = Gvecs+3*i;
+    double G[3];
+    G[0] = MxInv*(lattice[0]*g[0] + lattice[3]*g[1] + lattice[6]*g[2]);
+    G[1] = MyInv*(lattice[1]*g[0] + lattice[4]*g[1] + lattice[7]*g[2]);
+    G[2] = MzInv*(lattice[2]*g[0] + lattice[5]*g[1] + lattice[8]*g[2]);
+    int ix = round (twoPiInv * dot (lattice+0, g));
+    int iy = round (twoPiInv * dot (lattice+3, g));
+    int iz = round (twoPiInv * dot (lattice+6, g));
     ix = (ix + Mx)%Mx;
     iy = (iy + My)%My;
     iz = (iz + Mz)%Mz;
     double gamma = 1.0;
-    if (fabs(G[0]) > 1.0e-12)
+    if (fabs(G[0]) > 1.0e-10)
       gamma *= (3.0/(G[0]*G[0]*G[0]*G[0])*(3.0 - 4.0*cos(G[0]) + cos(2.0*G[0])));
     else
       gamma *= 1.5;
-    if (fabs(G[1]) > 1.0e-12)
+    if (fabs(G[1]) > 1.0e-10)
       gamma *= (3.0/(G[1]*G[1]*G[1]*G[1])*(3.0 - 4.0*cos(G[1]) + cos(2.0*G[1])));
     else
       gamma *= 1.5;
-    if (fabs(G[2]) > 1.0e-12)
+    if (fabs(G[2]) > 1.0e-10)
       gamma *= (3.0/(G[2]*G[2]*G[2]*G[2])*(3.0 - 4.0*cos(G[2]) + cos(2.0*G[2])));
     else
       gamma *= 1.5;
-    fft_box[ix*(My+iy)*Mz+iz] = coefs[i]/gamma;
+    fft_box[(ix*My+iy)*Mz+iz] = coefs[i]/gamma;
   }
   
   // Execute the FFTW plan
@@ -109,14 +118,20 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   int Nx = Mx + 3;
   int Ny = My + 3;
   int Nz = Mz + 3;
-  x_grid.start = 0.0;  x_grid.end = 1.0;  x_grid.num = Mx;  x_grid.delta = 1.0/(double)Mx;
-  y_grid.start = 0.0;  y_grid.end = 1.0;  y_grid.num = My;  y_grid.delta = 1.0/(double)My;
-  z_grid.start = 0.0;  z_grid.end = 1.0;  z_grid.num = Mz;  z_grid.delta = 1.0/(double)Mz;
+  x_grid.start = 0.0;  x_grid.end = 1.0;  x_grid.num = Mx;  
+  x_grid.delta = 1.0/(double)Mx;    x_grid.delta_inv = 1.0/x_grid.delta;
+  y_grid.start = 0.0;  y_grid.end = 1.0;  y_grid.num = My;  
+  y_grid.delta = 1.0/(double)My;    y_grid.delta_inv = 1.0/y_grid.delta;
+  z_grid.start = 0.0;  z_grid.end = 1.0;  z_grid.num = Mz;  
+  z_grid.delta = 1.0/(double)Mz;      z_grid.delta_inv = 1.0/z_grid.delta;
   spline->x_grid = x_grid;
   spline->y_grid = y_grid;
   spline->z_grid = z_grid;
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
+  spline->xBC.lCode = PERIODIC;  spline->xBC.rCode = PERIODIC;
+  spline->yBC.lCode = PERIODIC;  spline->yBC.rCode = PERIODIC;
+  spline->zBC.lCode = PERIODIC;  spline->zBC.rCode = PERIODIC;
   
   posix_memalign ((void**)&spline->coefs, 16, sizeof(float)*Nx*Ny*Nz);
 
@@ -128,11 +143,11 @@ create_blip_3d_s (double *lattice, double *Gvecs,
       for (int iz=0; iz < Nz; iz++) {
 	int jz = (iz-1 + Mz)%Mz;
 	if (useReal)
-	  spline->coefs[ix*(Ny+iy)*Nz+iz] = 
-	    crealf (fft_box[jx*(My+jy)*Mz+jz]);
+	  spline->coefs[(ix*Ny+iy)*Nz+iz] = 
+	    crealf (fft_box[(jx*My+jy)*Mz+jz]);
 	else
-	  spline->coefs[ix*(Ny+iy)*Nz+iz] = 
-	    cimagf (fft_box[jx*(My+jy)*Mz+jz]);
+	  spline->coefs[(ix*Ny+iy)*Nz+iz] = 
+	    cimagf (fft_box[(jx*My+jy)*Mz+jz]);	
       }
     }
   }
@@ -141,4 +156,5 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   free (fft_box);
 
   init_sse_data();
+  return spline;
 }
