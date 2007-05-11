@@ -1,14 +1,19 @@
-EXTRA_DIST = background.html    \
-             benchmark.html     \
-             doc.html           \
-             download.html      \
-             faq.html           \
-             header.html        \
-             index.html         \
-             NUBinterface.html  \
-             UBinterface.html   \
-             bspline_logo.png   \
-             c-BN300y.png       \
-             NUBsplineBasis.png \
-             UBsplineBasis.png 
+EXTRA_DIST = background.shtml    \
+             benchmark.shtml     \
+             doc.shtml           \
+             download.shtml      \
+             faq.shtml           \
+             header.shtml        \
+             footer.shtml        \
+             index.shtml         \
+             NUBinterface.shtml  \
+             UBinterface.shtml   \
+             bspline_logo.png    \
+             c-BN300y.png        \
+             NUBsplineBasis.png  \
+             UBsplineBasis.png   \
+             F77nonuniform.shtml \
+             F77uniform.shtml    \
+             links.shtml         \
+             news.shtml
 
