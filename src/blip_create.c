@@ -26,13 +26,14 @@ inline double dot (double a[3], double b[3])
 // a factor which increases the density of the real-space grid.  A
 // factor of 1.0 uses the minimum density to avoid aliasing.  Finally,
 // the last parameter specifies whether to take the real or imaginary part.
+// The spline is constructed to have domain [0,1) for x, y, and z coordinates. 
 UBspline_3d_s
 create_blip_3d_s (double *lattice, double *Gvecs, 
 		  complex_float *coefs, int numG,
 		  double factor, bool useReal)
 {
   int max_ix=0, max_iy=0, max_iz=0;
-  int Nx, Ny, Nz;
+  int Mx, My, Mz;
   double twoPiInv = 1.0/(2.0*M_PI);
   for (int i=0; i<numG; i++) {
     double *G = Gvecs+3*i;
@@ -43,29 +44,30 @@ create_blip_3d_s (double *lattice, double *Gvecs,
     if (abs(iy) > max_iy)   max_iy = iy;
     if (abs(iz) > max_iz)   max_iz = iz;
   }
-  Nx = 2*max_ix + 1;
-  Ny = 2*max_ix + 1;
-  Nz = 2*max_ix + 1;
-  Nx = (int) ceil(factor*Nx);
-  Ny = (int) ceil(factor*Ny);
-  Nz = (int) ceil(factor*Nz);
+  Mx = 2*max_ix + 1;
+  My = 2*max_ix + 1;
+  Mz = 2*max_ix + 1;
+  Mx = (int) ceil(factor*Mx);
+  My = (int) ceil(factor*My);
+  Mz = (int) ceil(factor*Mz);
 
   // FFTs are a little faster with even dimensions.
-  if ((Nx%2)==1) Nx++;
-  if ((Ny%2)==1) Ny++;
-  if ((Nz%2)==1) Nz++;
+  if ((Mx%2)==1) Mx++;
+  if ((My%2)==1) My++;
+  if ((Mz%2)==1) Mz++;
 
   // Now allocate space for FFT box
   complex_float *fft_box;
-  posix_memalign ((void**)&fft_box, (size_t)16, sizeof(complex_float)*Nx*Ny*Nz);
+  posix_memalign ((void**)&fft_box, (size_t)16, sizeof(complex_float)*Mx*My*Mz);
 
   // Create FFTW plan
-  fftwf_plan_dft_3d (Nx, Ny, Nz, (fftwf_complex*)fft_box, (fftwf_complex*)fft_box, 1,
+  fftwf_plan plan = 
+  fftwf_plan_dft_3d (Mx, My, Mz, (fftwf_complex*)fft_box, (fftwf_complex*)fft_box, 1,
 		     FFTW_ESTIMATE);
 
   
   // Zero-out fft-box
-  for (int i=0; i<Nx*Ny*Nz; i++)
+  for (int i=0; i<Mx*My*Mz; i++)
     fft_box[i] = (complex_float)0.0f;
   
   // Now fill in fft box with coefficients in the right places
@@ -74,9 +76,9 @@ create_blip_3d_s (double *lattice, double *Gvecs,
     int ix = round (twoPiInv * dot (lattice+0, G));
     int iy = round (twoPiInv * dot (lattice+3, G));
     int iz = round (twoPiInv * dot (lattice+6, G));
-    ix = (ix + Nx)%Nx;
-    iy = (iy + Ny)%Ny;
-    iz = (iz + Nz)%Nz;
+    ix = (ix + Mx)%Mx;
+    iy = (iy + My)%My;
+    iz = (iz + Mz)%Mz;
     double gamma = 1.0;
     if (fabs(G[0]) > 1.0e-12)
       gamma *= (3.0/(G[0]*G[0]*G[0]*G[0])*(3.0 - 4.0*cos(G[0]) + cos(2.0*G[0])));
@@ -90,11 +92,53 @@ create_blip_3d_s (double *lattice, double *Gvecs,
       gamma *= (3.0/(G[2]*G[2]*G[2]*G[2])*(3.0 - 4.0*cos(G[2]) + cos(2.0*G[2])));
     else
       gamma *= 1.5;
-    fft_box[ix*(Ny+iy)*Nz+iz] = coefs[i]/gamma;
+    fft_box[ix*(My+iy)*Mz+iz] = coefs[i]/gamma;
   }
   
   // Execute the FFTW plan
+  fftwf_execute (plan);
+  // Destroy plan
+  fftwf_destroy_plan (plan);
+
+  // Now we have the coefficients in the FFT box.  We must allocate a
+  // little bit larger box to hold the B-spline coefficients
+  UBspline_3d_s* restrict spline = malloc (sizeof (UBspline_3d_s));
+  spline->spcode = U3D;
+  spline->tcode  = SINGLE_REAL;
+  Ugrid x_grid, y_grid, z_grid;
+  int Nx = Mx + 3;
+  int Ny = My + 3;
+  int Nz = Mz + 3;
+  x_grid.start = 0.0;  x_grid.end = 1.0;  x_grid.num = Mx;  x_grid.delta = 1.0/(double)Mx;
+  y_grid.start = 0.0;  y_grid.end = 1.0;  y_grid.num = My;  y_grid.delta = 1.0/(double)My;
+  z_grid.start = 0.0;  z_grid.end = 1.0;  z_grid.num = Mz;  z_grid.delta = 1.0/(double)Mz;
+  spline->x_grid = x_grid;
+  spline->y_grid = y_grid;
+  spline->z_grid = z_grid;
+  spline->x_stride = Ny*Nz;
+  spline->y_stride = Nz;
   
+  posix_memalign ((void**)&spline->coefs, 16, sizeof(float)*Nx*Ny*Nz);
+
+  // Now copy data into spline coefficients, observing periodic boundary conditions
+  for (int ix=0; ix<Nx; ix++) {
+    int jx = (ix-1 + Mx)%Mx;
+    for (int iy=0; iy < Ny; iy++) {
+      int jy = (iy-1 + My)%My;
+      for (int iz=0; iz < Nz; iz++) {
+	int jz = (iz-1 + Mz)%Mz;
+	if (useReal)
+	  spline->coefs[ix*(Ny+iy)*Nz+iz] = 
+	    crealf (fft_box[jx*(My+jy)*Mz+jz]);
+	else
+	  spline->coefs[ix*(Ny+iy)*Nz+iz] = 
+	    cimagf (fft_box[jx*(My+jy)*Mz+jz]);
+      }
+    }
+  }
+      
 
   free (fft_box);
+
+  init_sse_data();
 }
