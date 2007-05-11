@@ -399,6 +399,14 @@ F77_FUNC_(fcreate_ubspline_3d_z,FCREATE_UBSPLINE_3D_Z)
   *spline = create_UBspline_3d_z (xgrid, ygrid, zgrid, xBC, yBC, zBC, data);
 }
 
+CFUNC void
+F77_FUNC_(fdestroy_bspline,FDESTROY_BSPLINE)
+  (Bspline **spline)
+{
+  destroy_Bspline (*spline);
+}
+
+
 /////////////////////////
 // Evaluation routines //
 /////////////////////////
