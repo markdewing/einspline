@@ -6,93 +6,26 @@
 </head>
 
 <body bgcolor=#FFFFD0>
+<!--#include virtual="header.shtml" -->
+
 <center>
-<img src="einspline_logo.png" align="center">
+<h1> C interface </h1>
 </center>
+libbspline organizes spline routines into two groups:  those which are
+specified on a uniform grid (or multidimensional mesh), and those on
+nonuniform grids.  The uniform versions of the routines are documented
+below, followed by the nonuniform versions.
 
-<div align=center>
-<TABLE CELLSPACING=20 CELLPADDING=1>
-<TR>
-	<TD><A HREF="index.html">About</A></TD>
-	<TD><A HREF="download.html">Download</A></TD>
-	<TD><A HREF="benchmark.html">Benchmark</A></TD>
-	<TD><A HREF="doc.html">Documentation</A></TD>
-	<TD><A HREF="faq.html">FAQ</A></TD>
-	<TD><A HREF="links.html">Links</A></TD>
-</TR>
-</TABLE>
-</div>
+<center><h2> Uniform splines </h2></center>
+<h2><a href="NUBinterface.shtml"> Nonuniform Splines </a></h2>
 
-<center><h1> Uniform splines </h1></center>
 <h3> <font color="Blue"> Spline creation </font></h3>
 Each B-spline object type has an associated creation routine, to the
 user must pass the dimensions of the data, the boundary conditions to
 use, and a pointer to the mesh data.  
-<h4> Base data types </h4>
-Each spline creation and evaluation routines have four versions,
-corresponding to the four support base data types.  Following the
-LAPACK naming convention, these types are specified by single-letter
-codes:
-<ul>
-  <li> <font color="blue"> s</font>: single-precision real <font color="blue">(float)</font>   </li>
-  <li> <font color="blue"> d</font>: double-precision real <font color="blue">(double)</font>   </li>
-  <li> <font color="blue"> c</font>: single-precision complex <font color="blue">(complex_float)</font></li>
-  <li> <font color="blue"> z</font>: double-precision complex
-  <font color="blue">(complex_double)</font> </li>
-</ul>
 <h4> Grid dimensions </h4>
-The uniform grid structure, has the following elements, which must be specified:
-<ul>
-  <li> <font color="blue"> double <i>start</i> </font>:  
-       the first grid point </li>
-  <li> <font color="blue"> double <i>end</i>   </font>:  
-       the last grid point  </li>
-  <li> <font color="blue"> int <i>numpoints</i> </font>:  
-        the number of grid points </li>
-</ul>
 <h4> Boundary conditions </h4>
-The boundary conditions at the first and last grid point must be specified.  They are
-specifed with BCtype_<i>x</i> structures, where <i>x</i> is one of {s,
-d, c, z}, as described above.  For the real types (s and d) the
-structure contains the following elements
-<table CELLPADDING=3 frame=border rules=all bordercolor="gray" >
-  <tr> <td>Type</td> <td> Name </td> <td> Description </td> </tr>
-  <tr> <td>bc_code </td> <td> lCode </td> <td> "left"  boundary condition code </td> </tr>
-  <tr> <td>bc_code </td> <td> lCode </td> <td> "right" boundary condition code </td> </tr>
-  <tr> <td>d_type  </td> <td> lVal  </td> <td> "left"  boundary condition value </td> </tr>
-  <tr> <td>d_type  </td> <td> rVal  </td> <td> "right"  boundary condition value </td> </tr>
-  </tr>
-  <caption> <font color="blue"> BCtype_s and BCtype_d data structure elements</font></caption>
-</table>
-<font color="blue">bc_code</font> is one of the enumerated value,
-{<font color="blue">PERIODIC</font>, <font color="blue">DERIV1</font>,
-<font color="blue">DERIV2</font>, <font color="blue">FLAT</font>,
-<font color="blue">NATURAL</font> }. <br/>
-<font color="blue">d_type</font> is the the C type corresponding to
-{s, d, c, z}, i.e. {float, double, complex_float, complex_double}
-<br/> <br/>
-
-For the complex types, we must specify both the real and imaginary
-parts:
-<table CELLPADDING=3 frame=border rules=all bordercolor="gray" >
-  <tr> <td>Type</td> <td> Name </td> <td> Description </td> </tr>
-  <tr> <td>bc_code </td> <td> lCode </td> <td> "left"  boundary condition code </td> </tr>
-  <tr> <td>bc_code </td> <td> lCode </td> <td> "right" boundary condition code </td> </tr>
-  <tr> <td>d_type  </td> <td> lVal_r  </td> <td> "left"  boundary condition real part </td> </tr>
-  <tr> <td>d_type  </td> <td> lVal_i  </td> <td> "left"  boundary condition imag part </td> </tr>
-  <tr> <td>d_type  </td> <td> rVal_r  </td> <td> "right"  boundary condition real part </td> </tr>
-  <tr> <td>d_type  </td> <td> rVal_i  </td> <td> "right"  boundary condition imag part </td> </tr>
-  </tr>
-  <caption> <font color="blue"> BCtype_s and BCtype_d data structure elements</font></caption>
-</table>
-
 <h4> Data to be interpolated </h4>
-The data to be interpolated should have
-<i>N<sub>x</sub</i> <i>N<sub>y</sub</i> <i>N<sub>z</sub</i> contiguous
-elements, arranged is row-order (C-style) format.  That is, the offset
-of the (ix,iy,iz) element is (ix*(Ny+iy)*Nz+iz).  Complex numbers are
-stored in the standard format of (real,imaginary) pairs, which the
-real element first.
 
 <h4> Function prototypes: </h4>
 <u>Single-precision real: </u><br>
@@ -129,16 +62,7 @@ UBspline_3d_z * create_UBspline_3d_z (Ugrid x_grid,   Ugrid y_grid, Ugrid z_grid
                                       BCtype_z  xBC,  BCtype_z   yBC, BCtype_z   zBC, 
                                       complex_double *data);
 </PRE>
-<hr/>
-<h3> <font color="Blue"> Spline destruction </font></h3>
-The memory used for spline storage can be freed simply by a call to
-<pre>
-void
-destroy_Bspline (void *<i>spline</i>);
-</pre>
-The <i>spline</i> parameter can be a spline of any type and dimension,
-uniform or nonuniform.
-<hr/>
+<hr>
 <h3> <font color="Blue"> Spline evaluation </font> </h3>
 For each of the four datatypes, there are four evaluation routines, depending on
 which quantities need to be computed:
@@ -415,11 +339,6 @@ inline void
 eval_UBspline_3d_z_vgh (UBspline_3d_z * restrict spline, double x, double y,
 			complex_double* restrict val, complex_double* restrict grad, complex_double* restrict hess);
 </PRE>
-<hr/>
-<table border="0" CELLPADDING=5>
-<tr>
-<td><a href="http://www.gl.ciw.edu"><img src="CIWlogo_tiny_noBG.png" border="0"/></a></td>
-<td><a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=195939&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a></td>
-</tr> </table>
+<!--#include virtual="footer.shtml" -->
 </body>
 </html>

@@ -6,25 +6,10 @@
 </head>
 
 <body bgcolor=#FFFFD0>
-<center>
-<img src="einspline_logo.png" align="center">
-</center>
-
-<div align=center>
-<TABLE CELLSPACING=20 CELLPADDING=1>
-<TR>
-	<TD><A HREF="index.html">About</A></TD>
-	<TD><A HREF="download.html">Download</A></TD>
-	<TD><A HREF="benchmark.html">Benchmark</A></TD>
-	<TD><A HREF="doc.html">Documentation</A></TD>
-	<TD><A HREF="faq.html">FAQ</A></TD>
-	<TD><A HREF="links.html">Links</A></TD>
-</TR>
-</TABLE>
-</div>
-
-<h1><a href="background.html">B-spline Background</a></h1>
-The above link gives some introductory background on interpolating B-splines and their construction.  
+<!--#include virtual="header.shtml" -->
+<h1>B-spline Background</h1>
+Some introductory background on interpolating B-splines and their construction can be
+found <a href="background.shtml">here</a>.
 
 <h1> Installation </h1>
 <p><font color="blue"> einspline</font> is written in standard C
@@ -61,23 +46,17 @@ specified on a uniform grid (or multidimensional mesh), and those on
 nonuniform grids.  The uniform versions of the routines are documented
 below, followed by the nonuniform versions.
 
-<h3><a href="UBinterface.html"> Uniform Splines </a></h3>
-<h3><a href="NUBinterface.html"> Nonuniform Splines </a></h3>
+<h3><a href="UBinterface.shtml"> Uniform Splines </a></h3>
+<h3><a href="NUBinterface.shtml"> Nonuniform Splines </a></h3>
 
 <h2> FORTRAN 77 interface </h2>
-<h3><a href="F77uniform.html">    Uniform splines    </a></h3>
-<h3><a href="F77nonuniform.html"> Nonuniform splines </a></h3>
+<h3><a href="F77uniform.shtml">    Uniform splines    </a></h3>
+<h3><a href="F77nonuniform.shtml"> Nonuniform splines </a></h3>
 
 <center>
 <h1> Python interface </h1>
 </center>
 This interface has not yet been coded.
-
-<hr/>
-<table border="0" CELLPADDING=5>
-<tr>
-<td><a href="http://www.gl.ciw.edu"><img src="CIWlogo_tiny_noBG.png" border="0"/></a></td>
-<td><a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=195939&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a></td>
-</tr> </table>
+<!--#include virtual="footer.shtml" -->
 </body>
 </html>

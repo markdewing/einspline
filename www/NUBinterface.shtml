@@ -6,24 +6,8 @@
 </head>
 
 <body bgcolor=#FFFFD0>
-<center>
-<img src="einspline_logo.png" align="center">
-</center>
+<!--#include virtual="header.shtml" -->
 
-<div align=center>
-<TABLE CELLSPACING=20 CELLPADDING=1>
-<TR>
-	<TD><A HREF="index.html">About</A></TD>
-	<TD><A HREF="download.html">Download</A></TD>
-	<TD><A HREF="benchmark.html">Benchmark</A></TD>
-	<TD><A HREF="doc.html">Documentation</A></TD>
-	<TD><A HREF="faq.html">FAQ</A></TD>
-	<TD><A HREF="links.html">Links</A></TD>
-</TR>
-</TABLE>
-</div>
-
-<center>
 <h1> Nonuniform Splines </h1>
 </center>
 <h2> Nonuniform grids </h2>
@@ -405,11 +389,6 @@ inline void
 <font color="Blue">eval_NUBspline_3d_z_vgh</font> (NUBspline_3d_z * restrict <i>spline</i>, double <i>x</i>, double <i>y</i>,
 			 complex_double* restrict <i>val</i>, complex_double* restrict <i>grad</i>, complex_double* restrict <i>hess</i>);
 </PRE>
-<hr/>
-<table border="0" CELLPADDING=5>
-<tr>
-<td><a href="http://www.gl.ciw.edu"><img src="CIWlogo_tiny_noBG.png" border="0"/></a></td>
-<td><a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=195939&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a></td>
-</tr> </table>
+<!--#include virtual="footer.shtml" -->
 </body>
 </html>

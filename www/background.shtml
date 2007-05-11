@@ -6,22 +6,7 @@
 </head>
 
 <body bgcolor=#FFFFD0>
-<center>
-<img src="einspline_logo.png" align="center">
-</center>
-
-<div align=center>
-<TABLE CELLSPACING=20 CELLPADDING=1>
-<TR>
-	<TD><A HREF="index.html">About</A></TD>
-	<TD><A HREF="download.html">Download</A></TD>
-	<TD><A HREF="benchmark.html">Benchmark</A></TD>
-	<TD><A HREF="doc.html">Documentation</A></TD>
-	<TD><A HREF="faq.html">FAQ</A></TD>
-	<TD><A HREF="links.html">Links</A></TD>
-</TR>
-</TABLE>
-</div>
+<!--#include virtual="header.shtml" -->
 
 <center><h1>Background</h1></center>
 Basis splines were invented by developed by I.J. Schoenberg and made
@@ -135,12 +120,6 @@ for a 2D spline, we first solve the interpolating equations in the
  these F<sup>x</sup> coefficients as the RHS, yielding the final 2D
  B-spline coefficients. </p> 
  </td> </tr> </table>
-
-<hr/>
-<table border="0" CELLPADDING=5>
-<tr>
-<td><a href="http://www.gl.ciw.edu"><img src="CIWlogo_tiny_noBG.png" border="0"/></a></td>
-<td><a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=195939&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a></td>
-</tr> </table>
+<!--#include virtual="footer.shtml" -->
 </body>
 </html>
