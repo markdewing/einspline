@@ -72,6 +72,19 @@ times closer together than the points at the left and right extremes of the grid
 <p>Once the grids are created, their handles are passed to the nonuniform spline create routines documented below.</p>
 <br/>
 
+<center> <h2><u> Nonuniform grid destruction routine </u></h2> </center>
+The grid objects must be destroyed once they are no longer needed.  If they have been passed to
+a spline creation routine, they should not be destroyed until <b>after</b> the spline has been
+destroyed.  The following routine can be used to destroy either of the nonuniform grids.
+<pre>
+<font color="blue" size="5">SUBROUTINE FDESTROY_GRID (grid)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> grid     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle of grid object    </td> </tr>
+</table>
+</br>
+
 <center> <h2><u> Nonuniform spline creation routines </u></h2> </center>
 <h3> <u>One-dimensional:</u></h3>
 <h4> Single-precision real</h4>
@@ -344,6 +357,18 @@ times closer together than the points at the left and right extremes of the grid
 <tr> <td> z1_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Right z BC value         </td> </tr>
 <tr> <td> data     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Data to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+
+<center> <h2><u> Spline destruction routine </u></h2> </center>
+<p>The following subroutine can be used to deallocate the memory for any Bspline object.  
+Note that in the nonuniform case, the grid objects must be destroyed after the splines that
+refer to them.
+<pre>
+<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_3D_Z (spline)</font> </pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline   </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Spline object handle     </td> </tr>
 </table>
 <br/>
 

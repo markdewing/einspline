@@ -362,6 +362,17 @@ The subroutine names and parameters are given below:
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
+<center> <h2><u> Spline destruction routine </u></h2> </center>
+<p>The following subroutine can be used to deallocate the memory for any Bspline object.  
+Note that in the nonuniform case, the grid objects must be destroyed after the splines that
+refer to them.
+<pre>
+<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_3D_Z (spline)</font> </pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline   </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Spline object handle     </td> </tr>
+</table>
+<br/>
 
 <center> <h2><u> Uniform spline evaulation routines </u></h2> </center>
 <h3><u> One-dimensional </u></h3>
