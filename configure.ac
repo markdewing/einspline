@@ -67,15 +67,20 @@ if test "x$enable_sse3" = "xyes"; then
   AC_DEFINE([HAVE_SSE3], [1], [SSE3 instructions are available])
 fi
 
-AC_ARG_ENABLE(fftw,   [  --enable-fftw           enable FFTW library for creating blips])
-if test "x$enable_fftw" = "xyes"; then
+AC_ARG_ENABLE(blips,   [  --enable-blips          enable routines for creating BLIPS])
+AM_CONDITIONAL([WANT_BLIPS], [test "$enable_blips" = "yes"])
+if test "x$enable_blips" = "xyes"; then
   PKG_CHECK_MODULES(FFTW3,  fftw3,  fftw3_ok=yes,  fftw3_ok=no)
   PKG_CHECK_MODULES(FFTW3F, fftw3f, fftw3f_ok=yes, fftw3f_ok=no)
   if test "x$fftw3_ok" = "xyes"; then
     AC_DEFINE([HAVE_FFTW3], [1], [FFTW3 library is available])
+  else
+    AC_MSG_ERROR([Blip construction routines require that FFTW3 be installed.])
   fi
   if test "x$fftw3f_ok" = "xyes"; then
     AC_DEFINE([HAVE_FFTW3F], [1], [FFTW3F library is available])
+  else
+    AC_MSG_ERROR([Blip construction routines require that FFTW3 be installed.])
   fi
 fi
 
