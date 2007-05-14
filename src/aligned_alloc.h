@@ -33,8 +33,6 @@ aligned_alloc (size_t size, size_t alignment)
     size_t offset = alignment - (size_t)shifted%(size_t)alignment;
     void *aligned = shifted + offset;
     *((void**)aligned-1) = ptr;
-    fprintf (stderr, "ptr     = %p\n", ptr);
-    fprintf (stderr, "aligned = %p\n", aligned); 
     return aligned;
   }
 }
