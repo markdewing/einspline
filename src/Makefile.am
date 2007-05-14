@@ -18,7 +18,8 @@ if WANT_BLIPS
 endif
 
 lib_LTLIBRARIES = libeinspline.la
-libeinspline_la_SOURCES =                               \
+libeinspline_la_SOURCES =                             \
+                       aligned_alloc.h                \
                        bspline_base.h                 \
                        bspline_create.c               \
                        bspline_create.h               \

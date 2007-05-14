@@ -10,6 +10,7 @@
 #define _XOPEN_SOURCE 600
 #include <stdlib.h>
 #include <math.h>
+#include <aligned_alloc.h>
 
 void init_sse_data();
 
@@ -70,13 +71,14 @@ create_blip_3d_s (double *lattice, double *Gvecs,
 
   // Now allocate space for FFT box
   complex_float *fft_box, *alloc_ptr;
-#ifdef HAVE_POSIX_MEMALIGN
-  posix_memalign ((void**)&fft_box, (size_t)16, sizeof(complex_float)*Mx*My*Mz);
-  alloc_ptr = fft_box;
-#else
-  alloc_ptr = malloc (sizeof(complex_float)*Mx*My*Mz+15);
-  fft_box = (complex_float*) FFTAlign(alloc_ptr);
-#endif
+  fft_box = aligned_alloc (sizeof(complex_float)*Mx*My*Mz, 16);
+// #ifdef HAVE_POSIX_MEMALIGN
+//   posix_memalign ((void**)&fft_box, (size_t)16, sizeof(complex_float)*Mx*My*Mz);
+//   alloc_ptr = fft_box;
+// #else
+//   alloc_ptr = malloc (sizeof(complex_float)*Mx*My*Mz+15);
+//   fft_box = (complex_float*) FFTAlign(alloc_ptr);
+// #endif
   
 
   // Create FFTW plan
@@ -172,7 +174,8 @@ create_blip_3d_s (double *lattice, double *Gvecs,
     }
   }
       
-  free (alloc_ptr);
+  //free (alloc_ptr);
+  aligned_free (fft_box);
 
   init_sse_data();
   return spline;

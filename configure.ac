@@ -111,7 +111,7 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([clock_gettime floor pow sqrt strtol])
+AC_CHECK_FUNCS([clock_gettime floor pow sqrt strtol posix_memalign])
 
 AC_SUBST(PKGDATADEF)
 
