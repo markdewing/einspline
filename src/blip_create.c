@@ -2,6 +2,7 @@
 #include <math.h>
 #include <complex.h>
 #include <fftw3.h>
+#include "config.h"
 #ifdef _XOPEN_SOURCE
 #undef _XOPEN_SOURCE
 #endif
@@ -10,6 +11,14 @@
 #include <stdlib.h>
 #include <math.h>
 
+void init_sse_data();
+
+inline 
+void* FFTAlign (void* ptr)
+{
+  size_t offset = 16 - (size_t)((size_t)ptr)&0x0f;
+  return (void*) ((size_t)ptr+offset);
+}
 
 inline double dot (double a[3], double b[3])
 {
@@ -60,8 +69,15 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   fprintf (stderr, "(Mx, My, Mz) = (%d, %d, %d)\n", Mx, My, Mz);
 
   // Now allocate space for FFT box
-  complex_float *fft_box;
+  complex_float *fft_box, *alloc_ptr;
+#ifdef HAVE_POSIX_MEMALIGN
   posix_memalign ((void**)&fft_box, (size_t)16, sizeof(complex_float)*Mx*My*Mz);
+  alloc_ptr = fft_box;
+#else
+  alloc_ptr = malloc (sizeof(complex_float)*Mx*My*Mz+15);
+  fft_box = (complex_float*) FFTAlign(alloc_ptr);
+#endif
+  
 
   // Create FFTW plan
   fftwf_plan plan = 
@@ -133,7 +149,11 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   spline->yBC.lCode = PERIODIC;  spline->yBC.rCode = PERIODIC;
   spline->zBC.lCode = PERIODIC;  spline->zBC.rCode = PERIODIC;
   
+#ifndef __SSE2__
+  spline->coefs      = malloc (sizeof(float)*Nx*Ny*Nz);
+#else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(float)*Nx*Ny*Nz);
+#endif 
 
   // Now copy data into spline coefficients, observing periodic boundary conditions
   for (int ix=0; ix<Nx; ix++) {
@@ -152,8 +172,7 @@ create_blip_3d_s (double *lattice, double *Gvecs,
     }
   }
       
-
-  free (fft_box);
+  free (alloc_ptr);
 
   init_sse_data();
   return spline;
