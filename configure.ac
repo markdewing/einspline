@@ -24,7 +24,7 @@ AC_MSG_CHECKING([LIBS = $LIBS])
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h sys/time.h unistd.h])
-
+AC_C_VARARRAYS
 
 AC_MSG_CHECKING([optimal compiler flags])
 CFLAGS="${CFLAGS} -g"

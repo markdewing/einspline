@@ -145,6 +145,7 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
   int M = grid.num;
   float basis[4] = {1.0/6.0, 2.0/3.0, 1.0/6.0, 0.0};
   if (bc.lCode == PERIODIC) {
+#ifdef HAVE_C_VARARRAYS
     float bands[M][4];
     for (int i=0; i<M; i++) {
       bands[i][0] = basis[0];
@@ -153,9 +154,19 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
       bands[i][3] = data[i*dstride];
     }
     solve_periodic_interp_1d_s (bands, coefs, M, cstride);
+#else
+    float *bands = malloc(4*M*sizeof(float));
+    for (int i=0; i<M; i++) {
+      bands[4*i+0] = basis[0];
+      bands[4*i+1] = basis[1];
+      bands[4*i+2] = basis[2];
+      bands[4*i+3] = data[i*dstride];
+    }
+    solve_periodic_interp_1d_s (bands, coefs, M, cstride);
+    free (bands);
+#endif
   }
   else {
-    float bands[M+2][4];
     // Setup boundary conditions
     float abcd_left[4], abcd_right[4];
     // Left boundary
@@ -189,6 +200,8 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
       abcd_right[2] = 1.0 *grid.delta_inv * grid.delta_inv;
       abcd_right[3] = bc.rVal;
     }
+#ifdef HAVE_C_VARARRAYS
+    float bands[M+2][4];
     for (int i=0; i<4; i++) {
       bands[0][i]   = abcd_left[i];
       bands[M+1][i] = abcd_right[i];
@@ -200,6 +213,21 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
     }   
     // Now, solve for coefficients
     solve_deriv_interp_1d_s (bands, coefs, M, cstride);
+#else
+    float *bands = malloc ((M+2)*4*sizeof(float));
+    for (int i=0; i<4; i++) {
+      bands[4*0+i]   = abcd_left[i];
+      bands[4*(M+1)+i] = abcd_right[i];
+    }
+    for (int i=0; i<M; i++) {
+      for (int j=0; j<3; j++)
+	bands[4*(i+1)+j] = basis[j];
+      bands[4*(i+1)+3] = data[i*dstride];
+    }   
+    // Now, solve for coefficients
+    solve_deriv_interp_1d_s (bands, coefs, M, cstride);
+    free (bands);
+#endif
   }
 }
 
@@ -720,6 +748,7 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
   int M = grid.num;
   double basis[4] = {1.0/6.0, 2.0/3.0, 1.0/6.0, 0.0};
   if (bc.lCode == PERIODIC) {
+#ifdef HAVE_C_VARARRAYS
     double bands[M][4];
     for (int i=0; i<M; i++) {
       bands[i][0] = basis[0];
@@ -728,9 +757,19 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
       bands[i][3] = data[i*dstride];
     }
     solve_periodic_interp_1d_d (bands, coefs, M, cstride);
+#else
+    double *bands = malloc (4*M*sizeof(double));
+    for (int i=0; i<M; i++) {
+      bands[4*i+0] = basis[0];
+      bands[4*i+1] = basis[1];
+      bands[4*i+2] = basis[2];
+      bands[4*i+3] = data[i*dstride];
+    }
+    solve_periodic_interp_1d_d (bands, coefs, M, cstride);
+    free (bands);
+#endif
   }
   else {
-    double bands[M+2][4];
     // Setup boundary conditions
     double abcd_left[4], abcd_right[4];
     // Left boundary
@@ -764,6 +803,8 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
       abcd_right[2] = 1.0 *grid.delta_inv * grid.delta_inv;
       abcd_right[3] = bc.rVal;
     }
+#ifdef HAVE_C_VARARRAYS
+    double bands[M+2][4];
     for (int i=0; i<4; i++) {
       bands[0][i]   = abcd_left[i];
       bands[M+1][i] = abcd_right[i];
@@ -775,6 +816,21 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
     }   
     // Now, solve for coefficients
     solve_deriv_interp_1d_d (bands, coefs, M, cstride);
+#else
+    double *bands = malloc ((M+2)*4*sizeof(double));
+    for (int i=0; i<4; i++) {
+      bands[4*0+i]   = abcd_left[i];
+      bands[4*(M+1)+i] = abcd_right[i];
+    }
+    for (int i=0; i<M; i++) {
+      for (int j=0; j<3; j++)
+	bands[4*(i+1)+j] = basis[j];
+      bands[4*(i+1)+3] = data[i*dstride];
+    }   
+    // Now, solve for coefficients
+    solve_deriv_interp_1d_d (bands, coefs, M, cstride);
+    free (bands);
+#endif
   }
 }
 

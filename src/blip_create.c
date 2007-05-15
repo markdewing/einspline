@@ -72,14 +72,6 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   // Now allocate space for FFT box
   complex_float *fft_box, *alloc_ptr;
   fft_box = aligned_alloc (sizeof(complex_float)*Mx*My*Mz, 16);
-// #ifdef HAVE_POSIX_MEMALIGN
-//   posix_memalign ((void**)&fft_box, (size_t)16, sizeof(complex_float)*Mx*My*Mz);
-//   alloc_ptr = fft_box;
-// #else
-//   alloc_ptr = malloc (sizeof(complex_float)*Mx*My*Mz+15);
-//   fft_box = (complex_float*) FFTAlign(alloc_ptr);
-// #endif
-  
 
   // Create FFTW plan
   fftwf_plan plan = 
@@ -100,6 +92,9 @@ create_blip_3d_s (double *lattice, double *Gvecs,
     G[0] = MxInv*(lattice[0]*g[0] + lattice[3]*g[1] + lattice[6]*g[2]);
     G[1] = MyInv*(lattice[1]*g[0] + lattice[4]*g[1] + lattice[7]*g[2]);
     G[2] = MzInv*(lattice[2]*g[0] + lattice[5]*g[1] + lattice[8]*g[2]);
+//     G[0] = MxInv*(lattice[0]*g[0] + lattice[1]*g[1] + lattice[2]*g[2]);
+//     G[1] = MyInv*(lattice[1]*g[3] + lattice[4]*g[4] + lattice[5]*g[2]);
+//     G[2] = MzInv*(lattice[2]*g[6] + lattice[7]*g[1] + lattice[8]*g[2]);
     int ix = round (twoPiInv * dot (lattice+0, g));
     int iy = round (twoPiInv * dot (lattice+3, g));
     int iz = round (twoPiInv * dot (lattice+6, g));

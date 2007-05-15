@@ -115,19 +115,36 @@ test_blip_1d_s (double a, double Gcut, double ratio)
     }
   }
 
-  UBspline_3d_s *spline;
-  spline = create_blip_3d_s (lattice, Gvecs, coefs, numG, 1.0, true);
+  UBspline_3d_s *blip, *interp;
+  blip   = create_blip_3d_s (lattice, Gvecs, coefs, numG, 4.0, true);
 
   // Now, evaluate spline on a line through the box
   FILE *fout = fopen ("blip_1d_s.dat", "w");
+  double y = 0.2; 
+  double z = 0.8;
+  double u[3], r[3];
+  u[1] = y;
+  u[2] = z;
   for (double x=0.0; x<1.0; x+=0.001) {
+    u[0] = x;
+    r[0] = u[0]*lattice[0] + u[1]*lattice[3] + u[2]*lattice[6];
+    r[1] = u[0]*lattice[1] + u[1]*lattice[4] + u[2]*lattice[7];
+    r[2] = u[0]*lattice[2] + u[1]*lattice[5] + u[2]*lattice[8];
+
     float val;
-    eval_UBspline_3d_s (spline, 0.2, x, 0.8, &val);
-    fprintf (fout, "%24.16e %24.16e\n", x, val);
+    eval_UBspline_3d_s (blip, x, 0.2, 0.8, &val);
+    double sum = 0.0;
+    for (int i=0; i<numG; i++) {
+      double phase = dot (Gvecs+3*i, r);
+      complex_float e2iGr = (float)cos(phase) + 1.0fi*sin(phase);
+      sum += crealf (coefs[i] * e2iGr);
+    }
+
+    fprintf (fout, "%24.16e %24.16e %24.16e\n", x, val, sum/3.375);
   }
   fclose (fout);
 
-  destroy_Bspline (spline);
+  destroy_Bspline (blip);
   free (Gvecs);
   free (coefs);
 }
