@@ -86,6 +86,7 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   double MxInv = 1.0/(double)Mx;
   double MyInv = 1.0/(double)My;
   double MzInv = 1.0/(double)Mz;
+  double scale = 1.0/3.375;
   for (int i=0; i<numG; i++) {
     double *g = Gvecs+3*i;
     double G[3];
@@ -114,6 +115,7 @@ create_blip_3d_s (double *lattice, double *Gvecs,
       gamma *= (3.0/(G[2]*G[2]*G[2]*G[2])*(3.0 - 4.0*cos(G[2]) + cos(2.0*G[2])));
     else
       gamma *= 1.5;
+    gamma *= scale;
     fft_box[(ix*My+iy)*Mz+iz] = coefs[i]/gamma;
   }
   

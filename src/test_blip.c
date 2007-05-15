@@ -140,7 +140,7 @@ test_blip_1d_s (double a, double Gcut, double ratio)
       sum += crealf (coefs[i] * e2iGr);
     }
 
-    fprintf (fout, "%24.16e %24.16e %24.16e\n", x, val, sum/3.375);
+    fprintf (fout, "%24.16e %24.16e %24.16e\n", x, val, sum);
   }
   fclose (fout);
 
