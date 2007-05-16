@@ -35,6 +35,11 @@
 ////////////////////////////////////////////////////////////
 void init_sse_data();
 
+void
+find_coefs_1d_d (Ugrid grid, BCtype_d bc, 
+		 double *data,  int dstride,
+		 double *coefs, int cstride);
+
 void 
 solve_deriv_interp_1d_s (float bands[], float coefs[],
 			 int M, int cstride)
@@ -137,6 +142,33 @@ solve_periodic_interp_1d_s (float bands[], float coefs[],
 }
 
 
+#ifdef HIGH_PRECISION
+void
+find_coefs_1d_s (Ugrid grid, BCtype_s bc, 
+		 float *data,  int dstride,
+		 float *coefs, int cstride)
+{
+  BCtype_d d_bc;
+  double *d_data, *d_coefs;
+
+  d_bc.lCode = bc.lCode;   d_bc.rCode = bc.rCode;
+  d_bc.lVal  = bc.lVal;    d_bc.rVal  = bc.rVal;
+  int M = grid.num, N;
+  if (bc.lCode == PERIODIC)    N = M+3;
+  else                         N = M+2;
+
+  d_data  = malloc (N*sizeof(double));
+  d_coefs = malloc (N*sizeof(double));
+  for (int i=0; i<M; i++)
+    d_data[i] = data[i*dstride];
+  find_coefs_1d_d (grid, d_bc, d_data, 1, d_coefs, 1);
+  for (int i=0; i<N; i++)
+    coefs[i*cstride] = d_coefs[i];
+  free (d_data);
+  free (d_coefs);
+}
+
+#else
 void
 find_coefs_1d_s (Ugrid grid, BCtype_s bc, 
 		 float *data,  int dstride,
@@ -216,7 +248,7 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
 #endif
   }
 }
-
+#endif
 
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////

@@ -84,6 +84,11 @@ if test "x$enable_blips" = "xyes"; then
   fi
 fi
 
+AC_ARG_ENABLE(precision, [  --enable-precision      use double-precision solve for single-precision splines])
+if test "x$enable_precision" = "xyes"; then
+   AC_DEFINE([HIGH_PRECISION], [1], [Use double-precision to solve for single-precision splines])
+fi
+
 AC_ARG_ENABLE(profile,[  --enable-profile        instrument code with profiling information])
 if test "x$enable_profile" = "xyes"; then
    CFLAGS="-pg $CFLAGS"
