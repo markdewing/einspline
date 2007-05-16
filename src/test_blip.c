@@ -144,7 +144,7 @@ test_blip_1d_s (double a, double Gcut, double ratio)
       gsum[2] += crealf (coefs[i] * 1.0fi * Gvecs[3*i+2]);
     }
 
-    fprintf (fout, "%24.16e %24.16e %24.16e\n", x, val, sum, grad[0], grad[1], grad[2],
+    fprintf (fout, "%24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e\n", x, val, sum, grad[0], grad[1], grad[2],
 	     gsum[0], gsum[1], gsum[2]);
   }
   fclose (fout);

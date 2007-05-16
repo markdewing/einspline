@@ -129,7 +129,7 @@ eval_UBspline_1d_z_vgh (UBspline_1d_z * restrict spline, double x,
 /* Value only */
 inline void
 eval_UBspline_2d_z (UBspline_2d_z * restrict spline, 
-		    double x, double y, double* restrict val)
+		    double x, double y, complex_double* restrict val)
 {
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;
@@ -467,8 +467,8 @@ eval_UBspline_3d_z (UBspline_3d_z * restrict spline,
 /* Value and gradient */
 inline void
 eval_UBspline_3d_z_vg (UBspline_3d_z * restrict spline, 
-			double x, double y, double z,
-			complex_double* restrict val, 
+		       double x, double y, double z,
+		       complex_double* restrict val, 
 		       complex_double* restrict grad)
 {
   x -= spline->x_grid.start;
