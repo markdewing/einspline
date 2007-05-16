@@ -36,48 +36,48 @@
 void init_sse_data();
 
 void 
-solve_deriv_interp_1d_s (float bands[][4], float coefs[],
+solve_deriv_interp_1d_s (float bands[], float coefs[],
 			 int M, int cstride)
 {
   // Solve interpolating equations
   // First and last rows are different
-  bands[0][1] /= bands[0][0];
-  bands[0][2] /= bands[0][0];
-  bands[0][3] /= bands[0][0];
-  bands[0][0] = 1.0;
-  bands[1][1] -= bands[1][0]*bands[0][1];
-  bands[1][2] -= bands[1][0]*bands[0][2];
-  bands[1][3] -= bands[1][0]*bands[0][3];
-  bands[0][0] = 0.0;
-  bands[1][2] /= bands[1][1];
-  bands[1][3] /= bands[1][1];
-  bands[1][1] = 1.0;
+  bands[4*(0)+1] /= bands[4*(0)+0];
+  bands[4*(0)+2] /= bands[4*(0)+0];
+  bands[4*(0)+3] /= bands[4*(0)+0];
+  bands[4*(0)+0] = 1.0;
+  bands[4*(1)+1] -= bands[4*(1)+0]*bands[4*(0)+1];
+  bands[4*(1)+2] -= bands[4*(1)+0]*bands[4*(0)+2];
+  bands[4*(1)+3] -= bands[4*(1)+0]*bands[4*(0)+3];
+  bands[4*(0)+0] = 0.0;
+  bands[4*(1)+2] /= bands[4*(1)+1];
+  bands[4*(1)+3] /= bands[4*(1)+1];
+  bands[4*(1)+1] = 1.0;
   
   // Now do rows 2 through M+1
   for (int row=2; row < (M+1); row++) {
-    bands[row][1] -= bands[row][0]*bands[row-1][2];
-    bands[row][3] -= bands[row][0]*bands[row-1][3];
-    bands[row][2] /= bands[row][1];
-    bands[row][3] /= bands[row][1];
-    bands[row][0] = 0.0;
-    bands[row][1] = 1.0;
+    bands[4*(row)+1] -= bands[4*(row)+0]*bands[4*(row-1)+2];
+    bands[4*(row)+3] -= bands[4*(row)+0]*bands[4*(row-1)+3];
+    bands[4*(row)+2] /= bands[4*(row)+1];
+    bands[4*(row)+3] /= bands[4*(row)+1];
+    bands[4*(row)+0] = 0.0;
+    bands[4*(row)+1] = 1.0;
   }
 
   // Do last row
-  bands[M+1][1] -= bands[M+1][0]*bands[M-1][2];
-  bands[M+1][3] -= bands[M+1][0]*bands[M-1][3];
-  bands[M+1][2] -= bands[M+1][1]*bands[M][2];
-  bands[M+1][3] -= bands[M+1][1]*bands[M][3];
-  bands[M+1][3] /= bands[M+1][2];
-  bands[M+1][2] = 1.0;
+  bands[4*(M+1)+1] -= bands[4*(M+1)+0]*bands[4*(M-1)+2];
+  bands[4*(M+1)+3] -= bands[4*(M+1)+0]*bands[4*(M-1)+3];
+  bands[4*(M+1)+2] -= bands[4*(M+1)+1]*bands[4*(M)+2];
+  bands[4*(M+1)+3] -= bands[4*(M+1)+1]*bands[4*(M)+3];
+  bands[4*(M+1)+3] /= bands[4*(M+1)+2];
+  bands[4*(M+1)+2] = 1.0;
 
-  coefs[(M+1)*cstride] = bands[M+1][3];
+  coefs[(M+1)*cstride] = bands[4*(M+1)+3];
   // Now back substitute up
   for (int row=M; row>0; row--)
-    coefs[row*cstride] = bands[row][3] - bands[row][2]*coefs[cstride*(row+1)];
+    coefs[row*cstride] = bands[4*(row)+3] - bands[4*(row)+2]*coefs[cstride*(row+1)];
   
   // Finish with first row
-  coefs[0] = bands[0][3] - bands[0][1]*coefs[1*cstride] - bands[0][2]*coefs[2*cstride];
+  coefs[0] = bands[4*(0)+3] - bands[4*(0)+1]*coefs[1*cstride] - bands[4*(0)+2]*coefs[2*cstride];
 }
 
 // On input, bands should be filled with:
@@ -87,47 +87,47 @@ solve_deriv_interp_1d_s (float bands[][4], float coefs[],
 // cstride gives the stride between values in coefs.
 // On exit, coefs with contain interpolating B-spline coefs
 void 
-solve_periodic_interp_1d_s (float bands[][4], float coefs[],
+solve_periodic_interp_1d_s (float bands[], float coefs[],
 			    int M, int cstride)
 {
   float lastCol[M];
   // Now solve:
   // First and last rows are different
-  bands[0][2] /= bands[0][1];
-  bands[0][0] /= bands[0][1];
-  bands[0][3] /= bands[0][1];
-  bands[0][1]  = 1.0;
-  bands[M-1][1] -= bands[M-1][2]*bands[0][0];
-  bands[M-1][3] -= bands[M-1][2]*bands[0][3];
-  bands[M-1][2]  = -bands[M-1][2]*bands[0][2];
-  lastCol[0] = bands[0][0];
+  bands[4*(0)+2] /= bands[4*(0)+1];
+  bands[4*(0)+0] /= bands[4*(0)+1];
+  bands[4*(0)+3] /= bands[4*(0)+1];
+  bands[4*(0)+1]  = 1.0;
+  bands[4*(M-1)+1] -= bands[4*(M-1)+2]*bands[4*(0)+0];
+  bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(0)+3];
+  bands[4*(M-1)+2]  = -bands[4*(M-1)+2]*bands[4*(0)+2];
+  lastCol[0] = bands[4*(0)+0];
   
   for (int row=1; row < (M-1); row++) {
-    bands[row][1] -= bands[row][0] * bands[row-1][2];
-    bands[row][3] -= bands[row][0] * bands[row-1][3];
-    lastCol[row]   = -bands[row][0] * lastCol[row-1];
-    bands[row][0] = 0.0;
-    bands[row][2] /= bands[row][1];
-    bands[row][3] /= bands[row][1];
-    lastCol[row]  /= bands[row][1];
-    bands[row][1]  = 1.0;
+    bands[4*(row)+1] -= bands[4*(row)+0] * bands[4*(row-1)+2];
+    bands[4*(row)+3] -= bands[4*(row)+0] * bands[4*(row-1)+3];
+    lastCol[row]   = -bands[4*(row)+0] * lastCol[row-1];
+    bands[4*(row)+0] = 0.0;
+    bands[4*(row)+2] /= bands[4*(row)+1];
+    bands[4*(row)+3] /= bands[4*(row)+1];
+    lastCol[row]  /= bands[4*(row)+1];
+    bands[4*(row)+1]  = 1.0;
     if (row < (M-2)) {
-      bands[M-1][3] -= bands[M-1][2]*bands[row][3];
-      bands[M-1][1] -= bands[M-1][2]*lastCol[row];
-      bands[M-1][2] = -bands[M-1][2]*bands[row][2];
+      bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(row)+3];
+      bands[4*(M-1)+1] -= bands[4*(M-1)+2]*lastCol[row];
+      bands[4*(M-1)+2] = -bands[4*(M-1)+2]*bands[4*(row)+2];
     }
   }
 
   // Now do last row
   // The [2] element and [0] element are now on top of each other 
-  bands[M-1][0] += bands[M-1][2];
-  bands[M-1][1] -= bands[M-1][0] * (bands[M-2][2]+lastCol[M-2]);
-  bands[M-1][3] -= bands[M-1][0] *  bands[M-2][3];
-  bands[M-1][3] /= bands[M-1][1];
-  coefs[M*cstride] = bands[M-1][3];
+  bands[4*(M-1)+0] += bands[4*(M-1)+2];
+  bands[4*(M-1)+1] -= bands[4*(M-1)+0] * (bands[4*(M-2)+2]+lastCol[M-2]);
+  bands[4*(M-1)+3] -= bands[4*(M-1)+0] *  bands[4*(M-2)+3];
+  bands[4*(M-1)+3] /= bands[4*(M-1)+1];
+  coefs[M*cstride] = bands[4*(M-1)+3];
   for (int row=M-2; row>=0; row--) 
     coefs[(row+1)*cstride] = 
-      bands[row][3] - bands[row][2]*coefs[(row+2)*cstride] - lastCol[row]*coefs[M*cstride];
+      bands[4*(row)+3] - bands[4*(row)+2]*coefs[(row+2)*cstride] - lastCol[row]*coefs[M*cstride];
   
   coefs[0*cstride] = coefs[M*cstride];
   coefs[(M+1)*cstride] = coefs[1*cstride];
@@ -146,16 +146,10 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
   float basis[4] = {1.0/6.0, 2.0/3.0, 1.0/6.0, 0.0};
   if (bc.lCode == PERIODIC) {
 #ifdef HAVE_C_VARARRAYS
-    float bands[M][4];
-    for (int i=0; i<M; i++) {
-      bands[i][0] = basis[0];
-      bands[i][1] = basis[1];
-      bands[i][2] = basis[2];
-      bands[i][3] = data[i*dstride];
-    }
-    solve_periodic_interp_1d_s (bands, coefs, M, cstride);
+    float bands[4*M];
 #else
     float *bands = malloc(4*M*sizeof(float));
+#endif    
     for (int i=0; i<M; i++) {
       bands[4*i+0] = basis[0];
       bands[4*i+1] = basis[1];
@@ -163,6 +157,7 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
       bands[4*i+3] = data[i*dstride];
     }
     solve_periodic_interp_1d_s (bands, coefs, M, cstride);
+#ifndef HAVE_C_VARARRAYS
     free (bands);
 #endif
   }
@@ -201,22 +196,12 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
       abcd_right[3] = bc.rVal;
     }
 #ifdef HAVE_C_VARARRAYS
-    float bands[M+2][4];
-    for (int i=0; i<4; i++) {
-      bands[0][i]   = abcd_left[i];
-      bands[M+1][i] = abcd_right[i];
-    }
-    for (int i=0; i<M; i++) {
-      for (int j=0; j<3; j++)
-	bands[i+1][j] = basis[j];
-      bands[i+1][3] = data[i*dstride];
-    }   
-    // Now, solve for coefficients
-    solve_deriv_interp_1d_s (bands, coefs, M, cstride);
+    float bands[4*(M+2)];
 #else
     float *bands = malloc ((M+2)*4*sizeof(float));
+#endif    
     for (int i=0; i<4; i++) {
-      bands[4*0+i]   = abcd_left[i];
+      bands[4*( 0 )+i]   = abcd_left[i];
       bands[4*(M+1)+i] = abcd_right[i];
     }
     for (int i=0; i<M; i++) {
@@ -226,6 +211,7 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
     }   
     // Now, solve for coefficients
     solve_deriv_interp_1d_s (bands, coefs, M, cstride);
+#ifndef HAVE_C_VARARRAYS
     free (bands);
 #endif
   }
@@ -639,48 +625,48 @@ create_UBspline_3d_c (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 // cstride gives the stride between values in coefs.
 // On exit, coefs with contain interpolating B-spline coefs
 void 
-solve_deriv_interp_1d_d (double bands[][4], double coefs[],
+solve_deriv_interp_1d_d (double bands[], double coefs[],
 			 int M, int cstride)
 {
   // Solve interpolating equations
   // First and last rows are different
-  bands[0][1] /= bands[0][0];
-  bands[0][2] /= bands[0][0];
-  bands[0][3] /= bands[0][0];
-  bands[0][0] = 1.0;
-  bands[1][1] -= bands[1][0]*bands[0][1];
-  bands[1][2] -= bands[1][0]*bands[0][2];
-  bands[1][3] -= bands[1][0]*bands[0][3];
-  bands[0][0] = 0.0;
-  bands[1][2] /= bands[1][1];
-  bands[1][3] /= bands[1][1];
-  bands[1][1] = 1.0;
+  bands[4*(0)+1] /= bands[4*(0)+0];
+  bands[4*(0)+2] /= bands[4*(0)+0];
+  bands[4*(0)+3] /= bands[4*(0)+0];
+  bands[4*(0)+0] = 1.0;
+  bands[4*(1)+1] -= bands[4*(1)+0]*bands[4*(0)+1];
+  bands[4*(1)+2] -= bands[4*(1)+0]*bands[4*(0)+2];
+  bands[4*(1)+3] -= bands[4*(1)+0]*bands[4*(0)+3];
+  bands[4*(0)+0] = 0.0;
+  bands[4*(1)+2] /= bands[4*(1)+1];
+  bands[4*(1)+3] /= bands[4*(1)+1];
+  bands[4*(1)+1] = 1.0;
   
   // Now do rows 2 through M+1
   for (int row=2; row < (M+1); row++) {
-    bands[row][1] -= bands[row][0]*bands[row-1][2];
-    bands[row][3] -= bands[row][0]*bands[row-1][3];
-    bands[row][2] /= bands[row][1];
-    bands[row][3] /= bands[row][1];
-    bands[row][0] = 0.0;
-    bands[row][1] = 1.0;
+    bands[4*(row)+1] -= bands[4*(row)+0]*bands[4*(row-1)+2];
+    bands[4*(row)+3] -= bands[4*(row)+0]*bands[4*(row-1)+3];
+    bands[4*(row)+2] /= bands[4*(row)+1];
+    bands[4*(row)+3] /= bands[4*(row)+1];
+    bands[4*(row)+0] = 0.0;
+    bands[4*(row)+1] = 1.0;
   }
 
   // Do last row
-  bands[M+1][1] -= bands[M+1][0]*bands[M-1][2];
-  bands[M+1][3] -= bands[M+1][0]*bands[M-1][3];
-  bands[M+1][2] -= bands[M+1][1]*bands[M][2];
-  bands[M+1][3] -= bands[M+1][1]*bands[M][3];
-  bands[M+1][3] /= bands[M+1][2];
-  bands[M+1][2] = 1.0;
+  bands[4*(M+1)+1] -= bands[4*(M+1)+0]*bands[4*(M-1)+2];
+  bands[4*(M+1)+3] -= bands[4*(M+1)+0]*bands[4*(M-1)+3];
+  bands[4*(M+1)+2] -= bands[4*(M+1)+1]*bands[4*(M)+2];
+  bands[4*(M+1)+3] -= bands[4*(M+1)+1]*bands[4*(M)+3];
+  bands[4*(M+1)+3] /= bands[4*(M+1)+2];
+  bands[4*(M+1)+2] = 1.0;
 
-  coefs[(M+1)*cstride] = bands[M+1][3];
+  coefs[(M+1)*cstride] = bands[4*(M+1)+3];
   // Now back substitute up
   for (int row=M; row>0; row--)
-    coefs[row*cstride] = bands[row][3] - bands[row][2]*coefs[cstride*(row+1)];
+    coefs[row*cstride] = bands[4*(row)+3] - bands[4*(row)+2]*coefs[cstride*(row+1)];
   
   // Finish with first row
-  coefs[0] = bands[0][3] - bands[0][1]*coefs[1*cstride] - bands[0][2]*coefs[2*cstride];
+  coefs[0] = bands[4*(0)+3] - bands[4*(0)+1]*coefs[1*cstride] - bands[4*(0)+2]*coefs[2*cstride];
 }
 
 // On input, bands should be filled with:
@@ -690,47 +676,47 @@ solve_deriv_interp_1d_d (double bands[][4], double coefs[],
 // cstride gives the stride between values in coefs.
 // On exit, coefs with contain interpolating B-spline coefs
 void 
-solve_periodic_interp_1d_d (double bands[][4], double coefs[],
+solve_periodic_interp_1d_d (double bands[], double coefs[],
 			    int M, int cstride)
 {
   double lastCol[M];
   // Now solve:
   // First and last rows are different
-  bands[0][2] /= bands[0][1];
-  bands[0][0] /= bands[0][1];
-  bands[0][3] /= bands[0][1];
-  bands[0][1]  = 1.0;
-  bands[M-1][1] -= bands[M-1][2]*bands[0][0];
-  bands[M-1][3] -= bands[M-1][2]*bands[0][3];
-  bands[M-1][2]  = -bands[M-1][2]*bands[0][2];
-  lastCol[0] = bands[0][0];
+  bands[4*(0)+2] /= bands[4*(0)+1];
+  bands[4*(0)+0] /= bands[4*(0)+1];
+  bands[4*(0)+3] /= bands[4*(0)+1];
+  bands[4*(0)+1]  = 1.0;
+  bands[4*(M-1)+1] -= bands[4*(M-1)+2]*bands[4*(0)+0];
+  bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(0)+3];
+  bands[4*(M-1)+2]  = -bands[4*(M-1)+2]*bands[4*(0)+2];
+  lastCol[0] = bands[4*(0)+0];
   
   for (int row=1; row < (M-1); row++) {
-    bands[row][1] -= bands[row][0] * bands[row-1][2];
-    bands[row][3] -= bands[row][0] * bands[row-1][3];
-    lastCol[row]   = -bands[row][0] * lastCol[row-1];
-    bands[row][0] = 0.0;
-    bands[row][2] /= bands[row][1];
-    bands[row][3] /= bands[row][1];
-    lastCol[row]  /= bands[row][1];
-    bands[row][1]  = 1.0;
+    bands[4*(row)+1] -= bands[4*(row)+0] * bands[4*(row-1)+2];
+    bands[4*(row)+3] -= bands[4*(row)+0] * bands[4*(row-1)+3];
+    lastCol[row]   = -bands[4*(row)+0] * lastCol[row-1];
+    bands[4*(row)+0] = 0.0;
+    bands[4*(row)+2] /= bands[4*(row)+1];
+    bands[4*(row)+3] /= bands[4*(row)+1];
+    lastCol[row]  /= bands[4*(row)+1];
+    bands[4*(row)+1]  = 1.0;
     if (row < (M-2)) {
-      bands[M-1][3] -= bands[M-1][2]*bands[row][3];
-      bands[M-1][1] -= bands[M-1][2]*lastCol[row];
-      bands[M-1][2] = -bands[M-1][2]*bands[row][2];
+      bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(row)+3];
+      bands[4*(M-1)+1] -= bands[4*(M-1)+2]*lastCol[row];
+      bands[4*(M-1)+2] = -bands[4*(M-1)+2]*bands[4*(row)+2];
     }
   }
 
   // Now do last row
   // The [2] element and [0] element are now on top of each other 
-  bands[M-1][0] += bands[M-1][2];
-  bands[M-1][1] -= bands[M-1][0] * (bands[M-2][2]+lastCol[M-2]);
-  bands[M-1][3] -= bands[M-1][0] *  bands[M-2][3];
-  bands[M-1][3] /= bands[M-1][1];
-  coefs[M*cstride] = bands[M-1][3];
+  bands[4*(M-1)+0] += bands[4*(M-1)+2];
+  bands[4*(M-1)+1] -= bands[4*(M-1)+0] * (bands[4*(M-2)+2]+lastCol[M-2]);
+  bands[4*(M-1)+3] -= bands[4*(M-1)+0] *  bands[4*(M-2)+3];
+  bands[4*(M-1)+3] /= bands[4*(M-1)+1];
+  coefs[M*cstride] = bands[4*(M-1)+3];
   for (int row=M-2; row>=0; row--) 
     coefs[(row+1)*cstride] = 
-      bands[row][3] - bands[row][2]*coefs[(row+2)*cstride] - lastCol[row]*coefs[M*cstride];
+      bands[4*(row)+3] - bands[4*(row)+2]*coefs[(row+2)*cstride] - lastCol[row]*coefs[M*cstride];
   
   coefs[0*cstride] = coefs[M*cstride];
   coefs[(M+1)*cstride] = coefs[1*cstride];
@@ -749,16 +735,10 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
   double basis[4] = {1.0/6.0, 2.0/3.0, 1.0/6.0, 0.0};
   if (bc.lCode == PERIODIC) {
 #ifdef HAVE_C_VARARRAYS
-    double bands[M][4];
-    for (int i=0; i<M; i++) {
-      bands[i][0] = basis[0];
-      bands[i][1] = basis[1];
-      bands[i][2] = basis[2];
-      bands[i][3] = data[i*dstride];
-    }
-    solve_periodic_interp_1d_d (bands, coefs, M, cstride);
+    double bands[M*4];
 #else
     double *bands = malloc (4*M*sizeof(double));
+#endif
     for (int i=0; i<M; i++) {
       bands[4*i+0] = basis[0];
       bands[4*i+1] = basis[1];
@@ -766,6 +746,7 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
       bands[4*i+3] = data[i*dstride];
     }
     solve_periodic_interp_1d_d (bands, coefs, M, cstride);
+#ifndef HAVE_C_VARARRAYS
     free (bands);
 #endif
   }
@@ -804,22 +785,12 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
       abcd_right[3] = bc.rVal;
     }
 #ifdef HAVE_C_VARARRAYS
-    double bands[M+2][4];
-    for (int i=0; i<4; i++) {
-      bands[0][i]   = abcd_left[i];
-      bands[M+1][i] = abcd_right[i];
-    }
-    for (int i=0; i<M; i++) {
-      for (int j=0; j<3; j++)
-	bands[i+1][j] = basis[j];
-      bands[i+1][3] = data[i*dstride];
-    }   
-    // Now, solve for coefficients
-    solve_deriv_interp_1d_d (bands, coefs, M, cstride);
+    double bands[(M+2)*4];
 #else
     double *bands = malloc ((M+2)*4*sizeof(double));
+#endif
     for (int i=0; i<4; i++) {
-      bands[4*0+i]   = abcd_left[i];
+      bands[4*( 0 )+i] = abcd_left[i];
       bands[4*(M+1)+i] = abcd_right[i];
     }
     for (int i=0; i<M; i++) {
@@ -829,6 +800,7 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
     }   
     // Now, solve for coefficients
     solve_deriv_interp_1d_d (bands, coefs, M, cstride);
+#ifndef HAVE_C_VARARRAYS
     free (bands);
 #endif
   }

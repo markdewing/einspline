@@ -131,16 +131,21 @@ test_blip_1d_s (double a, double Gcut, double ratio)
     r[1] = u[0]*lattice[1] + u[1]*lattice[4] + u[2]*lattice[7];
     r[2] = u[0]*lattice[2] + u[1]*lattice[5] + u[2]*lattice[8];
 
-    float val;
-    eval_UBspline_3d_s (blip, x, 0.2, 0.8, &val);
+    float val, grad[3];
+    eval_UBspline_3d_s_vg (blip, x, 0.2, 0.8, &val, grad);
     double sum = 0.0;
+    double gsum[3] = { 0.0, 0.0, 0.0}; 
     for (int i=0; i<numG; i++) {
       double phase = dot (Gvecs+3*i, r);
       complex_float e2iGr = (float)cos(phase) + 1.0fi*sin(phase);
       sum += crealf (coefs[i] * e2iGr);
+      gsum[0] += crealf (coefs[i] * 1.0fi * Gvecs[3*i+0]);
+      gsum[1] += crealf (coefs[i] * 1.0fi * Gvecs[3*i+1]);
+      gsum[2] += crealf (coefs[i] * 1.0fi * Gvecs[3*i+2]);
     }
 
-    fprintf (fout, "%24.16e %24.16e %24.16e\n", x, val, sum);
+    fprintf (fout, "%24.16e %24.16e %24.16e\n", x, val, sum, grad[0], grad[1], grad[2],
+	     gsum[0], gsum[1], gsum[2]);
   }
   fclose (fout);
 

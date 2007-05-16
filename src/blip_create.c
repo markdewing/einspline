@@ -93,9 +93,6 @@ create_blip_3d_s (double *lattice, double *Gvecs,
     G[0] = MxInv*(lattice[0]*g[0] + lattice[3]*g[1] + lattice[6]*g[2]);
     G[1] = MyInv*(lattice[1]*g[0] + lattice[4]*g[1] + lattice[7]*g[2]);
     G[2] = MzInv*(lattice[2]*g[0] + lattice[5]*g[1] + lattice[8]*g[2]);
-//     G[0] = MxInv*(lattice[0]*g[0] + lattice[1]*g[1] + lattice[2]*g[2]);
-//     G[1] = MyInv*(lattice[1]*g[3] + lattice[4]*g[4] + lattice[5]*g[2]);
-//     G[2] = MzInv*(lattice[2]*g[6] + lattice[7]*g[1] + lattice[8]*g[2]);
     int ix = round (twoPiInv * dot (lattice+0, g));
     int iy = round (twoPiInv * dot (lattice+3, g));
     int iz = round (twoPiInv * dot (lattice+6, g));
