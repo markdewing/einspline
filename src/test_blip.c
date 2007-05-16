@@ -131,18 +131,26 @@ test_blip_1d_s (double a, double Gcut, double ratio)
     r[1] = u[0]*lattice[1] + u[1]*lattice[4] + u[2]*lattice[7];
     r[2] = u[0]*lattice[2] + u[1]*lattice[5] + u[2]*lattice[8];
 
-    float val, grad[3];
-    eval_UBspline_3d_s_vg (blip, x, 0.2, 0.8, &val, grad);
+    float val, derivs[3];
+    eval_UBspline_3d_s_vg (blip, x, 0.2, 0.8, &val, derivs);
+    
     double sum = 0.0;
     double gsum[3] = { 0.0, 0.0, 0.0}; 
+    double gex[3];
+    gsum[0] = 0.0; gsum[1] = 0.0; gsum[2] = 0.0;
     for (int i=0; i<numG; i++) {
       double phase = dot (Gvecs+3*i, r);
       complex_float e2iGr = (float)cos(phase) + 1.0fi*sin(phase);
       sum += crealf (coefs[i] * e2iGr);
-      gsum[0] += crealf (coefs[i] * 1.0fi * Gvecs[3*i+0]);
-      gsum[1] += crealf (coefs[i] * 1.0fi * Gvecs[3*i+1]);
-      gsum[2] += crealf (coefs[i] * 1.0fi * Gvecs[3*i+2]);
+      gsum[0] += crealf (coefs[i] *e2iGr *1.0fi * Gvecs[3*i+0]);
+      gsum[1] += crealf (coefs[i] *e2iGr *1.0fi * Gvecs[3*i+1]);
+      gsum[2] += crealf (coefs[i] *e2iGr *1.0fi * Gvecs[3*i+2]);
     }
+    float grad[3];
+    grad[0] = recip[0]*derivs[0] + recip[1]*derivs[1] + recip[2]*derivs[2];
+    grad[1] = recip[3]*derivs[0] + recip[4]*derivs[1] + recip[5]*derivs[2];
+    grad[2] = recip[6]*derivs[0] + recip[7]*derivs[1] + recip[8]*derivs[2];
+    grad[0]/=(2.0*M_PI); grad[1]/=(2.0*M_PI); grad[2]/=(2.0*M_PI);
 
     fprintf (fout, "%24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e\n", x, val, sum, grad[0], grad[1], grad[2],
 	     gsum[0], gsum[1], gsum[2]);
