@@ -29,6 +29,10 @@
     Python bindings when time permits.</li><br/>
 <li><u> What are the licensing terms of einspline?</u><br/>
     einspline is licensed under the <a href="http://www.gnu.org/copyleft/gpl.html">GNU Public License</a>. </li><br/>
+<li><u> How do I compile the library on Windows?</u><br/>
+    I have no idea.  I almost never use Windows and have no compilers
+    for that platform.  One user has reported that he was able to get
+    the library to compile, but I cannot help you with that.</li><br/>
 
 <li> <u> Where are all the other frequently asked questions in this FAQ? </u><br>
     Besides this one, they haven't been written, yet. </li> <br>
