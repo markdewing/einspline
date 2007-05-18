@@ -49,13 +49,6 @@ structure contains the following elements
   </tr>
   <caption> <font color="blue"> BCtype_s and BCtype_d data structure elements</font></caption>
 </table>
-<font color="blue">bc_code</font> is one of the enumerated value,
-{<font color="blue">PERIODIC</font>, <font color="blue">DERIV1</font>,
-<font color="blue">DERIV2</font>, <font color="blue">FLAT</font>,
-<font color="blue">NATURAL</font> }. <br/>
-<font color="blue">d_type</font> is the the C type corresponding to
-{s, d, c, z}, i.e. {float, double, complex_float, complex_double}
-<br/> <br/>
 
 For the complex types, we must specify both the real and imaginary
 parts:
@@ -70,6 +63,30 @@ parts:
   </tr>
   <caption> <font color="blue"> BCtype_s and BCtype_d data structure elements</font></caption>
 </table>
+<br/> 
+<font color="blue">lCode</font> and <font color="blue">lVal</font> specify the boundary conditions
+at the first grid point (the "left" boundary), while <font color="blue">rCode</font> and 
+<font color="blue">rVal</font> specify the boundary conditions on the last grid point (the "right"
+boundary).<br>
+<font color="blue">bc_code</font> is one of the enumerated value,
+{<font color="blue">PERIODIC</font>, <font color="blue">DERIV1</font>,
+<font color="blue">DERIV2</font>, <font color="blue">FLAT</font>,
+<font color="blue">NATURAL</font> }. <br/>
+<font color="blue">d_type</font> is the the C type corresponding to
+{s, d, c, z}, i.e. {float, double, complex_float, complex_double}
+<br/> <br/>
+The codes have the following meaning
+<table CELLPADDING=3 frame=border rules=all bordercolor="gray" width="50%">
+  <tr> <td>                    Code     </td> <td> Meaning </td></tr>
+  <tr> <td> <font color="blue">PERIODIC </font> </td> <td> Use periodic boundary conditions.  The value, first derivative and second derivative at the left
+boundary match those at the right boundary. </td> </tr>
+  <tr> <td> <font color="blue">DERIV1   </font> </td> <td> The value of the first derivative is specified in lVal or rVal. </td> </tr>
+  <tr> <td> <font color="blue">DERIV2   </font> </td> <td> The value of the second derivative is specified in lVal or rVal. </td> </tr>
+  <tr> <td> <font color="blue">FLAT     </font> </td> <td> The value of the first derivative is set to zero at the boundary. </td> </tr>
+  <tr> <td> <font color="blue">NATURAL     </font> </td> <td> The value of the second derivative is set to zero at the boundary. </td> </tr>
+</table>
+
+
 
 <h4> Data to be interpolated </h4>
 The data to be interpolated should have
