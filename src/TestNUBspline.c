@@ -26,6 +26,10 @@
 #include <math.h>
 #include <string.h>
 
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433
+#endif
+
 void
 PrintPassFail(bool pass)
 {
