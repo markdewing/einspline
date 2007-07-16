@@ -119,14 +119,14 @@ void
 test_bspline_3d_s()
 {
   double kcut = 2.0*M_PI * 5.0;
-  int Nspline = 30;
+  int Nspline = 60;
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 0.0; x_grid.end = 1.0; x_grid.num = Nspline;
   y_grid.start = 0.0; y_grid.end = 1.0; y_grid.num = Nspline;
   z_grid.start = 0.0; z_grid.end = 1.0; z_grid.num = Nspline;
-  double dx = 1.0/(double)(Nspline-1);
-  double dy = 1.0/(double)(Nspline-1);
-  double dz = 1.0/(double)(Nspline-1);
+  double dx = 1.0/(double)(Nspline);
+  double dy = 1.0/(double)(Nspline);
+  double dz = 1.0/(double)(Nspline);
   BCtype_s xBC, yBC, zBC;
   xBC.lCode = xBC.rCode = PERIODIC;
   yBC.lCode = yBC.rCode = PERIODIC;
@@ -162,7 +162,7 @@ test_bspline_3d_s()
     eval_UBspline_3d_s_vgh (spline, x, y, z, &sval, sgrad, shess);
     eval_periodic_func_s   (&func,  x, y, z, &eval, egrad, ehess);
     //    fprintf (stderr, "%10.8f %10.8f\n", eval, sval);
-    fprintf (stderr, "%10.8f %10.8f %10.8f     %10.8f %10.8f %10.8f\n",
+    fprintf (stderr, "%14.8f %14.8f %14.8f     %14.8f %14.8f %14.8f\n",
 	     egrad[0], egrad[1], egrad[2], sgrad[0], sgrad[1], sgrad[2]);
   }
 }
