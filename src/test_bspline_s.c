@@ -124,6 +124,9 @@ test_bspline_3d_s()
   x_grid.start = 0.0; x_grid.end = 1.0; x_grid.num = Nspline;
   y_grid.start = 0.0; y_grid.end = 1.0; y_grid.num = Nspline;
   z_grid.start = 0.0; z_grid.end = 1.0; z_grid.num = Nspline;
+  double dx = 1.0/(double)Nspline;
+  double dy = 1.0/(double)Nspline;
+  double dz = 1.0/(double)Nspline;
   BCtype_s xBC, yBC, zBC;
   xBC.lCode = xBC.rCode = PERIODIC;
   yBC.lCode = yBC.rCode = PERIODIC;
@@ -133,14 +136,14 @@ test_bspline_3d_s()
   periodic_func_s func;
   int_periodic_func (&func, kcut);
   for (int ix=0; ix < x_grid.num; ix++) {
-    double x = (double) ix * x_grid.num; 
+    double x = (double) ix * dx; 
     for (int iy=0; iy < y_grid.num; iy++) {
-      double y = (double) iy * y_grid.num;
+      double y = (double) iy * dy;
       for (int iz=0; iz < z_grid.num; iz++) {
-	double z = (double) iz * z_grid.num;
+	double z = (double) iz * dz;
 	float val, grad[3], hess[9];
 	eval_periodic_func_s (&func, x, y, z, &val, grad, hess);
-	data[ix*(Nspline+iy)*Nspline+iz] = val;
+	data[(ix*Nspline+iy)*Nspline+iz] = val;
       }
     }
   }
