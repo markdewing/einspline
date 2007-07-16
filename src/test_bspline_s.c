@@ -93,7 +93,7 @@ eval_periodic_func_s (periodic_func_s* restrict func,
     double kx = func->Gvecs[3*iG+0];
     double ky = func->Gvecs[3*iG+1];
     double kz = func->Gvecs[3*iG+2];
-    double phase = x*kx + y+ky + z*kz;
+    double phase = x*kx + y*ky + z*kz;
     double re, im;
     sincos(phase, &im, &re);
     double c_re = func->coefs[2*iG+0];
@@ -124,9 +124,9 @@ test_bspline_3d_s()
   x_grid.start = 0.0; x_grid.end = 1.0; x_grid.num = Nspline;
   y_grid.start = 0.0; y_grid.end = 1.0; y_grid.num = Nspline;
   z_grid.start = 0.0; z_grid.end = 1.0; z_grid.num = Nspline;
-  double dx = 1.0/(double)Nspline;
-  double dy = 1.0/(double)Nspline;
-  double dz = 1.0/(double)Nspline;
+  double dx = 1.0/(double)(Nspline-1);
+  double dy = 1.0/(double)(Nspline-1);
+  double dz = 1.0/(double)(Nspline-1);
   BCtype_s xBC, yBC, zBC;
   xBC.lCode = xBC.rCode = PERIODIC;
   yBC.lCode = yBC.rCode = PERIODIC;
