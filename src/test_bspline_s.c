@@ -53,8 +53,8 @@ int_periodic_func (periodic_func_s *func, double kcut)
       }
     }
   }
-  func->Gvecs = (float*) malloc (3*sizeof(double)*numG);
-  func->coefs = (float*) malloc (2*sizeof(float)*numG);
+  func->Gvecs = (double*) malloc (3*sizeof(double)*func->numG);
+  func->coefs = (float*)  malloc (2*sizeof(float) *func->numG);
 
   int iG = 0;
   for (int ix=-imax; ix<=imax; ix++) {
@@ -80,9 +80,9 @@ void
 eval_periodic_func_s (periodic_func_s* restrict func,
 		      double x, double y, double z,
 		      float *restrict val, float *restrict grad,
-		      float *restric hess)
+		      float *restrict hess)
 {
-  val = 0.0;
+  *val = 0.0;
   for (int i=0; i<3; i++)    grad[i] = 0.0;
   for (int i=0; i<9; i++)    hess[i] = 0.0;
 
@@ -93,20 +93,53 @@ eval_periodic_func_s (periodic_func_s* restrict func,
     double phase = x*kx + y+ky + z*kz;
     double re, im;
     sincos(phase, &im, &re);
-    double c_re = coefs[2*iG+0];
-    double c_im = coefs[2*iG+1];
-    val = re*c_re - im*c_im;
-    grad[0] = -kx*(re*ce_im + im*c_re);
-    grad[1] = -ky*(re*ce_im + im*c_re);
-    grad[2] = -kz*(re*ce_im + im*c_re);
-    
-    
+    double c_re = func->coefs[2*iG+0];
+    double c_im = func->coefs[2*iG+1];
+    *val    += re*c_re - im*c_im;
+    grad[0] += -kx*(re*c_im + im*c_re);
+    grad[1] += -ky*(re*c_im + im*c_re);
+    grad[2] += -kz*(re*c_im + im*c_re);
+    hess[0] += -kx*kx*(re*c_re - im*c_im);
+    hess[1] += -kx*ky*(re*c_re - im*c_im);
+    hess[2] += -kx*kz*(re*c_re - im*c_im);
+    hess[3] += -ky*kx*(re*c_re - im*c_im);
+    hess[4] += -ky*ky*(re*c_re - im*c_im);
+    hess[5] += -ky*kz*(re*c_re - im*c_im);
+    hess[6] += -kz*kx*(re*c_re - im*c_im);
+    hess[7] += -kz*ky*(re*c_re - im*c_im);
+    hess[8] += -kz*kz*(re*c_re - im*c_im);
   }
-
 }
 
 
+void
+test_bspline_3d_s()
+{
+  double kcut = 2.0*M_PI * 5.0;
+  int Nspline = 15;
+  Ugrid x_grid, y_grid, z_grid;
+  x_grid.start = 0.0; x_grid.end = 1.0; x_grid.num = Nspline;
+  y_grid.start = 0.0; y_grid.end = 1.0; y_grid.num = Nspline;
+  z_grid.start = 0.0; z_grid.end = 1.0; z_grid.num = Nspline;
+  BCtype_s xBC, yBC, zBC;
+  xBC.lCode = xBC.rCode = PERIODIC;
+  yBC.lCode = yBC.rCode = PERIODIC;
+  zBC.lCode = zBC.rCode = PERIODIC;
+
+  float *data = malloc (sizeof(float)*Nspline*Nspline*Nspline);
+  periodic_func_s func;
+
+
+  UBspline_3d_s *spline =
+    create_UBspline_3d_s (x_grid, y_grid, z_grid, xBC, yBC, zBC,
+			  data);
+  
+
+  
+
+}
+
 main()
 {
-
+  test_bspline_3d_s();
 }
