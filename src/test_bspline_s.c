@@ -161,7 +161,9 @@ test_bspline_3d_s()
     
     eval_UBspline_3d_s_vgh (spline, x, y, z, &sval, sgrad, shess);
     eval_periodic_func_s   (&func,  x, y, z, &eval, egrad, ehess);
-    fprintf (stderr, "%10.8f %10.8f\n", eval, sval);
+    //    fprintf (stderr, "%10.8f %10.8f\n", eval, sval);
+    fprintf (stderr, "%10.8f %10.8f %10.8f     %10.8f %10.8f %10.8f\n",
+	     egrad[0], egrad[1], egrad[2], sgrad[0], sgrad[1], sgrad[2]);
   }
 }
 
