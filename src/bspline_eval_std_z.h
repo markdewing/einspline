@@ -919,11 +919,11 @@ eval_UBspline_3d_z_vgh (UBspline_3d_z * restrict spline,
     (d2a[0]*bcP[0] + d2a[1]*bcP[1] + d2a[2]*bcP[2] + d2a[3]*bcP[3]);
   // dx dy
   hess[1] = spline->x_grid.delta_inv * spline->y_grid.delta_inv *
-    (da[0]*dbcP[0] + da[1]*dbcP[1] + da[1]*dbcP[1] + da[1]*dbcP[1]);
+    (da[0]*dbcP[0] + da[1]*dbcP[1] + da[2]*dbcP[2] + da[3]*dbcP[3]);
   hess[3] = hess[1];
   // dx dz;
   hess[2] = spline->x_grid.delta_inv * spline->z_grid.delta_inv *
-    (da[0]*bdcP[0] + da[1]*bdcP[1] + da[1]*bdcP[1] + da[1]*bdcP[1]);
+    (da[0]*bdcP[0] + da[1]*bdcP[1] + da[2]*bdcP[2] + da[3]*bdcP[3]);
   hess[6] = hess[2];
   // d2y
   hess[4] = spline->y_grid.delta_inv * spline->y_grid.delta_inv *
