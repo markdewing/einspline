@@ -4,7 +4,9 @@ if WANT_BLIPS
 endif
 
 
-check_PROGRAMS =  TestBspline TestNUBspline test_fbspline test_bspline_s $(CHECK_BLIPS)
+check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
+                  test_bspline_s test_bspline_d $(CHECK_BLIPS)
+
 
 TestBspline_SOURCES   = TestBspline.c
 TestNUBspline_SOURCES = TestNUBspline.c
@@ -13,6 +15,7 @@ if WANT_BLIPS
    test_blip_SOURCES     = test_blip.c
 endif
 test_bspline_s_SOURCE = test_bspline_s.c
+test_bspline_d_SOURCE = test_bspline_d.c
 
 LDADD = 
 AM_CCFLAGS = -g 
@@ -22,6 +25,7 @@ TestNUBspline_LDADD  = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_fbspline_LDADD  = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_blip_LDADD      = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_s_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
+test_bspline_d_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 
 
 lib_LTLIBRARIES = libeinspline.la
