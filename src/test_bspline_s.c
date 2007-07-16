@@ -28,6 +28,9 @@
 #define M_PI 3.1415926535897932384626433
 #endif
 
+double drand48();
+void sincos (double phi, double *s, double *c);
+
 typedef struct
 {
   double kcut;
@@ -116,7 +119,7 @@ void
 test_bspline_3d_s()
 {
   double kcut = 2.0*M_PI * 5.0;
-  int Nspline = 15;
+  int Nspline = 30;
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 0.0; x_grid.end = 1.0; x_grid.num = Nspline;
   y_grid.start = 0.0; y_grid.end = 1.0; y_grid.num = Nspline;
@@ -128,15 +131,35 @@ test_bspline_3d_s()
 
   float *data = malloc (sizeof(float)*Nspline*Nspline*Nspline);
   periodic_func_s func;
-
-
+  int_periodic_func (&func, kcut);
+  for (int ix=0; ix < x_grid.num; ix++) {
+    double x = (double) ix * x_grid.num; 
+    for (int iy=0; iy < y_grid.num; iy++) {
+      double y = (double) iy * y_grid.num;
+      for (int iz=0; iz < z_grid.num; iz++) {
+	double z = (double) iz * z_grid.num;
+	float val, grad[3], hess[9];
+	eval_periodic_func_s (&func, x, y, z, &val, grad, hess);
+	data[ix*(Nspline+iy)*Nspline+iz] = val;
+      }
+    }
+  }
+  
   UBspline_3d_s *spline =
-    create_UBspline_3d_s (x_grid, y_grid, z_grid, xBC, yBC, zBC,
-			  data);
+    create_UBspline_3d_s (x_grid, y_grid, z_grid, xBC, yBC, zBC, data);
   
-
-  
-
+  int numTest = 10000;
+  for (int i=0; i<numTest; i++) {
+    double x = drand48();
+    double y = drand48();
+    double z = drand48();
+    float sval, sgrad[3], shess[9];
+    float eval, egrad[3], ehess[9];
+    
+    eval_UBspline_3d_s_vgh (spline, x, y, z, &sval, sgrad, shess);
+    eval_periodic_func_s   (&func,  x, y, z, &eval, egrad, ehess);
+    fprintf (stderr, "%10.8f %10.8f\n", eval, sval);
+  }
 }
 
 main()
