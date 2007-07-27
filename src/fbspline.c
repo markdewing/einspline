@@ -119,9 +119,9 @@ F77_FUNC_(fcreate_ubspline_2d_s,FCREATE_UBSPLINE_2D_S)
   xgrid.start = *x0;
   xgrid.end   = *x1;
   xgrid.num   = *num_x;
-  ygrid.start = *x0;
-  ygrid.end   = *x1;
-  ygrid.num   = *num_x;
+  ygrid.start = *y0;
+  ygrid.end   = *y1;
+  ygrid.num   = *num_y;
  
   xBC.lCode = (bc_code) *x0_code;
   xBC.rCode = (bc_code) *x1_code;
@@ -148,9 +148,9 @@ F77_FUNC_(fcreate_ubspline_2d_d,FCREATE_UBSPLINE_2D_D)
   xgrid.start = *x0;
   xgrid.end   = *x1;
   xgrid.num   = *num_x;
-  ygrid.start = *x0;
-  ygrid.end   = *x1;
-  ygrid.num   = *num_x;
+  ygrid.start = *y0;
+  ygrid.end   = *y1;
+  ygrid.num   = *num_y;
  
   xBC.lCode = (bc_code) *x0_code;
   xBC.rCode = (bc_code) *x1_code;
@@ -176,9 +176,9 @@ F77_FUNC_(fcreate_ubspline_2d_c,FCREATE_UBSPLINE_2D_C)
   xgrid.start = *x0;
   xgrid.end   = *x1;
   xgrid.num   = *num_x;
-  ygrid.start = *x0;
-  ygrid.end   = *x1;
-  ygrid.num   = *num_x;
+  ygrid.start = *y0;
+  ygrid.end   = *y1;
+  ygrid.num   = *num_y;
  
   xBC.lCode = (bc_code) *x0_code;
   xBC.rCode = (bc_code) *x1_code;
@@ -209,9 +209,9 @@ F77_FUNC_(fcreate_ubspline_2d_z,FCREATE_UBSPLINE_2D_Z)
   xgrid.start = *x0;
   xgrid.end   = *x1;
   xgrid.num   = *num_x;
-  ygrid.start = *x0;
-  ygrid.end   = *x1;
-  ygrid.num   = *num_x;
+  ygrid.start = *y0;
+  ygrid.end   = *y1;
+  ygrid.num   = *num_y;
  
   xBC.lCode = (bc_code) *x0_code;
   xBC.rCode = (bc_code) *x1_code;
@@ -248,12 +248,12 @@ F77_FUNC_(fcreate_ubspline_3d_s,FCREATE_UBSPLINE_3D_S)
   xgrid.start = *x0;
   xgrid.end   = *x1;
   xgrid.num   = *num_x;
-  ygrid.start = *x0;
-  ygrid.end   = *x1;
-  ygrid.num   = *num_x;
-  zgrid.start = *x0;
-  zgrid.end   = *x1;
-  zgrid.num   = *num_x;
+  ygrid.start = *y0;
+  ygrid.end   = *y1;
+  ygrid.num   = *num_y;
+  zgrid.start = *z0;
+  zgrid.end   = *z1;
+  zgrid.num   = *num_z;
  
   xBC.lCode = (bc_code) *x0_code;
   xBC.rCode = (bc_code) *x1_code;
@@ -285,12 +285,12 @@ F77_FUNC_(fcreate_ubspline_3d_d,FCREATE_UBSPLINE_3D_D)
   xgrid.start = *x0;
   xgrid.end   = *x1;
   xgrid.num   = *num_x;
-  ygrid.start = *x0;
-  ygrid.end   = *x1;
-  ygrid.num   = *num_x;
-  zgrid.start = *x0;
-  zgrid.end   = *x1;
-  zgrid.num   = *num_x;
+  ygrid.start = *y0;
+  ygrid.end   = *y1;
+  ygrid.num   = *num_y;
+  zgrid.start = *z0;
+  zgrid.end   = *z1;
+  zgrid.num   = *num_z;
  
   xBC.lCode = (bc_code) *x0_code;
   xBC.rCode = (bc_code) *x1_code;
@@ -322,12 +322,12 @@ F77_FUNC_(fcreate_ubspline_3d_c,FCREATE_UBSPLINE_3D_C)
   xgrid.start = *x0;
   xgrid.end   = *x1;
   xgrid.num   = *num_x;
-  ygrid.start = *x0;
-  ygrid.end   = *x1;
-  ygrid.num   = *num_x;
-  zgrid.start = *x0;
-  zgrid.end   = *x1;
-  zgrid.num   = *num_x;
+  ygrid.start = *y0;
+  ygrid.end   = *y1;
+  ygrid.num   = *num_y;
+  zgrid.start = *z0;
+  zgrid.end   = *z1;
+  zgrid.num   = *num_z;
  
   xBC.lCode = (bc_code) *x0_code;
   xBC.rCode = (bc_code) *x1_code;
@@ -368,12 +368,12 @@ F77_FUNC_(fcreate_ubspline_3d_z,FCREATE_UBSPLINE_3D_Z)
   xgrid.start = *x0;
   xgrid.end   = *x1;
   xgrid.num   = *num_x;
-  ygrid.start = *x0;
-  ygrid.end   = *x1;
-  ygrid.num   = *num_x;
-  zgrid.start = *x0;
-  zgrid.end   = *x1;
-  zgrid.num   = *num_x;
+  ygrid.start = *y0;
+  ygrid.end   = *y1;
+  ygrid.num   = *num_y;
+  zgrid.start = *z0;
+  zgrid.end   = *z1;
+  zgrid.num   = *num_z;
  
   xBC.lCode = (bc_code) *x0_code;
   xBC.rCode = (bc_code) *x1_code;

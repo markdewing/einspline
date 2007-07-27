@@ -416,9 +416,6 @@ eval_UBspline_3d_z (UBspline_3d_z * restrict spline,
   tx = modf (ux, &ipartx);  int ix = (int) ipartx;
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   tz = modf (uz, &ipartz);  int iz = (int) ipartz;
-
-
-
   
   double tpx[4], tpy[4], tpz[4], a[4], b[4], c[4];
   tpx[0] = tx*tx*tx;  tpx[1] = tx*tx;  tpx[2] = tx;  tpx[3] = 1.0;
