@@ -24,6 +24,7 @@
 #include <math.h>
 #include <time.h>
 
+double drand48();
 
 void
 Test_1d_s()
@@ -776,5 +777,5 @@ int main()
   Test_3d_c();
   // Speed_3d_c();
   Test_3d_z();
-  // Speed_3d_z();
+  Speed_3d_z();
 }
