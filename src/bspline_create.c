@@ -383,10 +383,6 @@ create_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
 
-
-  fprintf (stderr, "Nx=%d Ny=%d Nz=%d\n", Nx, Ny, Nz);
-
-
 #ifndef __SSE2__
   spline->coefs      = malloc (sizeof(float)*Nx*Ny*Nz);
 #else
