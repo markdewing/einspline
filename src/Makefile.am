@@ -93,7 +93,8 @@ include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
 	          nubspline_eval_sse_c.h nubspline_eval_std_c.h               \
                   nubspline_eval_sse_d.h nubspline_eval_std_d.h               \
 	          nubspline_eval_sse_z.h nubspline_eval_std_z.h               \
-                  nubspline_structs.h nubasis.h nubspline.h nugrid.h
+                  nubspline_structs.h nubasis.h nubspline.h nugrid.h          \
+                  config.h
 
 
 EXTRA_DIST = 

@@ -25,8 +25,9 @@
 #include "nubasis.h"
 
 #ifdef __cplusplus
-typedef complex<float>  complex_float;
-typedef complex<double> complex_double;
+#include <complex>
+typedef std::complex<float>  complex_float;
+typedef std::complex<double> complex_double;
 #else
 #include <complex.h>
 typedef complex float  complex_float;
