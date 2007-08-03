@@ -138,7 +138,7 @@ eval_UBspline_1d_c_vg (UBspline_1d_c * restrict spline, double x,
      coefs[i+1]*(Af[ 4]*tp[0] + Af[ 5]*tp[1] + Af[ 6]*tp[2] + Af[ 7]*tp[3])+
      coefs[i+2]*(Af[ 8]*tp[0] + Af[ 9]*tp[1] + Af[10]*tp[2] + Af[11]*tp[3])+
      coefs[i+3]*(Af[12]*tp[0] + Af[13]*tp[1] + Af[14]*tp[2] + Af[15]*tp[3]));
-  *grad = spline->x_grid.delta_inv * 
+  *grad = (float)spline->x_grid.delta_inv * 
     (coefs[i+0]*(dAf[ 1]*tp[1] + dAf[ 2]*tp[2] + dAf[ 3]*tp[3])+
      coefs[i+1]*(dAf[ 5]*tp[1] + dAf[ 6]*tp[2] + dAf[ 7]*tp[3])+
      coefs[i+2]*(dAf[ 9]*tp[1] + dAf[10]*tp[2] + dAf[11]*tp[3])+
@@ -167,12 +167,12 @@ eval_UBspline_1d_c_vgl (UBspline_1d_c* restrict spline, double x,
      coefs[i+1]*(Af[ 4]*tp[0] + Af[ 5]*tp[1] + Af[ 6]*tp[2] + Af[ 7]*tp[3])+
      coefs[i+2]*(Af[ 8]*tp[0] + Af[ 9]*tp[1] + Af[10]*tp[2] + Af[11]*tp[3])+
      coefs[i+3]*(Af[12]*tp[0] + Af[13]*tp[1] + Af[14]*tp[2] + Af[15]*tp[3]));
-  *grad = spline->x_grid.delta_inv * 
+  *grad = (float)spline->x_grid.delta_inv * 
     (coefs[i+0]*(dAf[ 1]*tp[1] + dAf[ 2]*tp[2] + dAf[ 3]*tp[3])+
      coefs[i+1]*(dAf[ 5]*tp[1] + dAf[ 6]*tp[2] + dAf[ 7]*tp[3])+
      coefs[i+2]*(dAf[ 9]*tp[1] + dAf[10]*tp[2] + dAf[11]*tp[3])+
      coefs[i+3]*(dAf[13]*tp[1] + dAf[14]*tp[2] + dAf[15]*tp[3]));
-  *lapl = spline->x_grid.delta_inv * spline->x_grid.delta_inv * 
+  *lapl = (float)(spline->x_grid.delta_inv * spline->x_grid.delta_inv) * 
     (coefs[i+0]*(d2Af[ 2]*tp[2] + d2Af[ 3]*tp[3])+
      coefs[i+1]*(d2Af[ 6]*tp[2] + d2Af[ 7]*tp[3])+
      coefs[i+2]*(d2Af[10]*tp[2] + d2Af[11]*tp[3])+
