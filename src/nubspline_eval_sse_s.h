@@ -141,10 +141,10 @@ eval_NUBspline_2d_s (NUBspline_2d_s * restrict spline,
   #define P(i) (spline->coefs+(ix+(i))*xs+iy)
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3), _MM_HINT_T0);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -173,10 +173,10 @@ eval_NUBspline_2d_s_vg (NUBspline_2d_s * restrict spline,
   
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3), _MM_HINT_T0);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -207,10 +207,10 @@ eval_NUBspline_2d_s_vgl (NUBspline_2d_s * restrict spline,
   
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3), _MM_HINT_T0);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -248,10 +248,10 @@ eval_NUBspline_2d_s_vgh (NUBspline_2d_s * restrict spline,
   
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)(p     ), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+  xs), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+2*xs), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+3*xs), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p     ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+  xs), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+2*xs), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+3*xs), _MM_HINT_T0);
 
   tmp0 = _mm_loadu_ps (P(0));
   tmp1 = _mm_loadu_ps (P(1));
@@ -299,22 +299,22 @@ eval_NUBspline_3d_s (NUBspline_3d_s * restrict spline,
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
   float *restrict p = P(0,0);
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -366,22 +366,22 @@ eval_NUBspline_3d_s_vg (NUBspline_3d_s * restrict spline,
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
   float *restrict p = P(0,0);
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -453,22 +453,22 @@ eval_NUBspline_3d_s_vgl (NUBspline_3d_s * restrict spline,
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
   float *restrict p = P(0,0);
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);  p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);  p+= xs;
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -555,25 +555,25 @@ eval_NUBspline_3d_s_vgh (NUBspline_3d_s * restrict spline,
   float* restrict coefs = spline->coefs;
 #define P(i,j) (coefs+(ix+(i))*xs+(iy+(j))*ys+(iz))
   float *restrict p = P(0,0);
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);
   p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);
   p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);
   p+= xs;
-  _mm_prefetch ((char*)(p    ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys ), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys2), _MM_HINT_T0);
-  _mm_prefetch ((char*)(p+ys3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p    ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys ), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+ys3), _MM_HINT_T0);
 
   // Compute cP, dcP, and d2cP products 1/4 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.

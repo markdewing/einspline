@@ -134,14 +134,14 @@ eval_NUBspline_2d_z (NUBspline_2d_z * restrict spline,
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
   double *restrict p = (double*)P(0,0);
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
 
   tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
@@ -204,14 +204,14 @@ eval_NUBspline_2d_z_vg (NUBspline_2d_z * restrict spline,
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
   double *restrict p = (double*)P(0,0);
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
 
   tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
@@ -286,14 +286,14 @@ eval_NUBspline_2d_z_vgl (NUBspline_2d_z * restrict spline,
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
   double *restrict p = (double*)P(0,0);
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
 
   tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
@@ -378,14 +378,14 @@ eval_NUBspline_2d_z_vgh (NUBspline_2d_z * restrict spline,
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
   double *restrict p = (double*)P(0,0);
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);  _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);  _mm_prefetch ((void*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);  _mm_prefetch ((const char*)(p+6), _MM_HINT_T0); p+= xs;
 
   tmp0 = _mm_load_pd (P(0,0));  tmp1 = _mm_load_pd (P(0,1));
   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
@@ -480,41 +480,41 @@ eval_NUBspline_3d_z (NUBspline_3d_z * restrict spline,
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
   double *restrict p = (double*) P(0,0,0);
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  
 
   // Compute cP, dcP, and d2cP products 1/8 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -699,41 +699,41 @@ eval_NUBspline_3d_z_vg (NUBspline_3d_z * restrict spline,
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
   double *restrict p = (double*) P(0,0,0);
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  
 
   // Compute cP, dcP, and d2cP products 1/8 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -957,41 +957,41 @@ eval_NUBspline_3d_z_vgl (NUBspline_3d_z * restrict spline,
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
   double *restrict p = (double*) P(0,0,0);
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  
 
   // Compute cP, dcP, and d2cP products 1/8 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.
@@ -1255,41 +1255,41 @@ eval_NUBspline_3d_z_vgh (NUBspline_3d_z * restrict spline,
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
   double *restrict p = (double*) P(0,0,0);
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += delta;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += delta;
 
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  p += ys2;
-  _mm_prefetch ((void*)(p+0), _MM_HINT_T0);    _mm_prefetch ((void*)(p+2), _MM_HINT_T0);
-  _mm_prefetch ((void*)(p+4), _MM_HINT_T0);    _mm_prefetch ((void*)(p+6), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  p += ys2;
+  _mm_prefetch ((const char*)(p+0), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)(p+4), _MM_HINT_T0);    _mm_prefetch ((const char*)(p+6), _MM_HINT_T0);  
 
   // Compute cP, dcP, and d2cP products 1/8 at a time to maximize
   // register reuse and avoid rerereading from memory or cache.

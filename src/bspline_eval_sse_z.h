@@ -171,10 +171,10 @@ inline void
 eval_UBspline_2d_z (UBspline_2d_z * restrict spline, 
 		    double x, double y, complex_double* restrict val)
 {
-  _mm_prefetch ((void*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -194,14 +194,14 @@ eval_UBspline_2d_z (UBspline_2d_z * restrict spline,
 #define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -271,14 +271,14 @@ eval_UBspline_2d_z_vg (UBspline_2d_z * restrict spline,
 		       double x, double y, 
 		       complex_double* restrict val, complex_double* restrict grad)
 {
-  _mm_prefetch ((void*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[11],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[13],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[15],_MM_HINT_T0);  
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -298,14 +298,14 @@ eval_UBspline_2d_z_vg (UBspline_2d_z * restrict spline,
 #define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -396,18 +396,18 @@ eval_UBspline_2d_z_vgl (UBspline_2d_z * restrict spline,
 			double x, double y, complex_double* restrict val, 
 			complex_double* restrict grad, complex_double* restrict lapl)
 {
-  _mm_prefetch ((void*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[17],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[19],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[21],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[23],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[11],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[13],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[15],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[17],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[19],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[21],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[23],_MM_HINT_T0);  
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -427,14 +427,14 @@ eval_UBspline_2d_z_vgl (UBspline_2d_z * restrict spline,
 #define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -547,18 +547,18 @@ eval_UBspline_2d_z_vgh (UBspline_2d_z * restrict spline,
 			double x, double y, complex_double* restrict val, 
 			complex_double* restrict grad, complex_double* restrict hess)
 {
-  _mm_prefetch ((void*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[17],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[19],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[21],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[23],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[11],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[13],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[15],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[17],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[19],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[21],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[23],_MM_HINT_T0);  
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -578,14 +578,14 @@ eval_UBspline_2d_z_vgh (UBspline_2d_z * restrict spline,
 #define P(i,j) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j)))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -704,10 +704,10 @@ eval_UBspline_3d_z (UBspline_3d_z * restrict spline,
 		    double x, double y, double z,
 		    complex_double* restrict val)
 {
-  _mm_prefetch ((void*) &A_d[0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[1],_MM_HINT_T0);  
-  _mm_prefetch ((void*) &A_d[2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[3],_MM_HINT_T0);  
-  _mm_prefetch ((void*) &A_d[4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[5],_MM_HINT_T0);  
-  _mm_prefetch ((void*) &A_d[6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[7],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[7],_MM_HINT_T0);  
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -732,22 +732,22 @@ eval_UBspline_3d_z (UBspline_3d_z * restrict spline,
 #define P(i,j,k) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz+k))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,3,2), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -928,14 +928,14 @@ eval_UBspline_3d_z_vg (UBspline_3d_z * restrict spline,
 			double x, double y, double z,
 			complex_double* restrict val, complex_double* restrict grad)
 {
-  _mm_prefetch((void*) &A_d[ 0],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);
-  _mm_prefetch((void*) &A_d[ 2],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);
-  _mm_prefetch((void*) &A_d[ 4],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);
-  _mm_prefetch((void*) &A_d[ 6],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);
-  _mm_prefetch((void*) &A_d[ 8],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);
-  _mm_prefetch((void*) &A_d[10],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);
-  _mm_prefetch((void*) &A_d[12],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);
-  _mm_prefetch((void*) &A_d[14],_MM_HINT_T0);  _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);
+  _mm_prefetch((const char*) &A_d[ 0],_MM_HINT_T0);  _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);
+  _mm_prefetch((const char*) &A_d[ 2],_MM_HINT_T0);  _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);
+  _mm_prefetch((const char*) &A_d[ 4],_MM_HINT_T0);  _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);
+  _mm_prefetch((const char*) &A_d[ 6],_MM_HINT_T0);  _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);
+  _mm_prefetch((const char*) &A_d[ 8],_MM_HINT_T0);  _mm_prefetch ((const char*) &A_d[ 9],_MM_HINT_T0);
+  _mm_prefetch((const char*) &A_d[10],_MM_HINT_T0);  _mm_prefetch ((const char*) &A_d[11],_MM_HINT_T0);
+  _mm_prefetch((const char*) &A_d[12],_MM_HINT_T0);  _mm_prefetch ((const char*) &A_d[13],_MM_HINT_T0);
+  _mm_prefetch((const char*) &A_d[14],_MM_HINT_T0);  _mm_prefetch ((const char*) &A_d[15],_MM_HINT_T0);
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -960,22 +960,22 @@ eval_UBspline_3d_z_vg (UBspline_3d_z * restrict spline,
 #define P(i,j,k) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz+k))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(0,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(1,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(2,3,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,0,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,1,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,2,2), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3,0), _MM_HINT_T0);  _mm_prefetch ((void*)P(3,3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,3,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,0,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,1,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,2,2), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,3,2), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -1218,18 +1218,18 @@ eval_UBspline_3d_z_vgl (UBspline_3d_z * restrict spline,
 			complex_double* restrict val, complex_double* restrict grad, 
 			complex_double* restrict lapl)
 {
-  _mm_prefetch ((void*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[17],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[19],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[21],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[23],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[11],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[13],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[15],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[17],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[19],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[21],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[23],_MM_HINT_T0);  
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -1254,38 +1254,38 @@ eval_UBspline_3d_z_vgl (UBspline_3d_z * restrict spline,
 #define P(i,j,k) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz+k))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0,0), _MM_HINT_T0);    _mm_prefetch ((void*)P(0,0,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(0,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,1,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(0,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,2,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(0,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,3,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(0,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,3,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,0,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(1,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,1,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(1,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,2,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(1,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,3,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(1,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,3,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,0,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(2,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,1,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(2,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,2,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(2,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,3,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(2,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,3,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,0,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(3,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,1,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(3,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,2,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(3,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,3,1), _MM_HINT_T0);  
-  _mm_prefetch ((void*)P(3,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,3,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0,0), _MM_HINT_T0);    _mm_prefetch ((const char*)P(0,0,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(0,0,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,0,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,1,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,1,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(0,1,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,1,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,2,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(0,2,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,2,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,3,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,3,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(0,3,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,3,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,0,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(1,0,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,0,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,1,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,1,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(1,1,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,1,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,2,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(1,2,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,2,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,3,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,3,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(1,3,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,3,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,0,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(2,0,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,0,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,1,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,1,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(2,1,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,1,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,2,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(2,2,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,2,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,3,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,3,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(2,3,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,3,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,0,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(3,0,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,0,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,1,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,1,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(3,1,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,1,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,2,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(3,2,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,2,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,3,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,3,1), _MM_HINT_T0);  
+  _mm_prefetch ((const char*)P(3,3,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,3,3), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -1579,18 +1579,18 @@ eval_UBspline_3d_z_vgh (UBspline_3d_z * restrict spline,
 			complex_double* restrict val, complex_double* restrict grad, 
 			complex_double* restrict hess)
 {
-  _mm_prefetch ((void*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 1],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 3],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 5],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 7],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[ 9],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[11],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[13],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[15],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[17],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[19],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[21],_MM_HINT_T0);  
-  _mm_prefetch ((void*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((void*) &A_d[23],_MM_HINT_T0); 
+  _mm_prefetch ((const char*)  &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[10],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[11],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[12],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[13],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[14],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[15],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[16],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[17],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[18],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[19],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[20],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[21],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_d[22],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[23],_MM_HINT_T0); 
 
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
@@ -1615,38 +1615,38 @@ eval_UBspline_3d_z_vgh (UBspline_3d_z * restrict spline,
 #define P(i,j,k) (const double*)(spline->coefs+(ix+(i))*xs+(iy+(j))*ys+(iz+k))
   // Prefetch the data from main memory into cache so it's available
   // when we need to use it.
-  _mm_prefetch ((void*)P(0,0,0), _MM_HINT_T0);    _mm_prefetch ((void*)P(0,0,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,1,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,2,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,3,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(0,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(0,3,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,0,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,1,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,2,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,3,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(1,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(1,3,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,0,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,1,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,2,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,3,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(2,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(2,3,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,0,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,0,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,0,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,1,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,1,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,1,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,2,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,2,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,2,3), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3,0), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,3,1), _MM_HINT_T0);
-  _mm_prefetch ((void*)P(3,3,2), _MM_HINT_T0);	  _mm_prefetch ((void*)P(3,3,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0,0), _MM_HINT_T0);    _mm_prefetch ((const char*)P(0,0,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,0,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,0,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,1,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,1,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,1,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,1,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,2,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,2,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,2,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,3,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,3,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(0,3,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(0,3,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,0,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,0,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,0,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,1,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,1,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,1,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,1,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,2,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,2,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,2,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,3,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,3,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(1,3,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(1,3,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,0,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,0,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,0,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,1,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,1,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,1,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,1,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,2,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,2,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,2,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,3,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,3,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(2,3,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(2,3,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,0,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,0,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,0,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,1,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,1,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,1,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,1,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,2,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,2,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,2,3), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,3,0), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,3,1), _MM_HINT_T0);
+  _mm_prefetch ((const char*)P(3,3,2), _MM_HINT_T0);	  _mm_prefetch ((const char*)P(3,3,3), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
