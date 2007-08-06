@@ -23,6 +23,10 @@
 
 #include "nubspline_structs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 NUgrid* 
 create_center_grid (double start, double end, double ratio, int num_points);
 
@@ -93,4 +97,7 @@ NUBspline_3d_z *
 create_NUBspline_3d_z (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid, 
 		       BCtype_z xBC, BCtype_z yBC, BCtype_z zBC, complex_double *data);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
