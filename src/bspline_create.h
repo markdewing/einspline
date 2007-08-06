@@ -24,6 +24,10 @@
 #include "bspline_base.h"
 #include "bspline_structs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
 ////              Spline creation functions             ////
@@ -108,5 +112,8 @@ UBspline_3d_z *
 create_UBspline_3d_z (Ugrid  x_grid, Ugrid   y_grid, Ugrid z_grid,
 		      BCtype_z  xBC, BCtype_z   yBC, BCtype_z zBC,
 		      complex_double *data);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
