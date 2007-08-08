@@ -537,7 +537,11 @@ eval_UBspline_2d_z_vgl (UBspline_2d_z * restrict spline,
   d2x_i *= dxInv*dxInv;
   d2y_r *= dyInv*dyInv;
   d2y_i *= dyInv*dyInv;
+#ifdef __cplusplus
+  *lapl = std::complex<double>(d2x_r + d2y_r, d2x_i + d2y_i);
+#else
   *lapl = (d2x_r + d2y_r) + 1.0I*(d2x_i + d2y_i);
+#endif
 #undef P
 }
 
@@ -1565,8 +1569,13 @@ eval_UBspline_3d_z_vgl (UBspline_3d_z * restrict spline,
   sec_derivs[3] *= dyInv*dyInv;
   sec_derivs[4] *= dzInv*dzInv;
   sec_derivs[5] *= dzInv*dzInv;
+#ifdef __cplusplus
+  *lapl = std::complex<double> (sec_derivs[0] + sec_derivs[2] + sec_derivs[4],
+				sec_derivs[1] + sec_derivs[3] + sec_derivs[5]);
+#else
   *lapl = (sec_derivs[0] + sec_derivs[2] + sec_derivs[4]) +
     1.0I*(sec_derivs[1] + sec_derivs[3] + sec_derivs[5]);
+#endif 
 #undef P
 }
 

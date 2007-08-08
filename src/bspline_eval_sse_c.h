@@ -21,6 +21,8 @@
 #ifndef BSPLINE_EVAL_SSE_C_H
 #define BSPLINE_EVAL_SSE_C_H
 
+#include "bspline_structs.h"
+
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <pmmintrin.h>
@@ -514,7 +516,11 @@ eval_UBspline_2d_c_vgl (UBspline_2d_c * restrict spline,
   hess_d2x_i *= dxInv*dxInv;
   hess_d2y_r *= dyInv*dyInv;
   hess_d2y_i *= dyInv*dyInv;
+#ifdef __cplusplus
+  *lapl = std::complex<float>(hess_d2x_r + hess_d2y_r, hess_d2x_i + hess_d2y_i);
+#else
   *lapl = (hess_d2x_r + hess_d2y_r) + 1.0fI* (hess_d2x_i + hess_d2y_i);
+#endif
 #undef P
 }
 
@@ -1297,8 +1303,13 @@ eval_UBspline_3d_c_vgl (UBspline_3d_c * restrict spline,
   sec_deriv[3] *= dyInv*dyInv;
   sec_deriv[4] *= dzInv*dzInv;
   sec_deriv[5] *= dzInv*dzInv;
+#ifdef __cplusplus
+  *lapl = std::complex<float>(sec_deriv[0] + sec_deriv[2] * sec_deriv[4],
+			      sec_deriv[1] + sec_deriv[3] * sec_deriv[5]);
+#else
   *lapl = (sec_deriv[0] + sec_deriv[2] * sec_deriv[4]) +
     1.0fi*(sec_deriv[1] + sec_deriv[3] * sec_deriv[5]);
+#endif
 
 #undef P
 }
