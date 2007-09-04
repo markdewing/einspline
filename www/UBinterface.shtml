@@ -32,7 +32,7 @@ The uniform grid structure, has the following elements, which must be specified:
        the first grid point </li>
   <li> <font color="blue"> double <i>end</i>   </font>:  
        the last grid point  </li>
-  <li> <font color="blue"> int <i>numpoints</i> </font>:  
+  <li> <font color="blue"> int <i>num</i> </font>:  
         the number of grid points </li>
 </ul>
 <h4> Boundary conditions </h4>
