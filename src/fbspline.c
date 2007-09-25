@@ -751,7 +751,7 @@ F77_FUNC_(feval_ubspline_3d_d_vgh,FEVAL_UBSPLINE_3D_D_VGH)
   (UBspline_3d_d **spline, double *x, double *y, double *z,
    double *val, double *grad, double *hess)
 {
-  eval_UBspline_3d_d_vgl (*spline, *x, *y, *z, val, grad, hess);
+  eval_UBspline_3d_d_vgh (*spline, *x, *y, *z, val, grad, hess);
 }
 
 /////////////////////////////////
