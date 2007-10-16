@@ -53,6 +53,14 @@ create_UBspline_3d_s (Ugrid x_grid,   Ugrid y_grid,   Ugrid z_grid,
 		      BCtype_s  xBC,  BCtype_s   yBC, BCtype_s   zBC,
 		      float *data);
 
+void
+recompute_UBspline_1d_s (UBspline_1d_s* spline, float *data);
+
+void
+recompute_UBspline_2d_s (UBspline_2d_s* spline, float *data);
+
+void
+recompute_UBspline_3d_s (UBspline_3d_s* spline, float *data);
 
 /////////////////////////////////////
 // Uniform, double precision, real //
@@ -73,6 +81,14 @@ create_UBspline_3d_d (Ugrid x_grid,   Ugrid   y_grid,   Ugrid z_grid,
 		      BCtype_d  xBC,  BCtype_d   yBC, BCtype_d   zBC,
 		      double *data);
 
+void
+recompute_UBspline_1d_d (UBspline_1d_d* spline, double *data);
+
+void
+recompute_UBspline_2d_d (UBspline_2d_d* spline, double *data);
+
+void
+recompute_UBspline_3d_d (UBspline_3d_d* spline, double *data);
 
 ///////////////////////////////////////
 // Uniform, single precision, complex//
@@ -93,6 +109,14 @@ create_UBspline_3d_c (Ugrid  x_grid, Ugrid y_grid, Ugrid z_grid,
 		      BCtype_c  xBC, BCtype_c yBC, BCtype_c zBC,
 		      complex_float *data);
 
+void
+recompute_UBspline_1d_c (UBspline_1d_c* spline, complex_float *data);
+
+void
+recompute_UBspline_2d_c (UBspline_2d_c* spline, complex_float *data);
+
+void
+recompute_UBspline_3d_c (UBspline_3d_c* spline, complex_float *data);
  
 ///////////////////////////////////////
 // Uniform, double precision, complex//
@@ -112,6 +136,16 @@ UBspline_3d_z *
 create_UBspline_3d_z (Ugrid  x_grid, Ugrid   y_grid, Ugrid z_grid,
 		      BCtype_z  xBC, BCtype_z   yBC, BCtype_z zBC,
 		      complex_double *data);
+
+void
+recompute_UBspline_1d_z (UBspline_1d_z* spline, complex_double *data);
+
+void
+recompute_UBspline_2d_z (UBspline_2d_z* spline, complex_double *data);
+
+void
+recompute_UBspline_3d_z (UBspline_3d_z* spline, complex_double *data);
+
 #ifdef __cplusplus
 }
 #endif

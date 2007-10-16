@@ -41,6 +41,19 @@ F77_FUNC_(fcreate_ubspline_1d_z,FCREATE_UBSPLINE_1D_Z)
    int *x0_code, complex_double *x0_val, int *x1_code, complex_double *x1_val,
    complex_double *data, UBspline_1d_z **spline);
 
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_1d_s,FRECOMPUTE_UBSPLINE_1D_S)
+  (UBspline_1d_s **spline, float *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_1d_d,FRECOMPUTE_UBSPLINE_1D_D)
+  (UBspline_1d_d **spline, double *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_1d_c,FRECOMPUTE_UBSPLINE_1D_C)
+  (UBspline_1d_c **spline, complex_float *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_1d_z,FRECOMPUTE_UBSPLINE_1D_Z)
+  (UBspline_1d_z **spline, complex_double *data);
+
 ////////
 // 2D //
 ////////
@@ -73,6 +86,18 @@ F77_FUNC_(fcreate_ubspline_2d_z,FCREATE_UBSPLINE_2D_Z)
    int *y0_code, complex_double *y0_val, int *y1_code, complex_double *y1_val,
    complex_double *data, UBspline_2d_z **spline);
 
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_2d_s,FRECOMPUTE_UBSPLINE_2D_S)
+  (UBspline_2d_s **spline, float *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_2d_d,FRECOMPUTE_UBSPLINE_2D_D)
+  (UBspline_2d_d **spline, double *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_2d_c,FRECOMPUTE_UBSPLINE_2D_C)
+  (UBspline_2d_c **spline, complex_float *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_2d_z,FRECOMPUTE_UBSPLINE_2D_Z)
+  (UBspline_2d_z **spline, complex_double *data);
 
 ////////
 // 3D //
@@ -113,6 +138,19 @@ F77_FUNC_(fcreate_ubspline_3d_z,FCREATE_UBSPLINE_3D_Z)
    int *y0_code,  complex_double *y0_val, int *y1_code, complex_double *y1_val,
    int *z0_code,  complex_double *z0_val, int *z1_code, complex_double *z1_val,
    complex_double *data, UBspline_3d_z **spline);
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_3d_s,FRECOMPUTE_UBSPLINE_3D_S)
+  (UBspline_3d_s **spline, float *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_3d_d,FRECOMPUTE_UBSPLINE_3D_D)
+  (UBspline_3d_d **spline, double *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_3d_c,FRECOMPUTE_UBSPLINE_3D_C)
+  (UBspline_3d_c **spline, complex_float *data);
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_3d_z,FRECOMPUTE_UBSPLINE_3D_Z)
+  (UBspline_3d_z **spline, complex_double *data);
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////

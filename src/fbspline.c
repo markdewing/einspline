@@ -101,7 +101,33 @@ F77_FUNC_(fcreate_ubspline_1d_z,FCREATE_UBSPLINE_1D_Z)
   *spline = create_UBspline_1d_z (xgrid, xBC, data);
 }
 
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_1d_s,FRECOMPUTE_UBSPLINE_1D_S)
+  (UBspline_1d_s **spline, float *data)
+{
+  recompute_UBspline_1d_s (*spline, data);
+}
 
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_1d_d,FRECOMPUTE_UBSPLINE_1D_D)
+  (UBspline_1d_d **spline, double *data) 
+{
+  recompute_UBspline_1d_d (*spline, data);
+}
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_1d_c,FRECOMPUTE_UBSPLINE_1D_C)
+  (UBspline_1d_c **spline, complex_float *data)
+{
+  recompute_UBspline_1d_c (*spline, data);
+}
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_1d_z,FRECOMPUTE_UBSPLINE_1D_Z)
+  (UBspline_1d_z **spline, complex_double *data) 
+{
+  recompute_UBspline_1d_z (*spline, data);
+}
 
 ////////
 // 2D //
@@ -227,6 +253,35 @@ F77_FUNC_(fcreate_ubspline_2d_z,FCREATE_UBSPLINE_2D_Z)
   yBC.rVal_i  = cimag(*y1_val);
 
   *spline = create_UBspline_2d_z (xgrid, ygrid, xBC, yBC, data);
+}
+
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_2d_s,FRECOMPUTE_UBSPLINE_2D_S)
+  (UBspline_2d_s **spline, float *data)
+{
+  recompute_UBspline_2d_s (*spline, data);
+}
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_2d_d,FRECOMPUTE_UBSPLINE_2D_D)
+  (UBspline_2d_d **spline, double *data) 
+{
+  recompute_UBspline_2d_d (*spline, data);
+}
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_2d_c,FRECOMPUTE_UBSPLINE_2D_C)
+  (UBspline_2d_c **spline, complex_float *data)
+{
+  recompute_UBspline_2d_c (*spline, data);
+}
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_2d_z,FRECOMPUTE_UBSPLINE_2D_Z)
+  (UBspline_2d_z **spline, complex_double *data) 
+{
+  recompute_UBspline_2d_z (*spline, data);
 }
 
 
@@ -399,14 +454,43 @@ F77_FUNC_(fcreate_ubspline_3d_z,FCREATE_UBSPLINE_3D_Z)
   *spline = create_UBspline_3d_z (xgrid, ygrid, zgrid, xBC, yBC, zBC, data);
 }
 
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_3d_s,FRECOMPUTE_UBSPLINE_3D_S)
+  (UBspline_3d_s **spline, float *data)
+{
+  recompute_UBspline_3d_s (*spline, data);
+}
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_3d_d,FRECOMPUTE_UBSPLINE_3D_D)
+  (UBspline_3d_d **spline, double *data) 
+{
+  recompute_UBspline_3d_d (*spline, data);
+}
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_3d_c,FRECOMPUTE_UBSPLINE_3D_C)
+  (UBspline_3d_c **spline, complex_float *data)
+{
+  recompute_UBspline_3d_c (*spline, data);
+}
+
+CFUNC void 
+F77_FUNC_(frecompute_ubspline_3d_z,FRECOMPUTE_UBSPLINE_3D_Z)
+  (UBspline_3d_z **spline, complex_double *data) 
+{
+  recompute_UBspline_3d_z (*spline, data);
+}
+
+
+
 CFUNC void
 F77_FUNC_(fdestroy_bspline,FDESTROY_BSPLINE)
   (Bspline **spline)
 {
   destroy_Bspline (*spline);
 }
-
-
 /////////////////////////
 // Evaluation routines //
 /////////////////////////
