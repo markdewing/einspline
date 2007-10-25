@@ -37,8 +37,12 @@ typedef struct
   int (*reverse_map)(void *grid, double x);
 } NUgrid;
 
+#ifdef __cplusplus
+extern "C" 
+#endif
 NUgrid*
 create_general_grid (double *points, int num_points);
+
 
 typedef struct
 {
@@ -55,6 +59,9 @@ typedef struct
   bool odd;
 } center_grid;
 
+#ifdef __cplusplus
+extern "C" 
+#endif
 NUgrid*
 create_center_grid (double start, double end, double ratio, 
 		    int num_points);
