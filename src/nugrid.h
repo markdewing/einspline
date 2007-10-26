@@ -40,8 +40,6 @@ typedef struct
 #ifdef __cplusplus
 extern "C" 
 #endif
-NUgrid*
-create_general_grid (double *points, int num_points);
 
 
 typedef struct
@@ -60,12 +58,20 @@ typedef struct
 } center_grid;
 
 #ifdef __cplusplus
-extern "C" 
+extern "C" {
 #endif
+
 NUgrid*
 create_center_grid (double start, double end, double ratio, 
 		    int num_points);
 
+NUgrid*
+create_general_grid (double *points, int num_points);
+
 void
 destroy_grid (NUgrid *grid);
+
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -18,8 +18,8 @@
 //  Boston, MA  02110-1301  USA                                            //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef BSPLINE_EVAL_SSE_D_H
-#define BSPLINE_EVAL_SSE_D_H
+#ifndef NUBSPLINE_EVAL_SSE_D_H
+#define NUBSPLINE_EVAL_SSE_D_H
 
 #include <math.h>
 #include <stdio.h>
