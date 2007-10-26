@@ -349,7 +349,12 @@ eval_NUBspline_2d_z_vgl (NUBspline_2d_z * restrict spline,
   _MM_DOT4_PD (d2a01, d2a23, bP01i, bP23i, d2x_i);
   _MM_DOT4_PD (a01, a23, d2bP01r, d2bP23r, d2y_r);
   _MM_DOT4_PD (a01, a23, d2bP01i, d2bP23i, d2y_i);
+#ifdef __cplusplus
+  *lapl = std::complex<double>(d2x_r + d2y_r,
+			       d2x_i + d2y_i);
+#else
   *lapl = (d2x_r + d2y_r) + 1.0i*(d2x_i + d2y_i);
+#endif
 #undef P
 }
 
@@ -1211,7 +1216,12 @@ eval_NUBspline_3d_z_vgl (NUBspline_3d_z * restrict spline,
   // d2z
   _MM_DOT4_PD (a01, a23, bd2cP01r, bd2cP23r, d2z_r);
   _MM_DOT4_PD (a01, a23, bd2cP01i, bd2cP23i, d2z_i);
+#ifdef __cplusplus
+  *lapl = std::complex<double>(d2x_r + d2y_r + d2z_r,
+			       d2x_i + d2y_i + d2z_i);
+#else
   *lapl = (d2x_r + d2y_r + d2z_r) + 1.0i*(d2x_i + d2y_i + d2z_i);
+#endif
 #undef P
 
 }

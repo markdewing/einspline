@@ -36,6 +36,11 @@ typedef struct
   bool periodic;
 } NUBasis;
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /////////////////
 // Constructor //
 /////////////////
@@ -96,9 +101,16 @@ void
 get_NUBasis_d2funcs_di (NUBasis* restrict basis, int i,
 			double bfuncs[4], double dbfuncs[4], 
 			double d2bfuncs[4]);
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef __SSE2__
 #include <xmmintrin.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 get_NUBasis_funcs_sse_s (NUBasis* restrict basis, double x,
 			 __m128 *restrict funcs);
@@ -123,6 +135,9 @@ get_NUBasis_d2funcs_sse_d (NUBasis* restrict basis, double x,
 			   __m128d *restrict   f01, __m128d *restrict   f23,
 			   __m128d *restrict  df01, __m128d *restrict  df23,
 			   __m128d *restrict d2f01, __m128d *restrict d2f23);
+#ifdef __cplusplus
+}
+#endif
 #endif // #ifdef __SSE2__
 
 #endif // #ifdef NUBASIS_H

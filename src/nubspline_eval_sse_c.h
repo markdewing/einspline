@@ -305,7 +305,12 @@ eval_NUBspline_2d_c_vgl (NUBspline_2d_c * restrict spline,
   _MM_DOT4_PS (d2a, bPi, d2x_i);
   _MM_DOT4_PS (a, d2bPr, d2y_r);
   _MM_DOT4_PS (a, d2bPi, d2y_i);
+#ifdef __cplusplus
+  *lapl = std::complex<float>(d2x_r + d2y_r,
+			      d2x_i + d2y_i);
+#else
   *lapl = (d2x_r + d2y_r) + 1.0if*(d2x_i + d2y_i);
+#endif
 #undef P
 }
 
@@ -845,7 +850,12 @@ eval_NUBspline_3d_c_vgl (NUBspline_3d_c * restrict spline,
   _MM_DOT4_PS (d2a, bcPi, d2x_i);
   _MM_DOT4_PS (a, d2bcPi, d2y_i);
   _MM_DOT4_PS (a, bd2cPi, d2z_i);
+#ifdef __cplusplus
+  *lapl = std::complex<float>(d2x_r + d2y_r + d2z_r,
+			      d2x_i + d2y_i + d2z_i);
+#else
   *lapl = (d2x_r + d2y_r + d2z_r) + 1.0if * (d2x_i+d2y_i+d2z_i);
+#endif
 #undef P
 }
 
