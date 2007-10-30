@@ -411,6 +411,9 @@ solve_NUB_deriv_interp_1d_d (NUBasis* restrict basis,
     get_NUBasis_funcs_di (basis, i, &(bands[4*(i+1)]));
     bands[4*(i+1)+3] = data[datastride*i];
   }
+  /* for (int i=0; i<4*N; i++)
+     if (isnan(bands[i]))
+     fprintf(stderr, "NAN at bands[%d].\n", i); */
     
   // Now solve:
   // First and last rows are different
@@ -563,6 +566,7 @@ find_NUBcoefs_1d_d (NUBasis* restrict basis, BCtype_d bc,
       get_NUBasis_d2funcs_di (basis, M-1, bfuncs, dbfuncs, abcd_right);
       abcd_right[3] = bc.rVal;
     }
+
     // Now, solve for coefficients
     solve_NUB_deriv_interp_1d_d (basis, data, dstride, coefs, cstride,
 				 abcd_left, abcd_right);
@@ -993,6 +997,9 @@ create_NUBspline_3d_z (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
     return spline;
   spline->sp_code = NU3D;
   spline->t_code  = DOUBLE_COMPLEX;
+  spline->x_grid = x_grid;
+  spline->y_grid = y_grid;
+  spline->z_grid = z_grid;
 
   // Next, create the bases
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
@@ -1026,6 +1033,15 @@ create_NUBspline_3d_z (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
       int coffset = iy*Nz+iz;
       find_NUBcoefs_1d_z (spline->x_basis, xBC, data+doffset, My*Mz,
 			  spline->coefs+coffset, Ny*Nz);
+      /* for (int ix=0; ix<Nx; ix++) {
+	complex_double z = spline->coefs[coffset+ix*spline->x_stride];
+	if (isnan(creal(z)))
+	  fprintf (stderr, "NAN encountered in create_NUBspline_3d_z at real part of (%d,%d,%d)\n",
+		   ix,iy,iz);
+	if (isnan(cimag(z)))
+	  fprintf (stderr, "NAN encountered in create_NUBspline_3d_z at imag part of (%d,%d,%d)\n",
+		   ix,iy,iz);
+       } */
     }
   
   // Now, solve in the Y-direction

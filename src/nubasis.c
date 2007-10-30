@@ -30,7 +30,7 @@ create_NUBasis (NUgrid *grid, bool periodic)
   basis->grid = grid;
   basis->periodic = periodic;
   int N = grid->num_points;
-  basis->xVals = malloc ((N+4)*sizeof(double));
+  basis->xVals = malloc ((N+5)*sizeof(double));
   basis->dxInv = malloc (3*(N+2)*sizeof(double));
   for (int i=0; i<N; i++)
     basis->xVals[i+2] = grid->points[i];
@@ -42,12 +42,14 @@ create_NUBasis (NUgrid *grid, bool periodic)
     basis->xVals[1]   = g[ 0 ] - 1.0*(g[1]-g[0]);
     basis->xVals[N+2] = g[N-1] + 1.0*(g[N-1]-g[N-2]);
     basis->xVals[N+3] = g[N-1] + 2.0*(g[N-1]-g[N-2]);
+    basis->xVals[N+4] = g[N-1] + 3.0*(g[N-1]-g[N-2]);
   }
   else {
     basis->xVals[1]   = g[ 0 ] - (g[N-1] - g[N-2]);
     basis->xVals[0]   = g[ 0 ] - (g[N-1] - g[N-3]);
     basis->xVals[N+2] = g[N-1] + (g[ 1 ] - g[ 0 ]);
     basis->xVals[N+3] = g[N-1] + (g[ 2 ] - g[ 0 ]);
+    basis->xVals[N+4] = g[N-1] + (g[ 3 ] - g[ 0 ]);
   }
   for (int i=0; i<N+2; i++) 
     for (int j=0; j<3; j++) 
