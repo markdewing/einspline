@@ -7,6 +7,9 @@
 
 <body bgcolor=#FFFFD0>
 <!--#include virtual="header.shtml" -->
+<h2> 10/31/07 </h2>
+einspline-0.7.7 was released today.  It fixes an off-by-one error in the 
+construction of nonuniform B-spline bases.
 <h2> 5/11/07 </h2>
 Today, einspline 0.6 will be released today.  This release includes Fortran 77
 wrappers to the C library.
