@@ -1,10 +1,10 @@
 Summary:  einspline B-spline library
-Name: libeinspline
+Name: einspline
 Version: 0.7.7
 Release: 1
 License: GNU Public License
 Group: System Environment/Libraries
-URL: 
+URL: http://einspline.sf.net
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
@@ -15,6 +15,16 @@ flexible boundary conditions.  It supports real and complex data with
 single or double precision.  It also allows both uniform and
 nonuniform grid spacing.  Evaluation routines include standard
 versions and those optimized for SSE SIMD instructions.
+
+%package devel
+Summary: Header files, libraries and development documentation for %{name}
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
+
+%description devel
+This package contains the header files, static libraries and development
+documentation for %{name}. If you like to develop programs using %{name},
+you will need to install %{name}-devel.
 
 %prep
 %setup -q
@@ -29,8 +39,6 @@ versions and those optimized for SSE SIMD instructions.
 %clean
 %{__rm} -rf %{buildroot}
 
-%files
-%defattr(-,root,root,-)
 %files
 %defattr(-, root, root, 0755)
 %doc AUTHORS ChangeLog COPYING COPYRIGHT NEWS README* TODO

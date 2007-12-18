@@ -447,7 +447,7 @@ get_NUBasis_d2funcs_di (NUBasis* restrict basis, int i,
 }
 
 
-#ifdef __SSE2__
+#ifdef HAVE_SSE2
 typedef union
 {
   float s[4];

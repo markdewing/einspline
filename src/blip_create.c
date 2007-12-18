@@ -145,7 +145,7 @@ create_blip_3d_s (double *lattice, double *Gvecs,
   spline->yBC.lCode = PERIODIC;  spline->yBC.rCode = PERIODIC;
   spline->zBC.lCode = PERIODIC;  spline->zBC.rCode = PERIODIC;
   
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs      = malloc (sizeof(float)*Nx*Ny*Nz);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(float)*Nx*Ny*Nz);

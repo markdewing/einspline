@@ -289,7 +289,7 @@ create_NUBspline_2d_s (NUgrid* x_grid, NUgrid* y_grid,
   Ny = y_grid->num_points + 2;
     
   spline->x_stride = Ny;
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(float)*Nx*Ny);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(float)*Nx*Ny);
@@ -345,7 +345,7 @@ create_NUBspline_3d_s (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   // Allocate coefficients and solve  
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(float)*Nx*Ny*Nz);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(float)*Nx*Ny*Nz);
@@ -626,7 +626,7 @@ create_NUBspline_2d_d (NUgrid* x_grid, NUgrid* y_grid,
   Ny = y_grid->num_points + 2;
   
   spline->x_stride = Ny;
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(double)*Nx*Ny);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(double)*Nx*Ny);
@@ -682,7 +682,7 @@ create_NUBspline_3d_d (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(double)*Nx*Ny*Nz);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(double)*Nx*Ny*Nz);
@@ -794,7 +794,7 @@ create_NUBspline_2d_c (NUgrid* x_grid, NUgrid* y_grid,
   Ny = y_grid->num_points + 2;
     
   spline->x_stride = Ny;
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(complex_float)*Nx*Ny);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(complex_float)*Nx*Ny);
@@ -850,7 +850,7 @@ create_NUBspline_3d_c (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   // Allocate coefficients and solve  
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(complex_float)*Nx*Ny*Nz);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(complex_float)*Nx*Ny*Nz);
@@ -961,7 +961,7 @@ create_NUBspline_2d_z (NUgrid* x_grid, NUgrid* y_grid,
   Ny = y_grid->num_points + 2;
     
   spline->x_stride = Ny;
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(complex_double)*Nx*Ny);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(complex_double)*Nx*Ny);
@@ -1020,7 +1020,7 @@ create_NUBspline_3d_z (NUgrid* x_grid, NUgrid* y_grid, NUgrid* z_grid,
   // Allocate coefficients and solve  
   spline->x_stride = Ny*Nz;
   spline->y_stride = Nz;
-#ifndef __SSE2__
+#ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(complex_double)*Nx*Ny*Nz);
 #else
   posix_memalign ((void**)&spline->coefs, 16, sizeof(complex_double)*Nx*Ny*Nz);

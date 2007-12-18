@@ -23,7 +23,7 @@
 
 #include "nubspline_create.h"
 
-#ifdef __SSE2__
+#ifdef HAVE_SSE2
   #include "nubspline_structs.h"
   #include "nubspline_eval_sse_s.h"
   #include "nubspline_eval_sse_c.h"

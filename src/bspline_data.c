@@ -33,7 +33,7 @@
 #endif
 #include <stdlib.h>
 
-#ifdef __SSE__
+#ifdef HAVE_SSE
 #include <xmmintrin.h>
   // Single-precision version of matrices
 __m128 *restrict A_s = (__m128 *)0;
@@ -42,7 +42,7 @@ __m128 *restrict A_s = (__m128 *)0;
 // __m128  A0, A1, A2, A3, dA0, dA1, dA2, dA3, d2A0, d2A1, d2A2, d2A3;
 #endif
 
-#ifdef __SSE2__
+#ifdef HAVE_SSE2
 // Double-precision version of matrices
 #include <emmintrin.h>
 __m128d *restrict A_d = (__m128d *)0;
@@ -56,7 +56,7 @@ __m128d *restrict A_d = (__m128d *)0;
 
 void init_sse_data()
 {
-#ifdef __SSE__
+#ifdef HAVE_SSE
   if (A_s == 0) {
     posix_memalign ((void**)&A_s, 16, (sizeof(__m128)*12));
     A_s[0]  = _mm_setr_ps ( 1.0/6.0, -3.0/6.0,  3.0/6.0, -1.0/6.0 );
@@ -75,7 +75,7 @@ void init_sse_data()
   }
                  
 #endif
-#ifdef __SSE2__
+#ifdef HAVE_SSE2
   if (A_d == 0) {
     posix_memalign ((void**)&A_d, 16, (sizeof(__m128d)*24));
     A_d[ 0] = _mm_setr_pd (  3.0/6.0, -1.0/6.0 );	   

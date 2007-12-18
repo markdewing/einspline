@@ -105,7 +105,7 @@ get_NUBasis_d2funcs_di (NUBasis* restrict basis, int i,
 }
 #endif
 
-#ifdef __SSE2__
+#ifdef HAVE_SSE2
 #include <xmmintrin.h>
 
 #ifdef __cplusplus
@@ -138,6 +138,6 @@ get_NUBasis_d2funcs_sse_d (NUBasis* restrict basis, double x,
 #ifdef __cplusplus
 }
 #endif
-#endif // #ifdef __SSE2__
+#endif // #ifdef HAVE_SSE2
 
 #endif // #ifdef NUBASIS_H

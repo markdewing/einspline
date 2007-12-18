@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 AC_INIT(einspline, 0.5, kesler@ciw.edu, einspline)
-AM_INIT_AUTOMAKE(einspline, 0.7.7)
+AM_INIT_AUTOMAKE(einspline, 0.7.8)
 AC_CONFIG_SRCDIR([src/bspline.h])
 AC_CONFIG_HEADER([src/config.h])
 
@@ -30,10 +30,22 @@ AC_MSG_CHECKING([optimal compiler flags])
 CFLAGS="${CFLAGS} -g"
 AC_MSG_RESULT([${CFLAGS}])
 
+# Check for avaible SIMD extensions
+AX_EXT
+
 AC_ARG_ENABLE(altivec,[  --enable-altivec        enable PowerPC SIMD extensions])
 if test "x$enable_altivec" = "xyes"; then
    CFLAGS="$CFLAGS -faltivec -DUSE_ALTIVEC"
    FFLAGS="$FFLAGS -DUSE_ALTIVEC"
+fi
+
+AC_ARG_ENABLE(sse2, [  --enable-sse            enable SSE SIMD instructions])
+if test "x$enable_sse" = "xyes"; then
+  AC_CHECK_HEADER([xmmintrin.h],
+                  [AC_DEFINE([HAVE_XMMINTRIN_H],[1],
+                   [xmmintrin.h is available.])],
+                  [AC_MSG_ERROR([Cannot utilize SSE2 extensions without xmmintrin.h])])
+  AC_DEFINE([HAVE_SSE], [1], [SSE instructions are available])
 fi
 
 AC_ARG_ENABLE(sse2, [  --enable-sse2           enable SSE2 SIMD instructions])
@@ -46,6 +58,7 @@ if test "x$enable_sse2" = "xyes"; then
                   [AC_DEFINE([HAVE_EMMINTRIN_H],[1],
                    [emmintrin.h is available.])],
                   [AC_MSG_ERROR([Cannot utilize SSE2 extensions without emmintrin.h])])
+  AC_DEFINE([HAVE_SSE], [1],  [SSE  instructions are available])
   AC_DEFINE([HAVE_SSE2], [1], [SSE2 instructions are available])
 fi
 
@@ -54,7 +67,7 @@ if test "x$enable_sse3" = "xyes"; then
   AC_CHECK_HEADER([xmmintrin.h],
                   [AC_DEFINE([HAVE_XMMINTRIN_H],[1],
                    [xmmintrin.h is available.])],
-                  [AC_MSG_ERROR([Cannot utilize SSE2 extensions without xmmintrin.h])])
+                  [AC_MSG_ERROR([Cannot utilize SSE extensions without xmmintrin.h])])
   AC_CHECK_HEADER([emmintrin.h],
                   [AC_DEFINE([HAVE_EMMINTRIN_H],[1],
                    [emmintrin.h is available.])],
@@ -63,6 +76,7 @@ if test "x$enable_sse3" = "xyes"; then
                   [AC_DEFINE([HAVE_PMMINTRIN_H],[1],
                    [pmmintrin.h is available.])],
                   [AC_MSG_ERROR([Cannot utilize SSE2 extensions without pmmintrin.h])])
+  AC_DEFINE([HAVE_SSE],  [1], [SSE  instructions are available])
   AC_DEFINE([HAVE_SSE2], [1], [SSE2 instructions are available])
   AC_DEFINE([HAVE_SSE3], [1], [SSE3 instructions are available])
 fi

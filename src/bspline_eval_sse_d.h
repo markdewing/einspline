@@ -44,7 +44,7 @@ extern double* restrict d2Ad;
 // by, r = [dot([a0,a1],[b0,b1], dot([a2,a3],[b2,b3]).  Specifically
 // r_l = a0_l*b0_l + a0_h+b0_h + a1_l*b1_l + a1_h*b1_h
 // r_h = a2_l*b2_l + a2_h+b2_h + a3_l*b1_l + a3_h*b1_h
-#ifdef __SSE3__
+#ifdef HAVE_SSE3
 #define _MM_DDOT4_PD(a0, a1, a2, a3, b0, b1, b2, b3, r)               \
 do {                                                                  \
    __m128d t0 = _mm_add_pd(_mm_mul_pd (a0, b0),_mm_mul_pd (a1, b1));  \
