@@ -22,6 +22,7 @@
 #define NUBASIS_H
 
 #include "nugrid.h"
+#include "config.h"
 #include <stdbool.h>
 
 typedef struct
@@ -107,6 +108,7 @@ get_NUBasis_d2funcs_di (NUBasis* restrict basis, int i,
 
 #ifdef HAVE_SSE2
 #include <xmmintrin.h>
+#include <emmintrin.h>
 
 #ifdef __cplusplus
 extern "C" {

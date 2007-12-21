@@ -25,6 +25,11 @@
 #include <stdio.h>
 #include "nubspline_structs.h"
 
+#ifdef HAVE_SSE2
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#endif
+
 #ifdef HAVE_SSE3
 #define _MM_DDOT4_PD(a0, a1, a2, a3, b0, b1, b2, b3, r)               \
 do {                                                                  \

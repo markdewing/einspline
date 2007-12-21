@@ -18,6 +18,8 @@
 //  Boston, MA  02110-1301  USA                                            //
 /////////////////////////////////////////////////////////////////////////////
 
+#include "config.h"
+
 /*****************
 /*   SSE Data    */
 /*****************/
@@ -35,7 +37,8 @@
 
 #ifdef HAVE_SSE
 #include <xmmintrin.h>
-  // Single-precision version of matrices
+
+// Single-precision version of matrices
 __m128 *restrict A_s = (__m128 *)0;
 // There is a problem with alignment of global variables in shared
 // libraries on 32-bit machines.

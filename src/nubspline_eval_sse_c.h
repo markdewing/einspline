@@ -25,9 +25,20 @@
 #include <stdio.h>
 #include "nubspline_structs.h"
 
+#ifdef HAVE_SSE
+#include <xmmintrin.h>
+#endif
+
+#ifdef HAVE_SSE2
+#include <emmintrin.h>
+#endif
+
 /// SSE3 adds "horizontal add" instructions, which makes things
 /// simpler and faster
 #ifdef HAVE_SSE3
+
+#include <pmmintrin.h>
+
 #define _MM_MATVEC4_PS(M0, M1, M2, M3, v, r)                        \
 do {                                                                \
   __m128 _r0 = _mm_hadd_ps (_mm_mul_ps (M0, v), _mm_mul_ps (M1, v)); \
