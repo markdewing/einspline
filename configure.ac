@@ -30,14 +30,13 @@ AC_MSG_CHECKING([optimal compiler flags])
 CFLAGS="${CFLAGS} -g"
 AC_MSG_RESULT([${CFLAGS}])
 
-# Check for avaible SIMD extensions
-AX_EXT
 
 AC_ARG_ENABLE(altivec,[  --enable-altivec        enable PowerPC SIMD extensions])
 if test "x$enable_altivec" = "xyes"; then
    CFLAGS="$CFLAGS -faltivec -DUSE_ALTIVEC"
    FFLAGS="$FFLAGS -DUSE_ALTIVEC"
 fi
+
 
 AC_ARG_ENABLE(sse2, [  --enable-sse            enable SSE SIMD instructions])
 if test "x$enable_sse" = "xyes"; then
@@ -80,6 +79,17 @@ if test "x$enable_sse3" = "xyes"; then
   AC_DEFINE([HAVE_SSE2], [1], [SSE2 instructions are available])
   AC_DEFINE([HAVE_SSE3], [1], [SSE3 instructions are available])
 fi
+
+if test "x$enable_sse" = "xyes"; then
+   AX_EXT
+elif test "x$enable_sse2" = "xyes"; then
+   AX_EXT
+elif test "x$eangle_sse3" = "xyes"; then
+   AX_EXT
+fi
+
+
+
 
 AC_ARG_ENABLE(blips,   [  --enable-blips          enable routines for creating BLIPS])
 AM_CONDITIONAL([WANT_BLIPS], [test "$enable_blips" = "yes"])
