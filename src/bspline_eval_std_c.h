@@ -69,12 +69,14 @@ eval_UBspline_1d_c_vg (UBspline_1d_c * restrict spline, double x,
   tp[0] = t*t*t;  tp[1] = t*t;  tp[2] = t;  tp[3] = 1.0;
   complex_float* restrict coefs = spline->coefs;
 
+  float dxInv = spline->x_grid.delta_inv;
+
   *val = 
     (coefs[i+0]*(Af[ 0]*tp[0] + Af[ 1]*tp[1] + Af[ 2]*tp[2] + Af[ 3]*tp[3])+
      coefs[i+1]*(Af[ 4]*tp[0] + Af[ 5]*tp[1] + Af[ 6]*tp[2] + Af[ 7]*tp[3])+
      coefs[i+2]*(Af[ 8]*tp[0] + Af[ 9]*tp[1] + Af[10]*tp[2] + Af[11]*tp[3])+
      coefs[i+3]*(Af[12]*tp[0] + Af[13]*tp[1] + Af[14]*tp[2] + Af[15]*tp[3]));
-  *grad = spline->x_grid.delta_inv * 
+  *grad = dxInv * 
     (coefs[i+0]*(dAf[ 1]*tp[1] + dAf[ 2]*tp[2] + dAf[ 3]*tp[3])+
      coefs[i+1]*(dAf[ 5]*tp[1] + dAf[ 6]*tp[2] + dAf[ 7]*tp[3])+
      coefs[i+2]*(dAf[ 9]*tp[1] + dAf[10]*tp[2] + dAf[11]*tp[3])+
@@ -96,17 +98,19 @@ eval_UBspline_1d_c_vgl (UBspline_1d_c * restrict spline, double x,
   tp[0] = t*t*t;  tp[1] = t*t;  tp[2] = t;  tp[3] = 1.0;
   complex_float* restrict coefs = spline->coefs;
 
+  float dxInv = spline->x_grid.delta_inv;
+
   *val = 
     (coefs[i+0]*(Af[ 0]*tp[0] + Af[ 1]*tp[1] + Af[ 2]*tp[2] + Af[ 3]*tp[3])+
      coefs[i+1]*(Af[ 4]*tp[0] + Af[ 5]*tp[1] + Af[ 6]*tp[2] + Af[ 7]*tp[3])+
      coefs[i+2]*(Af[ 8]*tp[0] + Af[ 9]*tp[1] + Af[10]*tp[2] + Af[11]*tp[3])+
      coefs[i+3]*(Af[12]*tp[0] + Af[13]*tp[1] + Af[14]*tp[2] + Af[15]*tp[3]));
-  *grad = spline->x_grid.delta_inv * 
+  *grad = dxInv * 
     (coefs[i+0]*(dAf[ 1]*tp[1] + dAf[ 2]*tp[2] + dAf[ 3]*tp[3])+
      coefs[i+1]*(dAf[ 5]*tp[1] + dAf[ 6]*tp[2] + dAf[ 7]*tp[3])+
      coefs[i+2]*(dAf[ 9]*tp[1] + dAf[10]*tp[2] + dAf[11]*tp[3])+
      coefs[i+3]*(dAf[13]*tp[1] + dAf[14]*tp[2] + dAf[15]*tp[3]));
-  *lapl = spline->x_grid.delta_inv * spline->x_grid.delta_inv * 
+  *lapl = dxInv * dxInv * 
     (coefs[i+0]*(d2Af[ 2]*tp[2] + d2Af[ 3]*tp[3])+
      coefs[i+1]*(d2Af[ 6]*tp[2] + d2Af[ 7]*tp[3])+
      coefs[i+2]*(d2Af[10]*tp[2] + d2Af[11]*tp[3])+
@@ -206,18 +210,20 @@ eval_UBspline_2d_c_vg (UBspline_2d_c * restrict spline,
   db[3] = (dAf[13]*tpy[1] + dAf[14]*tpy[2] + dAf[15]*tpy[3]);
   
   int xs = spline->x_stride;
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
 #define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
   *val =    
     (a[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
      a[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
      a[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
      a[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[0] = spline->x_grid.delta_inv *
+  grad[0] = dxInv *
     (da[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
      da[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
      da[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
      da[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[1] = spline->y_grid.delta_inv * 
+  grad[1] = dyInv * 
     (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
      a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
      a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
@@ -274,29 +280,33 @@ eval_UBspline_2d_c_vgl (UBspline_2d_c * restrict spline,
   d2b[3] = (d2Af[14]*tpy[2] + d2Af[15]*tpy[3]);
   
   int xs = spline->x_stride;
+
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+
 #define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
   *val =    
     (a[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
      a[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
      a[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
      a[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[0] = spline->x_grid.delta_inv *
+  grad[0] = dxInv *
     (da[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
      da[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
      da[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
      da[3]*(C(3,0)*b[0]+C(3,1)*b[1]+C(3,2)*b[2]+C(3,3)*b[3]));
-  grad[1] = spline->y_grid.delta_inv *
+  grad[1] = dyInv*
     (a[0]*(C(0,0)*db[0]+C(0,1)*db[1]+C(0,2)*db[2]+C(0,3)*db[3])+
      a[1]*(C(1,0)*db[0]+C(1,1)*db[1]+C(1,2)*db[2]+C(1,3)*db[3])+
      a[2]*(C(2,0)*db[0]+C(2,1)*db[1]+C(2,2)*db[2]+C(2,3)*db[3])+
      a[3]*(C(3,0)*db[0]+C(3,1)*db[1]+C(3,2)*db[2]+C(3,3)*db[3]));
   *lapl   = 
-    spline->x_grid.delta_inv * spline->x_grid.delta_inv *
+    dxInv * dxInv *
     (a[0]*(C(0,0)*d2b[0]+C(0,1)*d2b[1]+C(0,2)*d2b[2]+C(0,3)*d2b[3])+
       a[1]*(C(1,0)*d2b[0]+C(1,1)*d2b[1]+C(1,2)*d2b[2]+C(1,3)*d2b[3])+
       a[2]*(C(2,0)*d2b[0]+C(2,1)*d2b[1]+C(2,2)*d2b[2]+C(2,3)*d2b[3])+
      a[3]*(C(3,0)*d2b[0]+C(3,1)*d2b[1]+C(3,2)*d2b[2]+C(3,3)*d2b[3])) + 
-    spline->y_grid.delta_inv * spline->y_grid.delta_inv *
+    dyInv * dyInv *
      (d2a[0]*(C(0,0)*b[0]+C(0,1)*b[1]+C(0,2)*b[2]+C(0,3)*b[3])+
       d2a[1]*(C(1,0)*b[0]+C(1,1)*b[1]+C(1,2)*b[2]+C(1,3)*b[3])+
       d2a[2]*(C(2,0)*b[0]+C(2,1)*b[1]+C(2,2)*b[2]+C(2,3)*b[3])+
@@ -354,33 +364,35 @@ eval_UBspline_2d_c_vgh (UBspline_2d_c * restrict spline,
   d2b[3] = (d2Af[14]*tpy[2] + d2Af[15]*tpy[3]);
   
   int xs = spline->x_stride;
+  float dxInv = spline->x_grid->delta_inv;
+  float dyInv = spline->y_grid->delta_inv;
 #define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
   *val =    
     (  a[0]*(C(0,0)*  b[0]+C(0,1)*  b[1]+C(0,2)*  b[2]+C(0,3)*  b[3])+
        a[1]*(C(1,0)*  b[0]+C(1,1)*  b[1]+C(1,2)*  b[2]+C(1,3)*  b[3])+
        a[2]*(C(2,0)*  b[0]+C(2,1)*  b[1]+C(2,2)*  b[2]+C(2,3)*  b[3])+
        a[3]*(C(3,0)*  b[0]+C(3,1)*  b[1]+C(3,2)*  b[2]+C(3,3)*  b[3]));
-  grad[0] = spline->x_grid.delta_inv *
+  grad[0] = dxInv * 
     ( da[0]*(C(0,0)*  b[0]+C(0,1)*  b[1]+C(0,2)*  b[2]+C(0,3)*  b[3])+
       da[1]*(C(1,0)*  b[0]+C(1,1)*  b[1]+C(1,2)*  b[2]+C(1,3)*  b[3])+
       da[2]*(C(2,0)*  b[0]+C(2,1)*  b[1]+C(2,2)*  b[2]+C(2,3)*  b[3])+
       da[3]*(C(3,0)*  b[0]+C(3,1)*  b[1]+C(3,2)*  b[2]+C(3,3)*  b[3]));
-  grad[1] = spline->y_grid.delta_inv *
+  grad[1] = dyInv *
     (  a[0]*(C(0,0)* db[0]+C(0,1)* db[1]+C(0,2)* db[2]+C(0,3)* db[3])+
        a[1]*(C(1,0)* db[0]+C(1,1)* db[1]+C(1,2)* db[2]+C(1,3)* db[3])+
        a[2]*(C(2,0)* db[0]+C(2,1)* db[1]+C(2,2)* db[2]+C(2,3)* db[3])+
        a[3]*(C(3,0)* db[0]+C(3,1)* db[1]+C(3,2)* db[2]+C(3,3)* db[3]));
-  hess[0] = spline->x_grid.delta_inv * spline->x_grid.delta_inv *
+  hess[0] = dxInv * dxInv *
     (d2a[0]*(C(0,0)*  b[0]+C(0,1)*  b[1]+C(0,2)*  b[2]+C(0,3)*  b[3])+
      d2a[1]*(C(1,0)*  b[0]+C(1,1)*  b[1]+C(1,2)*  b[2]+C(1,3)*  b[3])+
      d2a[2]*(C(2,0)*  b[0]+C(2,1)*  b[1]+C(2,2)*  b[2]+C(2,3)*  b[3])+
      d2a[3]*(C(3,0)*  b[0]+C(3,1)*  b[1]+C(3,2)*  b[2]+C(3,3)*  b[3]));
-  hess[1] = spline->x_grid.delta_inv * spline->y_grid.delta_inv *
+  hess[1] = dxInv * dyInv * 
     ( da[0]*(C(0,0)* db[0]+C(0,1)* db[1]+C(0,2)* db[2]+C(0,3)* db[3])+
       da[1]*(C(1,0)* db[0]+C(1,1)* db[1]+C(1,2)* db[2]+C(1,3)* db[3])+
       da[2]*(C(2,0)* db[0]+C(2,1)* db[1]+C(2,2)* db[2]+C(2,3)* db[3])+
       da[3]*(C(3,0)* db[0]+C(3,1)* db[1]+C(3,2)* db[2]+C(3,3)* db[3]));
-  hess[3] = spline->y_grid.delta_inv * spline->y_grid.delta_inv *
+  hess[3] = dyInv * dyInv * 
     (  a[0]*(C(0,0)*d2b[0]+C(0,1)*d2b[1]+C(0,2)*d2b[2]+C(0,3)*d2b[3])+
        a[1]*(C(1,0)*d2b[0]+C(1,1)*d2b[1]+C(1,2)*d2b[2]+C(1,3)*d2b[3])+
        a[2]*(C(2,0)*d2b[0]+C(2,1)*d2b[1]+C(2,2)*d2b[2]+C(2,3)*d2b[3])+
@@ -513,6 +525,11 @@ eval_UBspline_3d_c_vg (UBspline_3d_c * restrict spline,
   
   int xs = spline->x_stride;
   int ys = spline->y_stride;
+
+  float dxInv = spline->x_grid->delta_inv;
+  float dyInv = spline->y_grid->delta_inv;
+  float dzInv = spline->z_grid->delta_inv;
+
 #define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
   cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
   cP[ 1] = (P(0,1,0)*c[0]+P(0,1,1)*c[1]+P(0,1,2)*c[2]+P(0,1,3)*c[3]);
@@ -542,11 +559,11 @@ eval_UBspline_3d_c_vg (UBspline_3d_c * restrict spline,
   dbcP[3] = ( db[0]*cP[12] + db[1]*cP[13] + db[2]*cP[14] + db[3]*cP[15]);
 
   *val    = ( a[0]*bcP[0] +  a[1]*bcP[1] +  a[2]*bcP[2] +  a[3]*bcP[3]);
-  grad[0] = spline->x_grid.delta_inv * 
+  grad[0] = dxInv * 
     (da[0]*bcP[0] + da[1]*bcP[1] + da[2]*bcP[2] + da[3]*bcP[3]);
-  grad[1] = spline->y_grid.delta_inv * 
+  grad[1] = dyInv *
     (a[0]*dbcP[0] + a[1]*dbcP[1] + a[2]*dbcP[2] + a[3]*dbcP[3]);
-  grad[2] = spline->z_grid.delta_inv * 
+  grad[2] = dzInv * 
     (a[0]*(b[0]*(P(0,0,0)*dc[0]+P(0,0,1)*dc[1]+P(0,0,2)*dc[2]+P(0,0,3)*dc[3])+
 	   b[1]*(P(0,1,0)*dc[0]+P(0,1,1)*dc[1]+P(0,1,2)*dc[2]+P(0,1,3)*dc[3])+
 	   b[2]*(P(0,2,0)*dc[0]+P(0,2,1)*dc[1]+P(0,2,2)*dc[2]+P(0,2,3)*dc[3])+
@@ -636,6 +653,11 @@ eval_UBspline_3d_c_vgl (UBspline_3d_c * restrict spline,
   
   int xs = spline->x_stride;
   int ys = spline->y_stride;
+
+  float dxInv = spline->x_grid->delta_inv;
+  float dyInv = spline->y_grid->delta_inv;
+  float dzInv = spline->z_grid->delta_inv;
+
 #define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
   cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
   cP[ 1] = (P(0,1,0)*c[0]+P(0,1,1)*c[1]+P(0,1,2)*c[2]+P(0,1,3)*c[3]);
@@ -695,21 +717,21 @@ eval_UBspline_3d_c_vgl (UBspline_3d_c * restrict spline,
   *val    = 
     ( a[0]*bcP[0] +  a[1]*bcP[1] +  a[2]*bcP[2] +  a[3]*bcP[3]);
 
-  grad[0] = spline->x_grid.delta_inv *
+  grad[0] = dxInv *
     (da[0]*bcP[0] + da[1]*bcP[1] + da[2]*bcP[2] + da[3]*bcP[3]);
-  grad[1] = spline->y_grid.delta_inv * 
+  grad[1] = dyInv * 
     (a[0]*dbcP[0] + a[1]*dbcP[1] + a[2]*dbcP[2] + a[3]*dbcP[3]);
-  grad[2] = spline->z_grid.delta_inv * 
+  grad[2] = dzInv * 
     (a[0]*bdcP[0] + a[1]*bdcP[1] + a[2]*bdcP[2] + a[3]*bdcP[3]);
 
   *lapl = 
-    spline->x_grid.delta_inv * spline->x_grid.delta_inv * 
+    dxInv * dxInv * 
     (d2a[0]*bcP[0] + d2a[1]*bcP[1] + d2a[2]*bcP[2] + d2a[3]*bcP[3])
     
-    + spline->y_grid.delta_inv * spline->y_grid.delta_inv * 
+    + dyInv * dyInv * 
     (a[0]*d2bcP[0] + a[1]*d2bcP[1] + a[2]*d2bcP[2] + a[3]*d2bcP[3]) +
     
-    + spline->z_grid.delta_inv * spline->z_grid.delta_inv * 
+    + dzInv * dzInv * 
     (a[0]*(b[0]*(P(0,0,0)*d2c[0]+P(0,0,1)*d2c[1]+P(0,0,2)*d2c[2]+P(0,0,3)*d2c[3])+    
 	   b[1]*(P(0,1,0)*d2c[0]+P(0,1,1)*d2c[1]+P(0,1,2)*d2c[2]+P(0,1,3)*d2c[3])+
 	   b[2]*(P(0,2,0)*d2c[0]+P(0,2,1)*d2c[1]+P(0,2,2)*d2c[2]+P(0,2,3)*d2c[3])+
@@ -890,32 +912,32 @@ eval_UBspline_3d_c_vgh (UBspline_3d_c * restrict spline,
   dbdcP[3] = ( db[0]*dcP[12] + db[1]*dcP[13] + db[2]*dcP[14] + db[3]*dcP[15]);
 
   *val = a[0]*bcP[0] + a[1]*bcP[1] + a[2]*bcP[2] + a[3]*bcP[3];
-  grad[0] = spline->x_grid.delta_inv *
+  grad[0] = dxInv *
     (da[0] *bcP[0] + da[1]*bcP[1] + da[2]*bcP[2] + da[3]*bcP[3]);
-  grad[1] = spline->y_grid.delta_inv *
+  grad[1] = dyInv *
     (a[0]*dbcP[0] + a[1]*dbcP[1] + a[2]*dbcP[2] + a[3]*dbcP[3]);
-  grad[2] = spline->z_grid.delta_inv *
+  grad[2] = dzInv *
     (a[0]*bdcP[0] + a[1]*bdcP[1] + a[2]*bdcP[2] + a[3]*bdcP[3]);
   // d2x
-  hess[0] = spline->x_grid.delta_inv * spline->x_grid.delta_inv *
+  hess[0] = dxInv * dxInv *
     (d2a[0]*bcP[0] + d2a[1]*bcP[1] + d2a[2]*bcP[2] + d2a[3]*bcP[3]);
   // dx dy
-  hess[1] = spline->x_grid.delta_inv * spline->y_grid.delta_inv *
+  hess[1] = dxInv * dyInv *
     (da[0]*dbcP[0] + da[1]*dbcP[1] + da[2]*dbcP[2] + da[3]*dbcP[3]);
   hess[3] = hess[1];
   // dx dz;
-  hess[2] = spline->x_grid.delta_inv * spline->z_grid.delta_inv *
+  hess[2] = dxInv * dzInv *
     (da[0]*bdcP[0] + da[1]*bdcP[1] + da[2]*bdcP[2] + da[3]*bdcP[3]);
   hess[6] = hess[2];
   // d2y
-  hess[4] = spline->y_grid.delta_inv * spline->y_grid.delta_inv *
+  hess[4] = dyInv * dyInv *
     (a[0]*d2bcP[0] + a[1]*d2bcP[1] + a[2]*d2bcP[2] + a[3]*d2bcP[3]);
   // dy dz
-  hess[5] = spline->y_grid.delta_inv * spline->z_grid.delta_inv *
+  hess[5] = dyInv * dzInv *
     (a[0]*dbdcP[0] + a[1]*dbdcP[1] + a[2]*dbdcP[2] + a[3]*dbdcP[3]);
   hess[7] = hess[5];
   // d2z
-  hess[8] = spline->z_grid.delta_inv * spline->z_grid.delta_inv *
+  hess[8] = dzInv * dzInv *
     (a[0]*bd2cP[0] + a[1]*bd2cP[1] + a[2]*bd2cP[2] + a[3]*bd2cP[3]);
 #undef P
 
