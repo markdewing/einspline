@@ -364,8 +364,8 @@ eval_UBspline_2d_c_vgh (UBspline_2d_c * restrict spline,
   d2b[3] = (d2Af[14]*tpy[2] + d2Af[15]*tpy[3]);
   
   int xs = spline->x_stride;
-  float dxInv = spline->x_grid->delta_inv;
-  float dyInv = spline->y_grid->delta_inv;
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
 #define C(i,j) coefs[(ix+(i))*xs+iy+(j)]
   *val =    
     (  a[0]*(C(0,0)*  b[0]+C(0,1)*  b[1]+C(0,2)*  b[2]+C(0,3)*  b[3])+
@@ -526,9 +526,9 @@ eval_UBspline_3d_c_vg (UBspline_3d_c * restrict spline,
   int xs = spline->x_stride;
   int ys = spline->y_stride;
 
-  float dxInv = spline->x_grid->delta_inv;
-  float dyInv = spline->y_grid->delta_inv;
-  float dzInv = spline->z_grid->delta_inv;
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  float dzInv = spline->z_grid.delta_inv;
 
 #define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
   cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
@@ -654,9 +654,9 @@ eval_UBspline_3d_c_vgl (UBspline_3d_c * restrict spline,
   int xs = spline->x_stride;
   int ys = spline->y_stride;
 
-  float dxInv = spline->x_grid->delta_inv;
-  float dyInv = spline->y_grid->delta_inv;
-  float dzInv = spline->z_grid->delta_inv;
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  float dzInv = spline->z_grid.delta_inv;
 
 #define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
   cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
@@ -828,6 +828,10 @@ eval_UBspline_3d_c_vgh (UBspline_3d_c * restrict spline,
   int xs = spline->x_stride;
   int ys = spline->y_stride;
   int offmax = (ix+3)*xs + (iy+3)*ys + iz+3;
+
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  float dzInv = spline->z_grid.delta_inv;
 
 #define P(i,j,k) coefs[(ix+(i))*xs+(iy+(j))*ys+(iz+(k))]
   cP[ 0] = (P(0,0,0)*c[0]+P(0,0,1)*c[1]+P(0,0,2)*c[2]+P(0,0,3)*c[3]);
