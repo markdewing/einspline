@@ -430,7 +430,6 @@ create_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #else
   posix_memalign ((void**)&spline->coefs, 16, (sizeof(float)*Nx*Ny*Nz));
 #endif
-  spline->coefs_size = Nx*Ny*Nz;
 
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) 
@@ -1703,6 +1702,9 @@ void
 destroy_NUBspline (Bspline *spline);
 
 void
+destroy_multi_UBspline (Bspline *spline);
+
+void
 destroy_Bspline (void *spline)
 {
   Bspline *sp = (Bspline *)spline;
@@ -1710,6 +1712,8 @@ destroy_Bspline (void *spline)
     destroy_UBspline (sp);
   else if (sp->sp_code <= NU3D) 
     destroy_NUBspline (sp);
+  else if (sp->sp_code <= MULTI_U3D)
+    destroy_multi_UBspline (sp);
   else
     fprintf (stderr, "Error in destroy_Bspline:  invalide spline code %d.\n",
 	     sp->sp_code);
