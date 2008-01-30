@@ -65,7 +65,7 @@ void test_complex_double()
   //return;
 
   // Now, test random values
-  int num_vals = 100000;
+  int num_vals = 100;
   complex_double multi_vals[num_splines], norm_vals[num_splines];
   for (int i=0; i<num_vals; i++) {
     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
@@ -86,6 +86,8 @@ void test_complex_double()
       }
     }
   }
+
+  num_vals = 100000;
 
   // Now do timing
   clock_t norm_start, norm_end, multi_start, multi_end, rand_start, rand_end;

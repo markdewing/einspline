@@ -100,22 +100,26 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
   abc[56]=a[3]*b[2]*c[0]; abc[57]=a[3]*b[2]*c[1]; abc[58]=a[3]*b[2]*c[2]; abc[59]=a[3]*b[2]*c[3];
   abc[60]=a[3]*b[3]*c[0]; abc[61]=a[3]*b[3]*c[1]; abc[62]=a[3]*b[3]*c[2]; abc[63]=a[3]*b[3]*c[3];
 
-  int offsets[64];
-  int index = 0;
+//   int offsets[64];
+//   int index = 0;
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-  for (int i=0; i<4; i++)
-    for (int j=0; j<4; j++)
-      for (int k=0; k<4; k++) {
-	offsets[index]= (ix+i)*xs +(iy+j)*ys + (iz+k);
-	index++;
-      }
+//   for (int i=0; i<4; i++)
+//     for (int j=0; j<4; j++)
+//       for (int k=0; k<4; k++) {
+// 	offsets[index]= (ix+i)*xs +(iy+j)*ys + (iz+k);
+// 	index++;
+//       }
 	
-  for (int i=0; i<spline->num_splines; i++) {
-    complex_double* restrict coefs = spline->coefs + i*spline->spline_stride;
-    vals[i] = 0.0;
-    for (int j=0; j<64; j++) 
-      vals[i] += coefs[offsets[j]]*abc[j];
+  for (int n=0; n<spline->num_splines; n++) {
+    complex_double* restrict coefs = spline->coefs + n*spline->spline_stride;
+    vals[n] = 0.0;
+    for (int i=0; i<4; i++)
+      for (int j=0; j<4; j++)
+	for (int k=0; k<4; k++)
+	  vals[n] += a[i]*b[j]*c[k]*coefs[(ix+i)*xs + (iy+j)*ys + (iz+k)];
+//     for (int j=0; j<64; j++) 
+//       vals[i] += coefs[offsets[j]]*abc[j];
   }
 }
 			  
