@@ -79,47 +79,37 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
   c[2] = (Ad[ 8]*tpz[0] + Ad[ 9]*tpz[1] + Ad[10]*tpz[2] + Ad[11]*tpz[3]);
   c[3] = (Ad[12]*tpz[0] + Ad[13]*tpz[1] + Ad[14]*tpz[2] + Ad[15]*tpz[3]);
 
-  double abc[64];
-  abc[ 0]=a[0]*b[0]*c[0]; abc[ 1]=a[0]*b[0]*c[1]; abc[ 2]=a[0]*b[0]*c[2]; abc[ 3]=a[0]*b[0]*c[3];
-  abc[ 4]=a[0]*b[1]*c[0]; abc[ 5]=a[0]*b[1]*c[1]; abc[ 6]=a[0]*b[1]*c[2]; abc[ 7]=a[0]*b[1]*c[3];
-  abc[ 8]=a[0]*b[2]*c[0]; abc[ 9]=a[0]*b[2]*c[1]; abc[10]=a[0]*b[2]*c[2]; abc[11]=a[0]*b[2]*c[3];
-  abc[12]=a[0]*b[3]*c[0]; abc[13]=a[0]*b[3]*c[1]; abc[14]=a[0]*b[3]*c[2]; abc[15]=a[0]*b[3]*c[3];
+//   double abc[64];
+//   abc[ 0]=a[0]*b[0]*c[0]; abc[ 1]=a[0]*b[0]*c[1]; abc[ 2]=a[0]*b[0]*c[2]; abc[ 3]=a[0]*b[0]*c[3];
+//   abc[ 4]=a[0]*b[1]*c[0]; abc[ 5]=a[0]*b[1]*c[1]; abc[ 6]=a[0]*b[1]*c[2]; abc[ 7]=a[0]*b[1]*c[3];
+//   abc[ 8]=a[0]*b[2]*c[0]; abc[ 9]=a[0]*b[2]*c[1]; abc[10]=a[0]*b[2]*c[2]; abc[11]=a[0]*b[2]*c[3];
+//   abc[12]=a[0]*b[3]*c[0]; abc[13]=a[0]*b[3]*c[1]; abc[14]=a[0]*b[3]*c[2]; abc[15]=a[0]*b[3]*c[3];
 
-  abc[16]=a[1]*b[0]*c[0]; abc[17]=a[1]*b[0]*c[1]; abc[18]=a[1]*b[0]*c[2]; abc[19]=a[1]*b[0]*c[3];
-  abc[20]=a[1]*b[1]*c[0]; abc[21]=a[1]*b[1]*c[1]; abc[22]=a[1]*b[1]*c[2]; abc[23]=a[1]*b[1]*c[3];
-  abc[24]=a[1]*b[2]*c[0]; abc[25]=a[1]*b[2]*c[1]; abc[26]=a[1]*b[2]*c[2]; abc[27]=a[1]*b[2]*c[3];
-  abc[28]=a[1]*b[3]*c[0]; abc[29]=a[1]*b[3]*c[1]; abc[30]=a[1]*b[3]*c[2]; abc[31]=a[1]*b[3]*c[3];
+//   abc[16]=a[1]*b[0]*c[0]; abc[17]=a[1]*b[0]*c[1]; abc[18]=a[1]*b[0]*c[2]; abc[19]=a[1]*b[0]*c[3];
+//   abc[20]=a[1]*b[1]*c[0]; abc[21]=a[1]*b[1]*c[1]; abc[22]=a[1]*b[1]*c[2]; abc[23]=a[1]*b[1]*c[3];
+//   abc[24]=a[1]*b[2]*c[0]; abc[25]=a[1]*b[2]*c[1]; abc[26]=a[1]*b[2]*c[2]; abc[27]=a[1]*b[2]*c[3];
+//   abc[28]=a[1]*b[3]*c[0]; abc[29]=a[1]*b[3]*c[1]; abc[30]=a[1]*b[3]*c[2]; abc[31]=a[1]*b[3]*c[3];
 
-  abc[32]=a[2]*b[0]*c[0]; abc[33]=a[2]*b[0]*c[1]; abc[34]=a[2]*b[0]*c[2]; abc[35]=a[2]*b[0]*c[3];
-  abc[36]=a[2]*b[1]*c[0]; abc[37]=a[2]*b[1]*c[1]; abc[38]=a[2]*b[1]*c[2]; abc[39]=a[2]*b[1]*c[3];
-  abc[40]=a[2]*b[2]*c[0]; abc[41]=a[2]*b[2]*c[1]; abc[42]=a[2]*b[2]*c[2]; abc[43]=a[2]*b[2]*c[3];
-  abc[44]=a[2]*b[3]*c[0]; abc[45]=a[2]*b[3]*c[1]; abc[46]=a[2]*b[3]*c[2]; abc[47]=a[2]*b[3]*c[3];
+//   abc[32]=a[2]*b[0]*c[0]; abc[33]=a[2]*b[0]*c[1]; abc[34]=a[2]*b[0]*c[2]; abc[35]=a[2]*b[0]*c[3];
+//   abc[36]=a[2]*b[1]*c[0]; abc[37]=a[2]*b[1]*c[1]; abc[38]=a[2]*b[1]*c[2]; abc[39]=a[2]*b[1]*c[3];
+//   abc[40]=a[2]*b[2]*c[0]; abc[41]=a[2]*b[2]*c[1]; abc[42]=a[2]*b[2]*c[2]; abc[43]=a[2]*b[2]*c[3];
+//   abc[44]=a[2]*b[3]*c[0]; abc[45]=a[2]*b[3]*c[1]; abc[46]=a[2]*b[3]*c[2]; abc[47]=a[2]*b[3]*c[3];
 
-  abc[48]=a[3]*b[0]*c[0]; abc[49]=a[3]*b[0]*c[1]; abc[50]=a[3]*b[0]*c[2]; abc[51]=a[3]*b[0]*c[3];
-  abc[52]=a[3]*b[1]*c[0]; abc[53]=a[3]*b[1]*c[1]; abc[54]=a[3]*b[1]*c[2]; abc[55]=a[3]*b[1]*c[3];
-  abc[56]=a[3]*b[2]*c[0]; abc[57]=a[3]*b[2]*c[1]; abc[58]=a[3]*b[2]*c[2]; abc[59]=a[3]*b[2]*c[3];
-  abc[60]=a[3]*b[3]*c[0]; abc[61]=a[3]*b[3]*c[1]; abc[62]=a[3]*b[3]*c[2]; abc[63]=a[3]*b[3]*c[3];
+//   abc[48]=a[3]*b[0]*c[0]; abc[49]=a[3]*b[0]*c[1]; abc[50]=a[3]*b[0]*c[2]; abc[51]=a[3]*b[0]*c[3];
+//   abc[52]=a[3]*b[1]*c[0]; abc[53]=a[3]*b[1]*c[1]; abc[54]=a[3]*b[1]*c[2]; abc[55]=a[3]*b[1]*c[3];
+//   abc[56]=a[3]*b[2]*c[0]; abc[57]=a[3]*b[2]*c[1]; abc[58]=a[3]*b[2]*c[2]; abc[59]=a[3]*b[2]*c[3];
+//   abc[60]=a[3]*b[3]*c[0]; abc[61]=a[3]*b[3]*c[1]; abc[62]=a[3]*b[3]*c[2]; abc[63]=a[3]*b[3]*c[3];
 
-//   int offsets[64];
-//   int index = 0;
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-//   for (int i=0; i<4; i++)
-//     for (int j=0; j<4; j++)
-//       for (int k=0; k<4; k++) {
-// 	offsets[index]= (ix+i)*xs +(iy+j)*ys + (iz+k);
-// 	index++;
-//       }
 	
   for (int n=0; n<spline->num_splines; n++) {
-    complex_double* restrict coefs = spline->coefs + n*spline->spline_stride;
+    complex_double* restrict coefs = spline->coefs + n*spline->spline_stride + ix*xs + iy*ys + iz;
     vals[n] = 0.0;
     for (int i=0; i<4; i++)
-      for (int j=0; j<4; j++)
-	for (int k=0; k<4; k++)
-	  vals[n] += a[i]*b[j]*c[k]*coefs[(ix+i)*xs + (iy+j)*ys + (iz+k)];
-//     for (int j=0; j<64; j++) 
-//       vals[i] += coefs[offsets[j]]*abc[j];
+      for (int j=0; j<4; j++) 
+	for (int k=0; k<4; k++) 
+	  vals[n] += (a[i]*b[j]*c[k])*coefs[i*xs + j*ys + k];
   }
 }
 			  
