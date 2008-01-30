@@ -990,8 +990,8 @@ set_multi_UBspline_2d_z (multi_UBspline_2d_z* spline, int num,
 
 multi_UBspline_3d_z*
 create_multi_UBspline_3d_z (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
-		      BCtype_z xBC, BCtype_z yBC, BCtype_z zBC,
-		      int num_splines)
+			    BCtype_z xBC, BCtype_z yBC, BCtype_z zBC,
+			    int num_splines)
 {
   // Create new spline
   multi_UBspline_3d_z* restrict spline = malloc (sizeof(multi_UBspline_3d_z));

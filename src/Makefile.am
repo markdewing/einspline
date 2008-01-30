@@ -5,7 +5,7 @@ endif
 
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
-                  test_bspline_s test_bspline_d $(CHECK_BLIPS)
+                  test_bspline_s test_bspline_d test_multi $(CHECK_BLIPS)
 
 
 TestBspline_SOURCES   = TestBspline.c
@@ -14,8 +14,9 @@ test_fbspline_SOURCES = test_fbspline.f
 if WANT_BLIPS
    test_blip_SOURCES     = test_blip.c
 endif
-test_bspline_s_SOURCE = test_bspline_s.c
-test_bspline_d_SOURCE = test_bspline_d.c
+test_bspline_s_SOURCES = test_bspline_s.c
+test_bspline_d_SOURCES = test_bspline_d.c
+test_multi_SOURCES     = test_multi.c
 
 LDADD = 
 AM_CCFLAGS = -g 
@@ -26,6 +27,7 @@ test_fbspline_LDADD  = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_blip_LDADD      = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_s_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_d_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
+test_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 
 
 lib_LTLIBRARIES = libeinspline.la
@@ -46,6 +48,7 @@ libeinspline_la_SOURCES =                             \
                        bspline_eval_sse_z.h           \
                        multi_bspline_create.c         \
                        multi_bspline_create.h         \
+                       multi_bspline_eval_std_z.h     \
                        multi_bspline_structs.h        \
                        nubspline_base.h               \
                        nubspline_create.c             \
