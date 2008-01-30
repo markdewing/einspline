@@ -24,16 +24,6 @@
 #include "bspline_base.h"
 #include "nubasis.h"
 
-#ifdef __cplusplus
-#include <complex>
-typedef std::complex<float>  complex_float;
-typedef std::complex<double> complex_double;
-#else
-#include <complex.h>
-typedef complex float  complex_float;
-typedef complex double complex_double;
-#endif
-
 typedef struct
 {
   spline_code sp_code;
