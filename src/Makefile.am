@@ -48,6 +48,7 @@ libeinspline_la_SOURCES =                             \
                        bspline_eval_sse_z.h           \
                        multi_bspline_create.c         \
                        multi_bspline_create.h         \
+                       multi_bspline_eval_sse_z.h     \
                        multi_bspline_eval_std_z.h     \
                        multi_bspline_structs.h        \
                        nubspline_base.h               \

@@ -24,6 +24,8 @@
 #include <math.h>
 #include <time.h>
 
+double drand48();
+
 void test_complex_double()
 {
   int Nx=73; int Ny=91; int Nz = 24;
