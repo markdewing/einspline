@@ -473,7 +473,7 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
     a01, b01, c01, a23, b23, c23, 
     da01, db01, dc01, da23, db23, dc23,
     d2a01, d2b01, d2c01, d2a23, d2b23, d2c23,
-    tmp0, tmp1, r0, r1, i0, i1;
+    tmp0, tmp1, r0, r1, r2, r3, i0, i1, i2, i3;
   
   tpx01 = _mm_set_pd (tx*tx*tx, tx*tx);
   tpx23 = _mm_set_pd (tx, 1.0);
@@ -872,7 +872,10 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   abc[318] = _mm_mul_pd(_mm_mul_pd (  a3,  db3),  dc23);
   abc[319] = _mm_mul_pd(_mm_mul_pd (  a3,   b3), d2c23);
 
-  // Now loop over all splines
+
+  ///////////////////////////////
+  // Now loop over all splines //
+  ///////////////////////////////
 #define nextP(i,j,k) (const double*)(next_coefs+(i)*xs+(j)*ys+(k))
   __m128d val_r, val_i, grad_r[3], grad_i[3], hess_r[9], hess_i[9];
 
@@ -907,60 +910,76 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
     // Now compute value, grad, and hessian
     int index = 0;
     for (int i=0; i<4; i++) 
-      for (int j=0; j<4; j++) {
+      for (int j=0; j<4; j+=2) {
 	tmp0 = _mm_load_pd (P(i,j,0));  tmp1 = _mm_load_pd (P(i,j,1));
-	r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-	i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+	r0 = _mm_unpacklo_pd (tmp0, tmp1);
+	i0 = _mm_unpackhi_pd (tmp0, tmp1);
+	tmp0 = _mm_load_pd (P(i,j,2));  tmp1 = _mm_load_pd (P(i,j,3));	
+	r1 = _mm_unpacklo_pd (tmp0, tmp1);
+	i1 = _mm_unpackhi_pd (tmp0, tmp1);
+	tmp0 = _mm_load_pd (P(i,j+1,0));  tmp1 = _mm_load_pd (P(i,j+1,1));
+	r2 = _mm_unpacklo_pd (tmp0, tmp1);
+	i2 = _mm_unpackhi_pd (tmp0, tmp1);
+	tmp0 = _mm_load_pd (P(i,j+1,2));  tmp1 = _mm_load_pd (P(i,j+1,3));	
+	r3 = _mm_unpacklo_pd (tmp0, tmp1);
+	i3 = _mm_unpackhi_pd (tmp0, tmp1);
 
-	val_r     = _mm_add_pd(val_r    , _mm_mul_pd(r0, abc[index+0]));
+	
+	_MM_DDOT4_PD(r0, r1, r2, r3,   abc[index+0], abc[index+10],
+		     abc[index+20],    abc[index+30],  tmp0);
+	val_r = _mm_add_pd(val_r, tmp0);
+
+	_MM_DDOT4_PD(i0, i1, i2, i3,   abc[index+0], abc[index+10],
+		     abc[index+20],    abc[index+30],  tmp1);
+	val_i = _mm_add_pd(val_i, tmp1);
+	
+
+// 	val_r     = _mm_add_pd(val_r    , _mm_mul_pd(r0, abc[index+0]));
+// 	val_i     = _mm_add_pd(val_i,     _mm_mul_pd(i0, abc[index+0]));
 	grad_r[0] = _mm_add_pd(grad_r[0], _mm_mul_pd(r0, abc[index+1]));
-	grad_r[1] = _mm_add_pd(grad_r[1], _mm_mul_pd(r0, abc[index+2]));
-	grad_r[2] = _mm_add_pd(grad_r[2], _mm_mul_pd(r0, abc[index+3]));
-	hess_r[0] = _mm_add_pd(hess_r[0], _mm_mul_pd(r0, abc[index+4]));
-	hess_r[1] = _mm_add_pd(hess_r[1], _mm_mul_pd(r0, abc[index+5]));
-	hess_r[2] = _mm_add_pd(hess_r[2], _mm_mul_pd(r0, abc[index+6]));
-	hess_r[4] = _mm_add_pd(hess_r[4], _mm_mul_pd(r0, abc[index+7]));
-	hess_r[5] = _mm_add_pd(hess_r[5], _mm_mul_pd(r0, abc[index+8]));
-	hess_r[8] = _mm_add_pd(hess_r[8], _mm_mul_pd(r0, abc[index+9]));
-
-	val_i     = _mm_add_pd(val_i,     _mm_mul_pd(i0, abc[index+0]));
 	grad_i[0] = _mm_add_pd(grad_i[0], _mm_mul_pd(i0, abc[index+1]));
+	grad_r[1] = _mm_add_pd(grad_r[1], _mm_mul_pd(r0, abc[index+2]));
 	grad_i[1] = _mm_add_pd(grad_i[1], _mm_mul_pd(i0, abc[index+2]));
+	grad_r[2] = _mm_add_pd(grad_r[2], _mm_mul_pd(r0, abc[index+3]));
 	grad_i[2] = _mm_add_pd(grad_i[2], _mm_mul_pd(i0, abc[index+3]));
+	hess_r[0] = _mm_add_pd(hess_r[0], _mm_mul_pd(r0, abc[index+4]));
 	hess_i[0] = _mm_add_pd(hess_i[0], _mm_mul_pd(i0, abc[index+4]));
+	hess_r[1] = _mm_add_pd(hess_r[1], _mm_mul_pd(r0, abc[index+5]));
 	hess_i[1] = _mm_add_pd(hess_i[1], _mm_mul_pd(i0, abc[index+5]));
+	hess_r[2] = _mm_add_pd(hess_r[2], _mm_mul_pd(r0, abc[index+6]));
 	hess_i[2] = _mm_add_pd(hess_i[2], _mm_mul_pd(i0, abc[index+6]));
+	hess_r[4] = _mm_add_pd(hess_r[4], _mm_mul_pd(r0, abc[index+7]));
 	hess_i[4] = _mm_add_pd(hess_i[4], _mm_mul_pd(i0, abc[index+7]));
+	hess_r[5] = _mm_add_pd(hess_r[5], _mm_mul_pd(r0, abc[index+8]));
 	hess_i[5] = _mm_add_pd(hess_i[5], _mm_mul_pd(i0, abc[index+8]));
+	hess_r[8] = _mm_add_pd(hess_r[8], _mm_mul_pd(r0, abc[index+9]));
 	hess_i[8] = _mm_add_pd(hess_i[8], _mm_mul_pd(i0, abc[index+9]));
 
-	tmp0 = _mm_load_pd (P(i,j,2));  tmp1 = _mm_load_pd (P(i,j,3));	
-	r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-	i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
 	
-	val_r     = _mm_add_pd(val_r    , _mm_mul_pd(r1, abc[index+10]));
+// 	val_r     = _mm_add_pd(val_r    , _mm_mul_pd(r1, abc[index+10]));
+// 	val_i     = _mm_add_pd(val_i    , _mm_mul_pd(i1, abc[index+10]));
 	grad_r[0] = _mm_add_pd(grad_r[0], _mm_mul_pd(r1, abc[index+11]));
-	grad_r[1] = _mm_add_pd(grad_r[1], _mm_mul_pd(r1, abc[index+12]));
-	grad_r[2] = _mm_add_pd(grad_r[2], _mm_mul_pd(r1, abc[index+13]));
-	hess_r[0] = _mm_add_pd(hess_r[0], _mm_mul_pd(r1, abc[index+14]));
-	hess_r[1] = _mm_add_pd(hess_r[1], _mm_mul_pd(r1, abc[index+15]));
-	hess_r[2] = _mm_add_pd(hess_r[2], _mm_mul_pd(r1, abc[index+16]));
-	hess_r[4] = _mm_add_pd(hess_r[4], _mm_mul_pd(r1, abc[index+17]));
-	hess_r[5] = _mm_add_pd(hess_r[5], _mm_mul_pd(r1, abc[index+18]));
-	hess_r[8] = _mm_add_pd(hess_r[8], _mm_mul_pd(r1, abc[index+19]));
-
-	val_i     = _mm_add_pd(val_i    , _mm_mul_pd(i1, abc[index+10]));
 	grad_i[0] = _mm_add_pd(grad_i[0], _mm_mul_pd(i1, abc[index+11]));
+	grad_r[1] = _mm_add_pd(grad_r[1], _mm_mul_pd(r1, abc[index+12]));
 	grad_i[1] = _mm_add_pd(grad_i[1], _mm_mul_pd(i1, abc[index+12]));
+	grad_r[2] = _mm_add_pd(grad_r[2], _mm_mul_pd(r1, abc[index+13]));
 	grad_i[2] = _mm_add_pd(grad_i[2], _mm_mul_pd(i1, abc[index+13]));
+	hess_r[0] = _mm_add_pd(hess_r[0], _mm_mul_pd(r1, abc[index+14]));
 	hess_i[0] = _mm_add_pd(hess_i[0], _mm_mul_pd(i1, abc[index+14]));
+	hess_r[1] = _mm_add_pd(hess_r[1], _mm_mul_pd(r1, abc[index+15]));
 	hess_i[1] = _mm_add_pd(hess_i[1], _mm_mul_pd(i1, abc[index+15]));
+	hess_r[2] = _mm_add_pd(hess_r[2], _mm_mul_pd(r1, abc[index+16]));
 	hess_i[2] = _mm_add_pd(hess_i[2], _mm_mul_pd(i1, abc[index+16]));
+	hess_r[4] = _mm_add_pd(hess_r[4], _mm_mul_pd(r1, abc[index+17]));
 	hess_i[4] = _mm_add_pd(hess_i[4], _mm_mul_pd(i1, abc[index+17]));
+	hess_r[5] = _mm_add_pd(hess_r[5], _mm_mul_pd(r1, abc[index+18]));
 	hess_i[5] = _mm_add_pd(hess_i[5], _mm_mul_pd(i1, abc[index+18]));
+	hess_r[8] = _mm_add_pd(hess_r[8], _mm_mul_pd(r1, abc[index+19]));
 	hess_i[8] = _mm_add_pd(hess_i[8], _mm_mul_pd(i1, abc[index+19]));
-	index += 20;
-      }    
+
+	index += 40;
+      }
+
     //_mm_storeu_pd((double*)(vals+si),_mm_hadd_pd(val_r, val_i));
     _mm_store_pd((double*)(vals+si)     , _mm_hadd_pd(val_r, val_i));
     _mm_store_pd((double*)(grads+3*si+0), _mm_hadd_pd(grad_r[0], grad_i[0]));
@@ -979,148 +998,6 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
     coefs += spline->spline_stride;
   }
 
-
-  // Compute cP, dcP, and d2cP products 1/8 at a time to maximize
-  // register reuse and avoid rerereading from memory or cache.
-  // Complex values are read in, then shuffled such that 4 registers
-  // hold the read parts and 4 register hold the imaginary parts.
-  // 1st eighth
-//   tmp0 = _mm_load_pd (P(0,0,0));  tmp1 = _mm_load_pd (P(0,0,1));
-//   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(0,0,2));  tmp1 = _mm_load_pd (P(0,0,3));
-//   r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(0,1,0));  tmp1 = _mm_load_pd (P(0,1,1));
-//   r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(0,1,2));  tmp1 = _mm_load_pd (P(0,1,3));
-//   r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   _MM_DDOT4_PD(r0, r1, r2, r3,   c01,  c23,  c01,  c23,  cPr[0]);
-//   _MM_DDOT4_PD(i0, i1, i2, i3,   c01,  c23,  c01,  c23,  cPi[0]);
-  
-//   // 2nd eighth
-//   tmp0 = _mm_load_pd (P(0,2,0));  tmp1 = _mm_load_pd (P(0,2,1));
-//   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(0,2,2));  tmp1 = _mm_load_pd (P(0,2,3));
-//   r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(0,3,0));  tmp1 = _mm_load_pd (P(0,3,1));
-//   r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(0,3,2));  tmp1 = _mm_load_pd (P(0,3,3));
-//   r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   _MM_DDOT4_PD(r0, r1, r2, r3,   c01,  c23,  c01,  c23,  cPr[1]);
-//   _MM_DDOT4_PD(i0, i1, i2, i3,   c01,  c23,  c01,  c23,  cPi[1]);
-
-//   // 3rd eighth
-//   tmp0 = _mm_load_pd (P(1,0,0));  tmp1 = _mm_load_pd (P(1,0,1));
-//   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(1,0,2));  tmp1 = _mm_load_pd (P(1,0,3));
-//   r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(1,1,0));  tmp1 = _mm_load_pd (P(1,1,1));
-//   r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(1,1,2));  tmp1 = _mm_load_pd (P(1,1,3));
-//   r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   _MM_DDOT4_PD(r0, r1, r2, r3,   c01,  c23,  c01,  c23,  cPr[2]);
-//   _MM_DDOT4_PD(i0, i1, i2, i3,   c01,  c23,  c01,  c23,  cPi[2]);
-
-//   // 4th eighth
-//   tmp0 = _mm_load_pd (P(1,2,0));  tmp1 = _mm_load_pd (P(1,2,1));
-//   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(1,2,2));  tmp1 = _mm_load_pd (P(1,2,3));
-//   r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(1,3,0));  tmp1 = _mm_load_pd (P(1,3,1));
-//   r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(1,3,2));  tmp1 = _mm_load_pd (P(1,3,3));
-//   r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   _MM_DDOT4_PD(r0, r1, r2, r3,   c01,  c23,  c01,  c23,  cPr[3]);
-//   _MM_DDOT4_PD(i0, i1, i2, i3,   c01,  c23,  c01,  c23,  cPi[3]);
-
-//   // 5th eighth
-//   tmp0 = _mm_load_pd (P(2,0,0));  tmp1 = _mm_load_pd (P(2,0,1));
-//   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(2,0,2));  tmp1 = _mm_load_pd (P(2,0,3));
-//   r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(2,1,0));  tmp1 = _mm_load_pd (P(2,1,1));
-//   r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(2,1,2));  tmp1 = _mm_load_pd (P(2,1,3));
-//   r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   _MM_DDOT4_PD(r0, r1, r2, r3,   c01,  c23,  c01,  c23,  cPr[4]);
-//   _MM_DDOT4_PD(i0, i1, i2, i3,   c01,  c23,  c01,  c23,  cPi[4]);
-
-//   // 6th eighth
-//   tmp0 = _mm_load_pd (P(2,2,0));  tmp1 = _mm_load_pd (P(2,2,1));
-//   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(2,2,2));  tmp1 = _mm_load_pd (P(2,2,3));
-//   r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(2,3,0));  tmp1 = _mm_load_pd (P(2,3,1));
-//   r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(2,3,2));  tmp1 = _mm_load_pd (P(2,3,3));
-//   r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   _MM_DDOT4_PD(r0, r1, r2, r3,   c01,  c23,  c01,  c23,  cPr[5]);
-//   _MM_DDOT4_PD(i0, i1, i2, i3,   c01,  c23,  c01,  c23,  cPi[5]);
-
-//   // 7th eighth
-//   tmp0 = _mm_load_pd (P(3,0,0));  tmp1 = _mm_load_pd (P(3,0,1));
-//   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(3,0,2));  tmp1 = _mm_load_pd (P(3,0,3));
-//   r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(3,1,0));  tmp1 = _mm_load_pd (P(3,1,1));
-//   r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(3,1,2));  tmp1 = _mm_load_pd (P(3,1,3));
-//   r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   _MM_DDOT4_PD(r0, r1, r2, r3,   c01,  c23,  c01,  c23,  cPr[6]);
-//   _MM_DDOT4_PD(i0, i1, i2, i3,   c01,  c23,  c01,  c23,  cPi[6]);
-
-//   // 8th eighth
-//   tmp0 = _mm_load_pd (P(3,2,0));  tmp1 = _mm_load_pd (P(3,2,1));
-//   r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(3,2,2));  tmp1 = _mm_load_pd (P(3,2,3));
-//   r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(3,3,0));  tmp1 = _mm_load_pd (P(3,3,1));
-//   r2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i2 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   tmp0 = _mm_load_pd (P(3,3,2));  tmp1 = _mm_load_pd (P(3,3,3));
-//   r3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-//   i3 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-//   _MM_DDOT4_PD(r0, r1, r2, r3,   c01,  c23,  c01,  c23,  cPr[7]);
-//   _MM_DDOT4_PD(i0, i1, i2, i3,   c01,  c23,  c01,  c23,  cPi[7]);
-  
-//   // Now compute bcP, dbcP, bdcP, d2bcP, bd2cP, and dbdc products
-//   _MM_DDOT4_PD (b01, b23, b01, b23, cPr[0], cPr[1], cPr[2], cPr[3], bcP01r);
-//   _MM_DDOT4_PD (b01, b23, b01, b23, cPi[0], cPi[1], cPi[2], cPi[3], bcP01i);
-//   _MM_DDOT4_PD (b01, b23, b01, b23, cPr[4], cPr[5], cPr[6], cPr[7], bcP23r);
-//   _MM_DDOT4_PD (b01, b23, b01, b23, cPi[4], cPi[5], cPi[6], cPi[7], bcP23i);
-
-//   // Compute value
-//   _MM_DOT4_PD (a01, a23, bcP01r, bcP23r, *((double*)val+0));
-//  _MM_DOT4_PD (a01, a23, bcP01i, bcP23i, *((double*)val+1));
 #undef P
 #undef nextP
 }
