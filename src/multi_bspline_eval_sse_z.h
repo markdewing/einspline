@@ -499,7 +499,6 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   _mm_prefetch ((const char*) &A_d[20],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[21],_MM_HINT_T0);  
   _mm_prefetch ((const char*) &A_d[22],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[23],_MM_HINT_T0);  
 
-
   x -= spline->x_grid.start;
   y -= spline->y_grid.start;  
   z -= spline->z_grid.start;

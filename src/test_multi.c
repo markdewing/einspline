@@ -29,7 +29,7 @@ double drand48();
 void test_complex_double()
 {
   int Nx=73; int Ny=91; int Nz = 29;
-  int num_splines = 201;
+  int num_splines = 128;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -132,7 +132,7 @@ void test_complex_double()
 void test_complex_double_vgh()
 {
   int Nx=73; int Ny=91; int Nz = 29;
-  int num_splines = 200;
+  int num_splines = 128;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -364,8 +364,8 @@ void test_double()
 
 void test_double_vgh()
 {
-  int Nx=73; int Ny=91; int Nz = 58;
-  int num_splines = 201;
+  int Nx=73; int Ny=91; int Nz = 29;
+  int num_splines = 128;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -448,7 +448,7 @@ void test_double_vgh()
     }
   }
   
-  num_vals = 200000;
+  num_vals = 100000;
   
   // Now do timing
   clock_t norm_start, norm_end, multi_start, multi_end, rand_start, rand_end;
