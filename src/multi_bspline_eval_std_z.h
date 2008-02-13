@@ -102,17 +102,29 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-	
-  for (int n=0; n<spline->num_splines; n++) {
-    complex_double* restrict coefs = spline->coefs + n*spline->spline_stride + ix*xs + iy*ys + iz;
-    vals[n] = 0.0;
-    for (int i=0; i<4; i++)
-      for (int j=0; j<4; j++) 
-	for (int k=0; k<4; k++) 
-	  vals[n] += (a[i]*b[j]*c[k])*coefs[i*xs + j*ys + k];
-  }
-}
-			  
+  int zs = spline->z_stride;
 
+  for (int n=0; n<spline->num_splines; n++)
+    vals[n] = 0.0;
+
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++) 
+      for (int k=0; k<4; k++) {
+	double prefactor = a[i]*b[j]*c[k];
+	complex_double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+	for (int n=0; n<spline->num_splines; n++) 
+	  vals[n] += prefactor*coefs[n];
+      }
+}
+
+
+inline void
+eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
+			      double x, double y, double z,
+			      complex_double* restrict vals,
+			      complex_double* restrict grads,
+			      complex_double* restrict hess)	  
+{
+}
 
 #endif

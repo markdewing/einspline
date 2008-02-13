@@ -173,7 +173,7 @@ typedef struct
   type_code    tcode;
   complex_double* restrict coefs;
   intptr_t spline_stride;
-  int x_stride, y_stride;
+  int x_stride, y_stride, z_stride;
   Ugrid x_grid, y_grid, z_grid;
   BCtype_z xBC, yBC, zBC;
   int num_splines;

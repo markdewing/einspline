@@ -238,5 +238,6 @@ void test_complex_double_vgh()
 
 main()
 {
-  test_complex_double_vgh();
+  test_complex_double();
+  //test_complex_double_vgh();
 }
