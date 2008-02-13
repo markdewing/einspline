@@ -260,6 +260,108 @@ void test_complex_double_vgh()
 }
 
 
+void test_double()
+{
+  int Nx=73; int Ny=91; int Nz = 24;
+  int num_splines = 200;
+
+  Ugrid x_grid, y_grid, z_grid;
+  x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
+  y_grid.start = 8.7; y_grid.end = 12.7; y_grid.num = Ny;
+  z_grid.start = 4.5; z_grid.end =  9.3; z_grid.num = Nz;
+
+  BCtype_d xBC, yBC, zBC;
+  xBC.lCode = xBC.rCode = PERIODIC;
+  yBC.lCode = yBC.rCode = PERIODIC;
+  zBC.lCode = zBC.rCode = PERIODIC;
+  
+  // First, create splines the normal way
+  UBspline_3d_d* norm_splines[num_splines];
+  multi_UBspline_3d_d *multi_spline;
+  
+  // First, create multispline
+  multi_spline = create_multi_UBspline_3d_d (x_grid, y_grid, z_grid, xBC, yBC, zBC,
+					     num_splines);
+  
+  double data[Nx*Ny*Nz];
+  // Now, create normal splines and set multispline data
+  for (int i=0; i<num_splines; i++) {
+    for (int j=0; j<Nx*Ny*Nz; j++)
+      data[j] = (drand48()-0.5) + (drand48()-0.5)*1.0i;
+    norm_splines[i] = create_UBspline_3d_d (x_grid, y_grid, z_grid, xBC, yBC, zBC, data);
+    set_multi_UBspline_3d_d (multi_spline, i, data);
+  }
+  
+  fprintf (stderr, "norm coef  = %1.14e\n",
+	   norm_splines[19]->coefs[227]);
+  fprintf (stderr, "multi coef = %1.14e\n",
+	   multi_spline->coefs[19+227*multi_spline->z_stride]);
+  
+  // Now, test random values
+  int num_vals = 100;
+  double multi_vals[num_splines], norm_vals[num_splines];
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    
+    eval_multi_UBspline_3d_d (multi_spline, x, y, z, 
+			      multi_vals);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_d (norm_splines[j], x, y, z, &(norm_vals[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      double diff = norm_vals[j] - multi_vals[j];
+      if (fabs(diff) > 1.0e-12) {
+	fprintf (stderr, "Error!  norm_vals[j] = %1.14e\n",
+		 norm_vals[j]);
+	fprintf (stderr, "       multi_vals[j] = %1.14e\n",
+		 multi_vals[j]);
+      }
+    }
+  }
+  
+  num_vals = 100000;
+  
+  // Now do timing
+  clock_t norm_start, norm_end, multi_start, multi_end, rand_start, rand_end;
+  rand_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+  }
+  rand_end = clock();
+  
+  norm_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_d (norm_splines[j], x, y, z, &(norm_vals[j]));
+  }
+  norm_end = clock();
+  
+  multi_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    eval_multi_UBspline_3d_d (multi_spline, x, y, z, multi_vals);
+  }
+  multi_end = clock();
+  
+  fprintf (stderr, "Normal spline time = %1.5f\n",
+	   (double)(norm_end-norm_start+rand_start-rand_end)/CLOCKS_PER_SEC);
+  fprintf (stderr, "Multi  spline time = %1.5f\n",
+	   (double)(multi_end-multi_start+rand_start-rand_end)/CLOCKS_PER_SEC);
+  
+}
+
+
+
 void test_double_vgh()
 {
   int Nx=73; int Ny=91; int Nz = 24;
@@ -389,7 +491,8 @@ void test_double_vgh()
 
 main()
 {
-  //test_complex_double();
+  test_complex_double();
   //test_complex_double_vgh();
-test_double_vgh();
+  test_double();
+  //test_double_vgh();
 }
