@@ -641,7 +641,8 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
     _mm_storeu_pd((double*)(hess+9*n+4), mhess [6*n+3]);
     _mm_storeu_pd((double*)(hess+9*n+5), mhess [6*n+4]);
     _mm_storeu_pd((double*)(hess+9*n+8), mhess [6*n+5]);
-    
+  }
+  for (int n=0; n<N; n++) {
     grads[3*n+0] *= dxInv;
     grads[3*n+1] *= dyInv;
     grads[3*n+2] *= dzInv;
