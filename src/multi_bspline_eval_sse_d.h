@@ -243,7 +243,8 @@ eval_multi_UBspline_3d_d_vg (multi_UBspline_3d_d *spline,
 
 
   // Zero-out values
-  __m128d mvals[N], mgrads[3*N];
+  int Nh = (N+1)/2;
+  __m128d mvals[Nh], mgrads[3*Nh];
   for (int n=0; n<N; n++) {
     mvals[n] = _mm_sub_pd (mvals[n], mvals[n]);
     for (int i=0; i<3; i++) 
@@ -556,14 +557,15 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
 
 
   // Zero-out values
-  __m128d mvals[N], mgrads[3*N], mhess[6*N];
-  for (int n=0; n<N; n++) {
+  int Nh = (N+1)/2;
+  __m128d mvals[Nh], mgrads[3*Nh], mhess[6*Nh];
+  for (int n=0; n<Nh; n++) {
     mvals[n] = _mm_sub_pd (mvals[n], mvals[n]);
     for (int i=0; i<3; i++)
       mgrads[3*n+i] = _mm_sub_pd (mgrads[3*n+i],mgrads[3*n+i]);
     for (int i=0; i<6; i++)
       mhess[6*n+i]  = _mm_sub_pd (mhess[6*n+i], mhess[6*n+i]);
-  }   
+  }
 
   __m128d a[4], b[4], c[4], da[4], db[4], dc[4], d2a[4], d2b[4], d2c[4];
   a[0]=_mm_unpacklo_pd(a01,a01); da[0]=_mm_unpacklo_pd(da01,da01); d2a[0]=_mm_unpacklo_pd(d2a01,d2a01);
@@ -603,7 +605,7 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
 
 	__m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
 
-	for (int n=0; n<N; n++) {
+	for (int n=0; n<Nh; n++) {
 	  mvals[n]      = _mm_add_pd (mvals[n],      _mm_mul_pd (   abc   , coefs[n]));
 	  mgrads[3*n+0] = _mm_add_pd (mgrads[3*n+0], _mm_mul_pd ( d_abc[0], coefs[n]));
 	  mgrads[3*n+1] = _mm_add_pd (mgrads[3*n+1], _mm_mul_pd ( d_abc[1], coefs[n]));
@@ -621,18 +623,46 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
   double dyInv = spline->y_grid.delta_inv;
   double dzInv = spline->z_grid.delta_inv; 
   
+  for (int n=0; n<N/2; n++) {
+    _mm_storeu_pd((double*)(vals+2*n),mvals[n]);
+
+    _mm_storel_pd((double*)(grads+6*n+0),mgrads[3*n+0]);
+    _mm_storeh_pd((double*)(grads+6*n+3),mgrads[3*n+0]);
+    _mm_storel_pd((double*)(grads+6*n+1),mgrads[3*n+1]);
+    _mm_storeh_pd((double*)(grads+6*n+4),mgrads[3*n+1]);
+    _mm_storel_pd((double*)(grads+6*n+2),mgrads[3*n+2]);
+    _mm_storeh_pd((double*)(grads+6*n+5),mgrads[3*n+2]);
+
+    _mm_storel_pd((double*)(hess+18*n+0),  mhess [6*n+0]);
+    _mm_storeh_pd((double*)(hess+18*n+9),  mhess [6*n+0]);
+    _mm_storel_pd((double*)(hess+18*n+1),  mhess [6*n+1]);
+    _mm_storeh_pd((double*)(hess+18*n+10), mhess [6*n+1]);
+    _mm_storel_pd((double*)(hess+18*n+2),  mhess [6*n+2]);
+    _mm_storeh_pd((double*)(hess+18*n+11), mhess [6*n+2]);
+    _mm_storel_pd((double*)(hess+18*n+4),  mhess [6*n+3]);
+    _mm_storeh_pd((double*)(hess+18*n+13), mhess [6*n+3]);
+    _mm_storel_pd((double*)(hess+18*n+5),  mhess [6*n+4]);
+    _mm_storeh_pd((double*)(hess+18*n+14), mhess [6*n+4]);
+    _mm_storel_pd((double*)(hess+18*n+8),  mhess [6*n+5]);
+    _mm_storeh_pd((double*)(hess+18*n+17), mhess [6*n+5]);
+  }
+
+  if (N&1) {
+    _mm_storeu_pd((double*)(vals+N-1),mvals[Nh-1]);
+
+    _mm_storel_pd((double*)(grads+3*(N-1)+0),mgrads[3*(Nh-1)+0]);
+    _mm_storel_pd((double*)(grads+3*(N-1)+1),mgrads[3*(Nh-1)+1]);
+    _mm_storel_pd((double*)(grads+3*(N-1)+2),mgrads[3*(Nh-1)+2]);
+
+    _mm_storel_pd((double*)(hess+9*(N-1)+0),  mhess [6*(Nh-1)+0]);
+    _mm_storel_pd((double*)(hess+9*(N-1)+1),  mhess [6*(Nh-1)+1]);
+    _mm_storel_pd((double*)(hess+9*(N-1)+2),  mhess [6*(Nh-1)+2]);
+    _mm_storel_pd((double*)(hess+9*(N-1)+4),  mhess [6*(Nh-1)+3]);
+    _mm_storel_pd((double*)(hess+9*(N-1)+5),  mhess [6*(Nh-1)+4]);
+    _mm_storel_pd((double*)(hess+9*(N-1)+8),  mhess [6*(Nh-1)+5]);
+  }
+
   for (int n=0; n<N; n++) {
-    _mm_storeu_pd((double*)(vals+n),mvals[n]);
-    _mm_storeu_pd((double*)(grads+3*n+0),mgrads[3*n+0]);
-    _mm_storeu_pd((double*)(grads+3*n+1),mgrads[3*n+1]);
-    _mm_storeu_pd((double*)(grads+3*n+2),mgrads[3*n+2]);
-    _mm_storeu_pd((double*)(hess+9*n+0), mhess [6*n+0]);
-    _mm_storeu_pd((double*)(hess+9*n+1), mhess [6*n+1]);
-    _mm_storeu_pd((double*)(hess+9*n+2), mhess [6*n+2]);
-    _mm_storeu_pd((double*)(hess+9*n+4), mhess [6*n+3]);
-    _mm_storeu_pd((double*)(hess+9*n+5), mhess [6*n+4]);
-    _mm_storeu_pd((double*)(hess+9*n+8), mhess [6*n+5]);
-    
     grads[3*n+0] *= dxInv;
     grads[3*n+1] *= dyInv;
     grads[3*n+2] *= dzInv;

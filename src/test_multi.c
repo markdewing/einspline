@@ -365,7 +365,7 @@ void test_double()
 void test_double_vgh()
 {
   int Nx=73; int Ny=91; int Nz = 24;
-  int num_splines = 200;
+  int num_splines = 201;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -418,6 +418,7 @@ void test_double_vgh()
       // Check value
       double diff = norm_vals[j] - multi_vals[j];
       if (fabs(diff) > 1.0e-12) {
+	fprintf (stderr, "j = %d\n", j);
 	fprintf (stderr, "Error!  norm_vals[j] = %1.14e\n",
 		 norm_vals[j]);
 	fprintf (stderr, "       multi_vals[j] = %1.14e\n",
@@ -493,6 +494,6 @@ main()
 {
   //test_complex_double();
   //test_complex_double_vgh();
-  test_double();
-  //test_double_vgh();
+  //test_double();
+  test_double_vgh();
 }
