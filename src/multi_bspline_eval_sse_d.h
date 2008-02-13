@@ -161,10 +161,11 @@ eval_multi_UBspline_3d_d (multi_UBspline_3d_d *spline,
 	  mvals[n] = _mm_add_pd (mvals[n], _mm_mul_pd (abc, coefs[n]));
       }
   
-  for (int n=0; n<N/2; n++)
-    _mm_storeu_pd((double*)(vals+2*n),mvals[n]);
+  for (int n=0; n<N/2; n++) 
+    _mm_storeu_pd((vals+2*n),mvals[n]);
   if (N & 1) 
-    vals[N-1] = ((double*)mvals)[N-1];
+    _mm_storel_pd(vals+N-1,mvals[N/2]);
+  //vals[N-1] = ((double*)mvals)[N-1];
 }
 
 

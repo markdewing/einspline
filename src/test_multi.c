@@ -263,7 +263,7 @@ void test_complex_double_vgh()
 void test_double()
 {
   int Nx=73; int Ny=91; int Nz = 24;
-  int num_splines = 200;
+  int num_splines = 201;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -491,7 +491,7 @@ void test_double_vgh()
 
 main()
 {
-  test_complex_double();
+  //test_complex_double();
   //test_complex_double_vgh();
   test_double();
   //test_double_vgh();
