@@ -97,7 +97,7 @@ create_multi_UBspline_1d_s (Ugrid x_grid, BCtype_s xBC, int num_splines)
     N = M+2;
   }
 
-  spline->spline_stride = N;
+  spline->x_stride = num_splines;
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 #ifndef HAVE_SSE2
@@ -114,9 +114,10 @@ void
 set_multi_UBspline_1d_s (multi_UBspline_1d_s *spline, int num,
 			 float *data)
 {
-  float *coefs = spline->coefs + num*spline->spline_stride;
+  float *coefs = spline->coefs + num;
+  int xs = spline->x_stride;
   find_coefs_1d_s (spline->x_grid, spline->xBC, data, 1, 
-		   coefs, 1);
+		   coefs, xs);
 }
 
 
@@ -147,8 +148,8 @@ create_multi_UBspline_2d_s (Ugrid x_grid, Ugrid y_grid,
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
-  spline->x_stride = Ny;
-  spline->spline_stride = Nx*Ny;
+  spline->x_stride = Ny*num_splines;
+  spline->y_stride = num_splines;
 #ifndef HAVE_SSE2
   spline->coefs = malloc ((size_t)sizeof(float)*Nx*Ny*num_splines);
 #else
@@ -172,22 +173,22 @@ set_multi_UBspline_2d_s (multi_UBspline_2d_s* spline, int num, float *data)
   if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
   else                                   Ny = My+2;
 
-  intptr_t offset = num*spline->spline_stride;
-  float *coefs = spline->coefs + offset;
+  float *coefs = spline->coefs + num;
+  int N = spline->num_splines;
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) {
     intptr_t doffset = iy;
-    intptr_t coffset = iy;
+    intptr_t coffset = iy*N;
     find_coefs_1d_s (spline->x_grid, spline->xBC, data+doffset, My,
-		     coefs+coffset, Ny);
+		     coefs+coffset, Ny*N);
   }
   
   // Now, solve in the Y-direction
   for (int ix=0; ix<Nx; ix++) {
-    intptr_t doffset = ix*Ny;
-    intptr_t coffset = ix*Ny;
-    find_coefs_1d_s (spline->y_grid, spline->yBC, coefs+doffset, 1, 
-		     coefs+coffset, 1);
+    intptr_t doffset = ix*Ny*N;
+    intptr_t coffset = ix*Ny*N;
+    find_coefs_1d_s (spline->y_grid, spline->yBC, coefs+doffset, N, 
+		     coefs+coffset, N);
   }
 }
 
@@ -227,9 +228,9 @@ create_multi_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   z_grid.delta_inv = 1.0/z_grid.delta;
   spline->z_grid   = z_grid;
 
-  spline->spline_stride = Nx*Ny*Nz;
-  spline->x_stride      = Ny*Nz;
-  spline->y_stride      = Nz;
+  spline->x_stride      = Ny*Nz*num_splines;
+  spline->y_stride      = Nz*num_splines;
+  spline->z_stride      = num_splines;
 
 #ifndef HAVE_SSE2
   spline->coefs      = malloc (sizeof(float)*Nx*Ny*Nz);
@@ -245,7 +246,6 @@ create_multi_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 void
 set_multi_UBspline_3d_s (multi_UBspline_3d_s* spline, int num, float *data)
 {
-  intptr_t offset = spline->spline_stride * num;
   int Mx = spline->x_grid.num;
   int My = spline->y_grid.num;
   int Mz = spline->z_grid.num;
@@ -258,33 +258,34 @@ set_multi_UBspline_3d_s (multi_UBspline_3d_s* spline, int num, float *data)
   if (spline->zBC.lCode == PERIODIC)     Nz = Mz+3;
   else                                   Nz = Mz+2;
 
-  float *coefs = spline->coefs + offset;
+  float *coefs = spline->coefs + num;
 
+  int N = spline->num_splines;
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) 
     for (int iz=0; iz<Mz; iz++) {
       int doffset = iy*Mz+iz;
-      int coffset = iy*Nz+iz;
+      int coffset = (iy*Nz+iz)*N;
       find_coefs_1d_s (spline->x_grid, spline->xBC, data+doffset, My*Mz,
-		       coefs+coffset, Ny*Nz);
+		       coefs+coffset, Ny*Nz*N);
     }
   
   // Now, solve in the Y-direction
   for (int ix=0; ix<Nx; ix++) 
     for (int iz=0; iz<Nz; iz++) {
-      int doffset = ix*Ny*Nz + iz;
-      int coffset = ix*Ny*Nz + iz;
-      find_coefs_1d_s (spline->y_grid, spline->yBC, coefs+doffset, Nz, 
-		       coefs+coffset, Nz);
+      int doffset = (ix*Ny*Nz + iz)*N;
+      int coffset = (ix*Ny*Nz + iz)*N;
+      find_coefs_1d_s (spline->y_grid, spline->yBC, coefs+doffset, Nz*N, 
+		       coefs+coffset, Nz*N);
     }
 
   // Now, solve in the Z-direction
   for (int ix=0; ix<Nx; ix++) 
     for (int iy=0; iy<Ny; iy++) {
-      int doffset = (ix*Ny+iy)*Nz + offset;
-      int coffset = (ix*Ny+iy)*Nz + offset;
-      find_coefs_1d_s (spline->z_grid, spline->zBC, coefs+doffset, 1, 
-		       coefs+coffset, 1);
+      int doffset = ((ix*Ny+iy)*Nz)*N;
+      int coffset = ((ix*Ny+iy)*Nz)*N;
+      find_coefs_1d_s (spline->z_grid, spline->zBC, coefs+doffset, N, 
+		       coefs+coffset, N);
     }
 }
 
@@ -325,7 +326,7 @@ create_multi_UBspline_1d_c (Ugrid x_grid, BCtype_c xBC, int num_splines)
 
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
-  spline->spline_stride = N;
+  spline->x_stride = num_splines;
 #ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(float)*N*num_splines);
 #else
@@ -339,8 +340,7 @@ create_multi_UBspline_1d_c (Ugrid x_grid, BCtype_c xBC, int num_splines)
 void
 set_UBspline_1d_c (multi_UBspline_1d_c* spline, int num, complex_float *data)
 {
-  intptr_t offset = spline->spline_stride * num;
-  complex_float *coefs = spline->coefs + offset;
+  complex_float *coefs = spline->coefs + num;
 
   BCtype_s xBC_r, xBC_i;
   xBC_r.lCode = spline->xBC.lCode;  xBC_r.rCode = spline->xBC.rCode;
@@ -348,12 +348,13 @@ set_UBspline_1d_c (multi_UBspline_1d_c* spline, int num, complex_float *data)
   xBC_i.lCode = spline->xBC.lCode;  xBC_i.rCode = spline->xBC.rCode;
   xBC_i.lVal  = spline->xBC.lVal_i; xBC_i.rVal  = spline->xBC.rVal_i;
 
+  int N = spline->num_splines;
   // Real part
   find_coefs_1d_s (spline->x_grid, xBC_r, 
-		   (float*)data, 2, (float*)coefs, 2);
+		   (float*)data, 2, (float*)coefs, 2*N);
   // Imaginarty part
   find_coefs_1d_s (spline->x_grid, xBC_i, 
-		   ((float*)data)+1, 2, ((float*)coefs+1), 2);
+		   ((float*)data)+1, 2*N, ((float*)coefs+1), 2*N);
 }
 
 
@@ -386,8 +387,8 @@ create_multi_UBspline_2d_c (Ugrid x_grid, Ugrid y_grid,
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
-  spline->x_stride = Ny;
-  spline->spline_stride = Nx * Ny;
+  spline->x_stride = Ny*num_splines;
+  spline->y_stride = num_splines;
 
 #ifndef HAVE_SSE2
   spline->coefs = malloc (2*sizeof(float)*Nx*Ny*num_splines);
@@ -409,7 +410,7 @@ set_multi_UBspline_2d_c (multi_UBspline_2d_c* spline, int num, complex_float *da
   int My = spline->y_grid.num;
   int Nx, Ny;
 
-  complex_float* coefs = spline->coefs + spline->spline_stride * num;
+  complex_float* coefs = spline->coefs + num;
 
   if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
   else                                   Nx = Mx+2;
@@ -426,28 +427,29 @@ set_multi_UBspline_2d_c (multi_UBspline_2d_c* spline, int num, complex_float *da
   yBC_i.lCode = spline->yBC.lCode;  yBC_i.rCode = spline->yBC.rCode;
   yBC_i.lVal  = spline->yBC.lVal_i; yBC_i.rVal  = spline->yBC.rVal_i;
  
+  int N = spline->num_splines;
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) {
-    int doffset = 2*iy;
-    int coffset = 2*iy;
+    int doffset = (2*iy);
+    int coffset = (2*iy)*N;
     // Real part
     find_coefs_1d_s (spline->x_grid, xBC_r, ((float*)data)+doffset, 2*My,
-		     (float*)coefs+coffset, 2*Ny);
+		     (float*)coefs+coffset, 2*Ny*N);
     // Imag part
     find_coefs_1d_s (spline->x_grid, xBC_i, ((float*)data)+doffset+1, 2*My,
-		     ((float*)coefs)+coffset+1, 2*Ny);
+		     ((float*)coefs)+coffset+1, 2*Ny*N);
   }
   
   // Now, solve in the Y-direction
   for (int ix=0; ix<Nx; ix++) {
-    int doffset = 2*ix*Ny;
-    int coffset = 2*ix*Ny;
+    int doffset = (2*ix*Ny)*N;
+    int coffset = (2*ix*Ny)*N;
     // Real part
-    find_coefs_1d_s (spline->y_grid, yBC_r, ((float*)coefs)+doffset, 2, 
-		     ((float*)coefs)+coffset, 2);
+    find_coefs_1d_s (spline->y_grid, yBC_r, ((float*)coefs)+doffset, 2*N, 
+		     ((float*)coefs)+coffset, 2*N);
     // Imag part
-    find_coefs_1d_s (spline->y_grid, yBC_i, ((float*)coefs)+doffset+1, 2, 
-		     ((float*)coefs)+coffset+1, 2);
+    find_coefs_1d_s (spline->y_grid, yBC_i, ((float*)coefs)+doffset+1, 2*N, 
+		     ((float*)coefs)+coffset+1, 2*N);
   }  
 }
 
@@ -487,9 +489,9 @@ create_multi_UBspline_3d_c (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   z_grid.delta_inv = 1.0/z_grid.delta;
   spline->z_grid   = z_grid;
 
-  spline->x_stride = Ny*Nz;
-  spline->y_stride = Nz;
-  spline->spline_stride = Nx*Ny*Nz;
+  spline->x_stride = Ny*Nz*num_splines;
+  spline->y_stride = Nz*num_splines;
+  spline->z_stride = num_splines;
 
 #ifndef HAVE_SSE2
   spline->coefs      = malloc ((size_t)2*sizeof(float)*Nx*Ny*Nz*num_splines);
@@ -531,18 +533,19 @@ set_multi_UBspline_3d_c (multi_UBspline_3d_c* spline, int num, complex_float *da
   zBC_i.lCode = spline->zBC.lCode;  zBC_i.rCode = spline->zBC.rCode;
   zBC_i.lVal  = spline->zBC.lVal_i; zBC_i.rVal  = spline->zBC.rVal_i;
 
-  complex_float *coefs = spline->coefs + spline->spline_stride * num;
+  complex_float *coefs = spline->coefs + num;
+  int N = spline->num_splines;
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) 
     for (int iz=0; iz<Mz; iz++) {
       int doffset = 2*(iy*Mz+iz);
-      int coffset = 2*(iy*Nz+iz);
+      int coffset = 2*(iy*Nz+iz)*N;
       // Real part
       find_coefs_1d_s (spline->x_grid, xBC_r, ((float*)data)+doffset, 2*My*Mz,
-		       ((float*)coefs)+coffset, 2*Ny*Nz);
+		       ((float*)coefs)+coffset, 2*Ny*Nz*N);
       // Imag part
       find_coefs_1d_s (spline->x_grid, xBC_i, ((float*)data)+doffset+1, 2*My*Mz,
-		       ((float*)coefs)+coffset+1, 2*Ny*Nz);
+		       ((float*)coefs)+coffset+1, 2*Ny*Nz*N);
     }
   
   // Now, solve in the Y-direction
@@ -551,24 +554,24 @@ set_multi_UBspline_3d_c (multi_UBspline_3d_c* spline, int num, complex_float *da
       int doffset = 2*(ix*Ny*Nz + iz);
       int coffset = 2*(ix*Ny*Nz + iz);
       // Real part
-      find_coefs_1d_s (spline->y_grid, yBC_r, ((float*)coefs)+doffset, 2*Nz, 
-		       ((float*)coefs)+coffset, 2*Nz);
+      find_coefs_1d_s (spline->y_grid, yBC_r, ((float*)coefs)+doffset, 2*Nz*N, 
+		       ((float*)coefs)+coffset, 2*Nz*N);
       // Imag part
-      find_coefs_1d_s (spline->y_grid, yBC_i, ((float*)coefs)+doffset+1, 2*Nz, 
-		       ((float*)coefs)+coffset+1, 2*Nz);
+      find_coefs_1d_s (spline->y_grid, yBC_i, ((float*)coefs)+doffset+1, 2*Nz*N, 
+		       ((float*)coefs)+coffset+1, 2*Nz*N);
     }
 
   // Now, solve in the Z-direction
   for (int ix=0; ix<Nx; ix++) 
     for (int iy=0; iy<Ny; iy++) {
-      int doffset = 2*((ix*Ny+iy)*Nz);
-      int coffset = 2*((ix*Ny+iy)*Nz);
+      int doffset = 2*((ix*Ny+iy)*Nz)*N;
+      int coffset = 2*((ix*Ny+iy)*Nz)*N;
       // Real part
-      find_coefs_1d_s (spline->z_grid, zBC_r, ((float*)coefs)+doffset, 2, 
-		       ((float*)coefs)+coffset, 2);
+      find_coefs_1d_s (spline->z_grid, zBC_r, ((float*)coefs)+doffset, 2*N, 
+		       ((float*)coefs)+coffset, 2*N);
       // Imag part
-      find_coefs_1d_s (spline->z_grid, zBC_i, ((float*)coefs)+doffset+1, 2, 
-		       ((float*)coefs)+coffset+1, 2);
+      find_coefs_1d_s (spline->z_grid, zBC_i, ((float*)coefs)+doffset+1, 2*N, 
+		       ((float*)coefs)+coffset+1, 2*N);
     }
 }
 
@@ -629,7 +632,7 @@ create_multi_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, int num_splines)
 
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
-  spline->spline_stride = N;
+  spline->x_stride = num_splines;
 
 #ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(double)*N*num_splines);
@@ -644,8 +647,9 @@ create_multi_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, int num_splines)
 void
 set_multi_UBspline_1d_d (multi_UBspline_1d_d* spline, int num, double *data)
 {
-  double *coefs = spline->coefs + spline->spline_stride * num;
-  find_coefs_1d_d (spline->x_grid, spline->xBC, data, 1, coefs, 1);
+  double *coefs = spline->coefs + num;
+  int N = spline->num_splines;
+  find_coefs_1d_d (spline->x_grid, spline->xBC, data, 1, coefs, N);
 }
 
 
@@ -677,8 +681,8 @@ create_multi_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
-  spline->x_stride = Ny;
-  spline->spline_stride = Nx*Ny;
+  spline->x_stride = Ny*num_splines;
+  spline->y_stride = num_splines;
 
 #ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(double)*Nx*Ny*num_splines);
@@ -696,7 +700,7 @@ set_multi_UBspline_2d_d (multi_UBspline_2d_d* spline, int num, double *data)
   int Mx = spline->x_grid.num;
   int My = spline->y_grid.num;
   int Nx, Ny;
-  double *coefs = spline->coefs + num*spline->spline_stride;
+  double *coefs = spline->coefs + num;
 
   if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
   else                                   Nx = Mx+2;
@@ -704,28 +708,29 @@ set_multi_UBspline_2d_d (multi_UBspline_2d_d* spline, int num, double *data)
   if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
   else                                   Ny = My+2;
 
+  int N = spline->num_splines;
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) {
     int doffset = iy;
-    int coffset = iy;
+    int coffset = iy*N;
     find_coefs_1d_d (spline->x_grid, spline->xBC, data+doffset, My,
-		     coefs+coffset, Ny);
+		     coefs+coffset, Ny*N);
   }
   
   // Now, solve in the Y-direction
   for (int ix=0; ix<Nx; ix++) {
-    int doffset = ix*Ny;
-    int coffset = ix*Ny;
-    find_coefs_1d_d (spline->y_grid, spline->yBC, coefs+doffset, 1, 
-		     coefs+coffset, 1);
+    int doffset = ix*Ny*N;
+    int coffset = ix*Ny*N;
+    find_coefs_1d_d (spline->y_grid, spline->yBC, coefs+doffset, N, 
+		     coefs+coffset, N);
   }
 }
 
 
 multi_UBspline_3d_d*
 create_multi_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
-		      BCtype_d xBC, BCtype_d yBC, BCtype_d zBC,
-		      int num_splines)
+			    BCtype_d xBC, BCtype_d yBC, BCtype_d zBC,
+			    int num_splines)
 {
   // Create new spline
   multi_UBspline_3d_d* restrict spline = malloc (sizeof(multi_UBspline_3d_d));
@@ -758,9 +763,9 @@ create_multi_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   z_grid.delta_inv = 1.0/z_grid.delta;
   spline->z_grid   = z_grid;
 
-  spline->x_stride = Ny*Nz;
-  spline->y_stride = Nz;
-  spline->spline_stride = Nx*Ny*Nz;
+  spline->x_stride = Ny*Nz*num_splines;
+  spline->y_stride = Nz*num_splines;
+  spline->z_stride = num_splines;
 
 #ifndef HAVE_SSE2
   spline->coefs      = malloc ((size_t)sizeof(double)*Nx*Ny*Nz*num_splines);
@@ -787,33 +792,34 @@ set_multi_UBspline_3d_d (multi_UBspline_3d_d* spline, int num, double *data)
   if (spline->zBC.lCode == PERIODIC)     Nz = Mz+3;
   else                                   Nz = Mz+2;
 
-  double *coefs = spline->coefs + spline->spline_stride * num;
+  double *coefs = spline->coefs + num;
+  int N = spline->num_splines;
 
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) 
     for (int iz=0; iz<Mz; iz++) {
       int doffset = iy*Mz+iz;
-      int coffset = iy*Nz+iz;
+      int coffset = (iy*Nz+iz)*N;
       find_coefs_1d_d (spline->x_grid, spline->xBC, data+doffset, My*Mz,
-		       coefs+coffset, Ny*Nz);
+		       coefs+coffset, Ny*Nz*N);
     }
   
   // Now, solve in the Y-direction
   for (int ix=0; ix<Nx; ix++) 
     for (int iz=0; iz<Nz; iz++) {
-      int doffset = ix*Ny*Nz + iz;
-      int coffset = ix*Ny*Nz + iz;
-      find_coefs_1d_d (spline->y_grid, spline->yBC, coefs+doffset, Nz, 
-		       coefs+coffset, Nz);
+      int doffset = (ix*Ny*Nz + iz)*N;
+      int coffset = (ix*Ny*Nz + iz)*N;
+      find_coefs_1d_d (spline->y_grid, spline->yBC, coefs+doffset, Nz*N, 
+		       coefs+coffset, Nz*N);
     }
 
   // Now, solve in the Z-direction
   for (int ix=0; ix<Nx; ix++) 
     for (int iy=0; iy<Ny; iy++) {
-      int doffset = (ix*Ny+iy)*Nz;
-      int coffset = (ix*Ny+iy)*Nz;
-      find_coefs_1d_d (spline->z_grid, spline->zBC, coefs+doffset, 1, 
-		       coefs+coffset, 1);
+      int doffset = (ix*Ny+iy)*Nz*N;
+      int coffset = (ix*Ny+iy)*Nz*N;
+      find_coefs_1d_d (spline->z_grid, spline->zBC, coefs+doffset, N, 
+		       coefs+coffset, N);
     }
 }
 
@@ -857,7 +863,7 @@ create_multi_UBspline_1d_z (Ugrid x_grid, BCtype_z xBC, int num_splines)
 
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
-  spline->spline_stride = N;
+  spline->x_stride = num_splines;
 #ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(double)*N*num_splines);
 #else
@@ -874,7 +880,7 @@ set_multi_UBspline_1d_z (multi_UBspline_1d_z* spline, int num, complex_double *d
   int M = spline->x_grid.num;
   int N;
 
-  complex_double *coefs = spline->coefs + spline->spline_stride * num;
+  complex_double *coefs = spline->coefs + num;
 
   if (spline->xBC.lCode == PERIODIC)   N = M+3;
   else                                 N = M+2;
@@ -922,8 +928,8 @@ create_multi_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
-  spline->x_stride = Ny;
-  spline->spline_stride = Nx*Ny;
+  spline->x_stride = Ny*num_splines;
+  spline->y_stride = num_splines;
 
 #ifndef HAVE_SSE2
   spline->coefs = malloc (2*sizeof(double)*Nx*Ny*num_splines);
@@ -959,7 +965,7 @@ set_multi_UBspline_2d_z (multi_UBspline_2d_z* spline, int num,
   yBC_i.lCode = spline->yBC.lCode;  yBC_i.rCode = spline->yBC.rCode;
   yBC_i.lVal  = spline->yBC.lVal_i; yBC_i.rVal  = spline->yBC.rVal_i;
 
-  complex_double *coefs = spline->coefs + spline->spline_stride * num;
+  complex_double *coefs = spline->coefs + num;
 
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) {
@@ -1027,7 +1033,6 @@ create_multi_UBspline_3d_z (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   spline->x_stride = Ny*Nz*num_splines;
   spline->y_stride = Nz*num_splines;
   spline->z_stride = num_splines;
-  spline->spline_stride = Nx*Ny*Nz;
 
 #ifndef HAVE_SSE2
   spline->coefs      = malloc ((size_t)2*sizeof(double)*Nx*Ny*Nz*num_splines);
