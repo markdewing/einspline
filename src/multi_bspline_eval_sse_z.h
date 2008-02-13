@@ -99,32 +99,8 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
   
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-  int ss = spline->spline_stride;
-  complex_double* restrict coefs = spline->coefs + ix*xs + iy*ys + iz;
-  complex_double* restrict next_coefs = coefs + ss;
-
-  // This macro is used to give the pointer to coefficient data.
-  // i and j should be in the range [0,3].  Coefficients are read four
-  // at a time, so no k value is needed.
-#define P(i,j,k) (const double*)(coefs+(i)*xs+(j)*ys+(k))
-  // Prefetch the data from main memory into cache so it's available
-  // when we need to use it.  This is for the first spline only.
-  _mm_prefetch ((const char*)P(0,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,0,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(0,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,1,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(0,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,2,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(0,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(0,3,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(1,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,0,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(1,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,1,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(1,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,2,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(1,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(1,3,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(2,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,0,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(2,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,1,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(2,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,2,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(2,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(2,3,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(3,0,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,0,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(3,1,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,1,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(3,2,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,2,2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(3,3,0), _MM_HINT_T0);  _mm_prefetch ((const char*)P(3,3,2), _MM_HINT_T0);
+  int zs = spline->z_stride;
+  int N  = spline->num_splines;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -154,111 +130,146 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
   _MM_DDOT4_PD (A_d[0], A_d[1], A_d[2], A_d[3], tpz01, tpz23, tpz01, tpz23,   c01);
   _MM_DDOT4_PD (A_d[4], A_d[5], A_d[6], A_d[7], tpz01, tpz23, tpz01, tpz23,   c23);
 
-  // Now compute tensor product of a, b, and c
-  __m128d abc[32];
-  __m128d b0, b1, b2, b3, a0, a1, a2, a3;
-  
-  //b0     = __m128d_mm_movedup_pd(b01);
-  a0     = _mm_unpacklo_pd(a01,a01);
-  a1     = _mm_unpackhi_pd(a01,a01);
-  a2     = _mm_unpacklo_pd(a23,a23);
-  a3     = _mm_unpackhi_pd(a23,a23);
+  // Zero-out values
+  __m128d mvals[N];
+  for (int n=0; n<N; n++) 
+    mvals[n] = _mm_sub_pd (mvals[n], mvals[n]);
 
-  b0     = _mm_unpacklo_pd(b01,b01);
-  b1     = _mm_unpackhi_pd(b01,b01);
-  b2     = _mm_unpacklo_pd(b23,b23);
-  b3     = _mm_unpackhi_pd(b23,b23);
+  __m128d a[4], b[4], c[4];
+  a[0]   = _mm_unpacklo_pd(a01,a01);
+  a[1]   = _mm_unpackhi_pd(a01,a01);
+  a[2]   = _mm_unpacklo_pd(a23,a23);
+  a[3]   = _mm_unpackhi_pd(a23,a23);
 
-  abc[ 0] = _mm_mul_pd(_mm_mul_pd (b0, c01), a0);
-  abc[ 1] = _mm_mul_pd(_mm_mul_pd (b0, c23), a0);
-  abc[ 2] = _mm_mul_pd(_mm_mul_pd (b1, c01), a0);
-  abc[ 3] = _mm_mul_pd(_mm_mul_pd (b1, c23), a0);
-  abc[ 4] = _mm_mul_pd(_mm_mul_pd (b2, c01), a0);
-  abc[ 5] = _mm_mul_pd(_mm_mul_pd (b2, c23), a0);
-  abc[ 6] = _mm_mul_pd(_mm_mul_pd (b3, c01), a0);
-  abc[ 7] = _mm_mul_pd(_mm_mul_pd (b3, c23), a0);
+  b[0]   = _mm_unpacklo_pd(b01,b01);
+  b[1]   = _mm_unpackhi_pd(b01,b01);
+  b[2]   = _mm_unpacklo_pd(b23,b23);
+  b[3]   = _mm_unpackhi_pd(b23,b23);
 
-  abc[ 8] = _mm_mul_pd(_mm_mul_pd (b0, c01), a1);
-  abc[ 9] = _mm_mul_pd(_mm_mul_pd (b0, c23), a1);
-  abc[10] = _mm_mul_pd(_mm_mul_pd (b1, c01), a1);
-  abc[11] = _mm_mul_pd(_mm_mul_pd (b1, c23), a1);
-  abc[12] = _mm_mul_pd(_mm_mul_pd (b2, c01), a1);
-  abc[13] = _mm_mul_pd(_mm_mul_pd (b2, c23), a1);
-  abc[14] = _mm_mul_pd(_mm_mul_pd (b3, c01), a1);
-  abc[15] = _mm_mul_pd(_mm_mul_pd (b3, c23), a1);
+  c[0]   = _mm_unpacklo_pd(c01,c01);
+  c[1]   = _mm_unpackhi_pd(c01,c01);
+  c[2]   = _mm_unpacklo_pd(c23,c23);
+  c[3]   = _mm_unpackhi_pd(c23,c23);
 
-  abc[16] = _mm_mul_pd(_mm_mul_pd (b0, c01), a2);
-  abc[17] = _mm_mul_pd(_mm_mul_pd (b0, c23), a2);
-  abc[18] = _mm_mul_pd(_mm_mul_pd (b1, c01), a2);
-  abc[19] = _mm_mul_pd(_mm_mul_pd (b1, c23), a2);
-  abc[20] = _mm_mul_pd(_mm_mul_pd (b2, c01), a2);
-  abc[21] = _mm_mul_pd(_mm_mul_pd (b2, c23), a2);
-  abc[22] = _mm_mul_pd(_mm_mul_pd (b3, c01), a2);
-  abc[23] = _mm_mul_pd(_mm_mul_pd (b3, c23), a2);
 
-  abc[24] = _mm_mul_pd(_mm_mul_pd (b0, c01), a3);
-  abc[25] = _mm_mul_pd(_mm_mul_pd (b0, c23), a3);
-  abc[26] = _mm_mul_pd(_mm_mul_pd (b1, c01), a3);
-  abc[27] = _mm_mul_pd(_mm_mul_pd (b1, c23), a3);
-  abc[28] = _mm_mul_pd(_mm_mul_pd (b2, c01), a3);
-  abc[29] = _mm_mul_pd(_mm_mul_pd (b2, c23), a3);
-  abc[30] = _mm_mul_pd(_mm_mul_pd (b3, c01), a3);
-  abc[31] = _mm_mul_pd(_mm_mul_pd (b3, c23), a3);
-
-  // Now loop over all splines
-#define nextP(i,j,k) (const double*)(next_coefs+(i)*xs+(j)*ys+(k))
-  for (int si=0; si<spline->num_splines; si++) {
-    // Prefetch next set of coefficients
-    next_coefs = coefs + 1*spline->spline_stride;
-    _mm_prefetch((const char*)nextP(0,0,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(0,0,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(0,1,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(0,1,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(0,2,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(0,2,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(0,3,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(0,3,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(1,0,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(1,0,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(1,1,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(1,1,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(1,2,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(1,2,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(1,3,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(1,3,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(2,0,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(2,0,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(2,1,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(2,1,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(2,2,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(2,2,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(2,3,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(2,3,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(3,0,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(3,0,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(3,1,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(3,1,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(3,2,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(3,2,2), _MM_HINT_T0);
-    _mm_prefetch((const char*)nextP(3,3,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(3,3,2), _MM_HINT_T0);
-
-    // The fence appears to slow things down considerably
-    // asm volatile ("mfence");
-    // Now compute value
-    int index = 0;
-    val_r = _mm_sub_pd (val_r, val_r);
-    val_i = _mm_sub_pd (val_i, val_i);
-    for (int i=0; i<4; i++) 
-      for (int j=0; j<4; j++) {
-	tmp0 = _mm_load_pd (P(i,j,0));  tmp1 = _mm_load_pd (P(i,j,1));
-	r0 = _mm_unpacklo_pd (tmp0, tmp1);
-	i0 = _mm_unpackhi_pd (tmp0, tmp1);
-	tmp0 = _mm_load_pd (P(i,j,2));  tmp1 = _mm_load_pd (P(i,j,3));	
-	r1 = _mm_unpacklo_pd (tmp0, tmp1);
-	i1 = _mm_unpackhi_pd (tmp0, tmp1);
-	//r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-	//i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-	//r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
-	//i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
-	
-    	val_r = _mm_add_pd (val_r, _mm_mul_pd (r0, abc[index+0]));
-	val_i = _mm_add_pd (val_i, _mm_mul_pd (i0, abc[index+0]));
-    	val_r = _mm_add_pd (val_r, _mm_mul_pd (r1, abc[index+1]));
-	val_i = _mm_add_pd (val_i, _mm_mul_pd (i1, abc[index+1]));
-	
-	index += 2;
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++)
+      for (int k=0; k<4; k++) {
+	__m128d abc = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);	
+	__m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+	for (int n=0; n<N; n++) 
+	  mvals[n] = _mm_add_pd (mvals[n], _mm_mul_pd (abc, coefs[n]));
       }
+  
+  for (int n=0; n<N; n++)
+    _mm_storeu_pd((double*)(vals+n),mvals[n]);
+  
+
+//   // Now compute tensor product of a, b, and c
+//   __m128d abc[32];
+//   __m128d b0, b1, b2, b3, a0, a1, a2, a3;
+  
+//   //b0     = __m128d_mm_movedup_pd(b01);
+//   a0     = _mm_unpacklo_pd(a01,a01);
+//   a1     = _mm_unpackhi_pd(a01,a01);
+//   a2     = _mm_unpacklo_pd(a23,a23);
+//   a3     = _mm_unpackhi_pd(a23,a23);
+
+//   b0     = _mm_unpacklo_pd(b01,b01);
+//   b1     = _mm_unpackhi_pd(b01,b01);
+//   b2     = _mm_unpacklo_pd(b23,b23);
+//   b3     = _mm_unpackhi_pd(b23,b23);
+
+//   abc[ 0] = _mm_mul_pd(_mm_mul_pd (b0, c01), a0);
+//   abc[ 1] = _mm_mul_pd(_mm_mul_pd (b0, c23), a0);
+//   abc[ 2] = _mm_mul_pd(_mm_mul_pd (b1, c01), a0);
+//   abc[ 3] = _mm_mul_pd(_mm_mul_pd (b1, c23), a0);
+//   abc[ 4] = _mm_mul_pd(_mm_mul_pd (b2, c01), a0);
+//   abc[ 5] = _mm_mul_pd(_mm_mul_pd (b2, c23), a0);
+//   abc[ 6] = _mm_mul_pd(_mm_mul_pd (b3, c01), a0);
+//   abc[ 7] = _mm_mul_pd(_mm_mul_pd (b3, c23), a0);
+
+//   abc[ 8] = _mm_mul_pd(_mm_mul_pd (b0, c01), a1);
+//   abc[ 9] = _mm_mul_pd(_mm_mul_pd (b0, c23), a1);
+//   abc[10] = _mm_mul_pd(_mm_mul_pd (b1, c01), a1);
+//   abc[11] = _mm_mul_pd(_mm_mul_pd (b1, c23), a1);
+//   abc[12] = _mm_mul_pd(_mm_mul_pd (b2, c01), a1);
+//   abc[13] = _mm_mul_pd(_mm_mul_pd (b2, c23), a1);
+//   abc[14] = _mm_mul_pd(_mm_mul_pd (b3, c01), a1);
+//   abc[15] = _mm_mul_pd(_mm_mul_pd (b3, c23), a1);
+
+//   abc[16] = _mm_mul_pd(_mm_mul_pd (b0, c01), a2);
+//   abc[17] = _mm_mul_pd(_mm_mul_pd (b0, c23), a2);
+//   abc[18] = _mm_mul_pd(_mm_mul_pd (b1, c01), a2);
+//   abc[19] = _mm_mul_pd(_mm_mul_pd (b1, c23), a2);
+//   abc[20] = _mm_mul_pd(_mm_mul_pd (b2, c01), a2);
+//   abc[21] = _mm_mul_pd(_mm_mul_pd (b2, c23), a2);
+//   abc[22] = _mm_mul_pd(_mm_mul_pd (b3, c01), a2);
+//   abc[23] = _mm_mul_pd(_mm_mul_pd (b3, c23), a2);
+
+//   abc[24] = _mm_mul_pd(_mm_mul_pd (b0, c01), a3);
+//   abc[25] = _mm_mul_pd(_mm_mul_pd (b0, c23), a3);
+//   abc[26] = _mm_mul_pd(_mm_mul_pd (b1, c01), a3);
+//   abc[27] = _mm_mul_pd(_mm_mul_pd (b1, c23), a3);
+//   abc[28] = _mm_mul_pd(_mm_mul_pd (b2, c01), a3);
+//   abc[29] = _mm_mul_pd(_mm_mul_pd (b2, c23), a3);
+//   abc[30] = _mm_mul_pd(_mm_mul_pd (b3, c01), a3);
+//   abc[31] = _mm_mul_pd(_mm_mul_pd (b3, c23), a3);
+
+//   // Now loop over all splines
+// #define nextP(i,j,k) (const double*)(next_coefs+(i)*xs+(j)*ys+(k))
+//   for (int si=0; si<spline->num_splines; si++) {
+//     // Prefetch next set of coefficients
+//     next_coefs = coefs + 1*spline->spline_stride;
+//     _mm_prefetch((const char*)nextP(0,0,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(0,0,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(0,1,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(0,1,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(0,2,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(0,2,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(0,3,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(0,3,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(1,0,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(1,0,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(1,1,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(1,1,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(1,2,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(1,2,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(1,3,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(1,3,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(2,0,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(2,0,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(2,1,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(2,1,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(2,2,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(2,2,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(2,3,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(2,3,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(3,0,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(3,0,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(3,1,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(3,1,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(3,2,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(3,2,2), _MM_HINT_T0);
+//     _mm_prefetch((const char*)nextP(3,3,0), _MM_HINT_T0); _mm_prefetch((const char*)nextP(3,3,2), _MM_HINT_T0);
+
+//     // The fence appears to slow things down considerably
+//     // asm volatile ("mfence");
+//     // Now compute value
+//     int index = 0;
+//     val_r = _mm_sub_pd (val_r, val_r);
+//     val_i = _mm_sub_pd (val_i, val_i);
+//     for (int i=0; i<4; i++) 
+//       for (int j=0; j<4; j++) {
+// 	tmp0 = _mm_load_pd (P(i,j,0));  tmp1 = _mm_load_pd (P(i,j,1));
+// 	r0 = _mm_unpacklo_pd (tmp0, tmp1);
+// 	i0 = _mm_unpackhi_pd (tmp0, tmp1);
+// 	tmp0 = _mm_load_pd (P(i,j,2));  tmp1 = _mm_load_pd (P(i,j,3));	
+// 	r1 = _mm_unpacklo_pd (tmp0, tmp1);
+// 	i1 = _mm_unpackhi_pd (tmp0, tmp1);
+// 	//r0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+// 	//i0 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+// 	//r1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(0, 0));
+// 	//i1 = _mm_shuffle_pd (tmp0, tmp1, _MM_SHUFFLE2(1, 1));
+	
+//     	val_r = _mm_add_pd (val_r, _mm_mul_pd (r0, abc[index+0]));
+// 	val_i = _mm_add_pd (val_i, _mm_mul_pd (i0, abc[index+0]));
+//     	val_r = _mm_add_pd (val_r, _mm_mul_pd (r1, abc[index+1]));
+// 	val_i = _mm_add_pd (val_i, _mm_mul_pd (i1, abc[index+1]));
+	
+// 	index += 2;
+//       }
     
-    //_mm_storeu_pd((double*)(vals+si),_mm_hadd_pd(val_r, val_i));
-    _mm_store_pd((double*)(vals+si),_mm_hadd_pd(val_r, val_i));
+//     //_mm_storeu_pd((double*)(vals+si),_mm_hadd_pd(val_r, val_i));
+//     _mm_store_pd((double*)(vals+si),_mm_hadd_pd(val_r, val_i));
     
-    coefs += spline->spline_stride;
-  }
+//     coefs += spline->spline_stride;
+//   }
 
 
   // Compute cP, dcP, and d2cP products 1/8 at a time to maximize

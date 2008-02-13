@@ -29,7 +29,7 @@ double drand48();
 void test_complex_double()
 {
   int Nx=73; int Ny=91; int Nz = 24;
-  int num_splines = 100;
+  int num_splines = 200;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -59,11 +59,11 @@ void test_complex_double()
   }
 
   fprintf (stderr, "norm coef  = %1.14e + %1.14ei\n",
-	   creal(norm_splines[99]->coefs[227]),
-	   cimag(norm_splines[99]->coefs[227]));
+	   creal(norm_splines[19]->coefs[227]),
+	   cimag(norm_splines[19]->coefs[227]));
   fprintf (stderr, "multi coef = %1.14e + %1.14ei\n",
-	   creal(multi_spline->coefs[227+99*multi_spline->spline_stride]),
-	   cimag(multi_spline->coefs[227+99*multi_spline->spline_stride]));
+	   creal(multi_spline->coefs[19+227*multi_spline->z_stride]),
+	   cimag(multi_spline->coefs[19+227*multi_spline->z_stride]));
   //return;
 
   // Now, test random values
@@ -132,7 +132,7 @@ void test_complex_double()
 void test_complex_double_vgh()
 {
   int Nx=73; int Ny=91; int Nz = 24;
-  int num_splines = 100;
+  int num_splines = 200;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
