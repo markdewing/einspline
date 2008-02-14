@@ -69,10 +69,92 @@ do {                                                                  \
 /* 2D double-precision, complex evaulation functions        */
 /************************************************************/
 inline void
+eval_multi_UBspline_2d_d(multi_UBspline_2d_d *spline,
+			 double x, double y,
+			 double* restrict vals)
+{
+  _mm_prefetch ((const char*) &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);  
+
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;  
+  double ux = x*spline->x_grid.delta_inv;
+  double uy = y*spline->y_grid.delta_inv;
+  ux = fmin (ux, (double)(spline->x_grid.num)-1.0e-5);
+  uy = fmin (uy, (double)(spline->y_grid.num)-1.0e-5);
+  double ipartx, iparty, tx, ty;
+  tx = modf (ux, &ipartx);  int ix = (int) ipartx;
+  ty = modf (uy, &iparty);  int iy = (int) iparty;
+  
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+  int N  = spline->num_splines;
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // A is 4x4 matrix given by the rows A0, A1, A2, A3
+  __m128d tpx01, tpx23, tpy01, tpy23,
+    a01  ,   b01,   a23,    b23;
+
+  tpx01 = _mm_set_pd (tx*tx*tx, tx*tx);
+  tpx23 = _mm_set_pd (tx, 1.0);
+  tpy01 = _mm_set_pd (ty*ty*ty, ty*ty);
+  tpy23 = _mm_set_pd (ty, 1.0);
+
+  // x-dependent vectors
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpx01, tpx23, tpx01, tpx23,   a23);
+
+  // y-dependent vectors
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpy01, tpy23, tpy01, tpy23,   b23);
+
+  // Zero-out values
+  int Nh = (N+1)/2;
+  __m128d mvals[Nh];
+  for (int n=0; n<Nh; n++) 
+    mvals[n] = _mm_sub_pd (mvals[n], mvals[n]);
+
+  __m128d a[4], b[4], da[4], db[4];
+  a[0]=_mm_unpacklo_pd(a01,a01);
+  a[1]=_mm_unpackhi_pd(a01,a01);
+  a[2]=_mm_unpacklo_pd(a23,a23);
+  a[3]=_mm_unpackhi_pd(a23,a23);
+				
+  b[0]=_mm_unpacklo_pd(b01,b01);
+  b[1]=_mm_unpackhi_pd(b01,b01);
+  b[2]=_mm_unpacklo_pd(b23,b23);
+  b[3]=_mm_unpackhi_pd(b23,b23);
+				 				   				  
+  // Main computation loop
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++) { 
+      __m128d ab;
+      
+      ab         = _mm_mul_pd(a[i], b[j]);
+      __m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys);
+      
+      for (int n=0; n<Nh; n++) 
+	mvals[n]      = _mm_add_pd (mvals[n],      _mm_mul_pd (   ab   , coefs[n]));
+    }
+  
+  for (int n=0; n<N/2; n++) 
+    _mm_storeu_pd((double*)(vals+2*n),mvals[n]);
+  if (N&1) 
+    _mm_storel_pd((double*)(vals+N-1),mvals[Nh-1]);
+}
+
+
+inline void
 eval_multi_UBspline_2d_d_vg (multi_UBspline_2d_d *spline,
-			      double x, double y,
-			      double* restrict vals,
-			     double* restrict grads);
+			     double x, double y,
+			     double* restrict vals,
+			     double* restrict grads)
 {
   _mm_prefetch ((const char*) &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
   _mm_prefetch ((const char*) &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
