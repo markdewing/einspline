@@ -337,13 +337,11 @@ eval_multi_UBspline_2d_d_vgl (multi_UBspline_2d_d *spline,
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) {
       double ab = a[i]*b[j];
-      double dab[3], d2ab[3];
+      double dab[2], d2ab[2];
       dab[0] = da[i]* b[j];
       dab[1] =  a[i]*db[j];
-      dab[2] =  a[i]* b[j];
       d2ab[0] = d2a[i]*  b[j];
       d2ab[1] =   a[i]*d2b[j];
-      d2ab[2] =   a[i]*  b[j];
       
       double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys);
       for (int n=0; n<spline->num_splines; n++) {
@@ -371,7 +369,7 @@ eval_multi_UBspline_2d_d_vgl (multi_UBspline_2d_d *spline,
 
 inline void
 eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
-			      double x, double y, double z,
+			      double x, double y,
 			      double* restrict vals,
 			      double* restrict grads,
 			      double* restrict hess)	  
@@ -422,26 +420,24 @@ eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
     vals[n] = 0.0;
     grads[2*n+0] = grads[2*n+1] = 0.0;
     for (int i=0; i<4; i++)
-      hess[4*+i] = 0.0;
+      hess[4*n+i] = 0.0;
   }
 
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++){
       double ab = a[i]*b[j];
-      double dab[3], d2ab[3];
+      double dab[2], d2ab[3];
       dab[0] = da[i]* b[j];
       dab[1] =  a[i]*db[j];
-      dab[2] =  a[i]* b[j];
-      d2ab[0] = d2a[i]*  b[j];
-      d2ab[1] =  da[i]* db[j];
-      d2ab[2] =   a[i]* d2b[j];
+      d2ab[0] = d2a[i] *   b[j];
+      d2ab[1] =  da[i] *  db[j];
+      d2ab[2] =   a[i] * d2b[j];
 
       double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys);
       for (int n=0; n<spline->num_splines; n++) {
 	vals[n]      +=   ab   *coefs[n];
 	grads[2*n+0] +=  dab[0]*coefs[n];
 	grads[2*n+1] +=  dab[1]*coefs[n];
-	grads[2*n+2] +=  dab[2]*coefs[n];
 	hess [4*n+0] += d2ab[0]*coefs[n];
 	hess [4*n+1] += d2ab[1]*coefs[n];
 	hess [4*n+3] += d2ab[2]*coefs[n];
