@@ -37,6 +37,302 @@ extern const double* restrict d2Ad;
 /************************************************************/
 /* 2D double-precision, complex evaulation functions        */
 /************************************************************/
+inline void
+eval_multi_UBspline_2d_d (multi_UBspline_2d_d *spline,
+			  double x, double y,
+			  double* restrict vals)
+{
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;
+  double ux = x*spline->x_grid.delta_inv;
+  double uy = y*spline->y_grid.delta_inv;
+  double ipartx, iparty, tx, ty;
+  tx = modf (ux, &ipartx);  int ix = (int) ipartx;
+  ty = modf (uy, &iparty);  int iy = (int) iparty;
+  
+  double tpx[4], tpy[4], a[4], b[4];
+  tpx[0] = tx*tx*tx;  tpx[1] = tx*tx;  tpx[2] = tx;  tpx[3] = 1.0;
+  tpy[0] = ty*ty*ty;  tpy[1] = ty*ty;  tpy[2] = ty;  tpy[3] = 1.0;
+  double* restrict coefs = spline->coefs;
+
+  a[0] = (Ad[ 0]*tpx[0] + Ad[ 1]*tpx[1] + Ad[ 2]*tpx[2] + Ad[ 3]*tpx[3]);
+  a[1] = (Ad[ 4]*tpx[0] + Ad[ 5]*tpx[1] + Ad[ 6]*tpx[2] + Ad[ 7]*tpx[3]);
+  a[2] = (Ad[ 8]*tpx[0] + Ad[ 9]*tpx[1] + Ad[10]*tpx[2] + Ad[11]*tpx[3]);
+  a[3] = (Ad[12]*tpx[0] + Ad[13]*tpx[1] + Ad[14]*tpx[2] + Ad[15]*tpx[3]);
+
+  b[0] = (Ad[ 0]*tpy[0] + Ad[ 1]*tpy[1] + Ad[ 2]*tpy[2] + Ad[ 3]*tpy[3]);
+  b[1] = (Ad[ 4]*tpy[0] + Ad[ 5]*tpy[1] + Ad[ 6]*tpy[2] + Ad[ 7]*tpy[3]);
+  b[2] = (Ad[ 8]*tpy[0] + Ad[ 9]*tpy[1] + Ad[10]*tpy[2] + Ad[11]*tpy[3]);
+  b[3] = (Ad[12]*tpy[0] + Ad[13]*tpy[1] + Ad[14]*tpy[2] + Ad[15]*tpy[3]);
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+
+  for (int n=0; n<spline->num_splines; n++)
+    vals[n] = 0.0;
+
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++) {
+      double prefactor = a[i]*b[j];
+      double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys);
+      for (int n=0; n<spline->num_splines; n++) 
+	vals[n] += prefactor*coefs[n];
+    }
+}
+
+
+inline void
+eval_multi_UBspline_2d_d_vg (multi_UBspline_2d_d *spline,
+			     double x, double y,
+			     double* restrict vals,
+			     double* restrict grads)
+{
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;
+  double ux = x*spline->x_grid.delta_inv;
+  double uy = y*spline->y_grid.delta_inv;
+  double ipartx, iparty, tx, ty;
+  tx = modf (ux, &ipartx);  int ix = (int) ipartx;
+  ty = modf (uy, &iparty);  int iy = (int) iparty;
+  
+  double tpx[4], tpy[4], tpz[4], a[4], b[4], da[4], db[4];
+  tpx[0] = tx*tx*tx;  tpx[1] = tx*tx;  tpx[2] = tx;  tpx[3] = 1.0;
+  tpy[0] = ty*ty*ty;  tpy[1] = ty*ty;  tpy[2] = ty;  tpy[3] = 1.0;
+  double* restrict coefs = spline->coefs;
+
+  a[0]  = (Ad[ 0]*tpx[0] + Ad[ 1]*tpx[1] + Ad[ 2]*tpx[2] + Ad[ 3]*tpx[3]);
+  a[1]  = (Ad[ 4]*tpx[0] + Ad[ 5]*tpx[1] + Ad[ 6]*tpx[2] + Ad[ 7]*tpx[3]);
+  a[2]  = (Ad[ 8]*tpx[0] + Ad[ 9]*tpx[1] + Ad[10]*tpx[2] + Ad[11]*tpx[3]);
+  a[3]  = (Ad[12]*tpx[0] + Ad[13]*tpx[1] + Ad[14]*tpx[2] + Ad[15]*tpx[3]);
+  da[0] = (dAd[ 0]*tpx[0] + dAd[ 1]*tpx[1] + dAd[ 2]*tpx[2] + dAd[ 3]*tpx[3]);
+  da[1] = (dAd[ 4]*tpx[0] + dAd[ 5]*tpx[1] + dAd[ 6]*tpx[2] + dAd[ 7]*tpx[3]);
+  da[2] = (dAd[ 8]*tpx[0] + dAd[ 9]*tpx[1] + dAd[10]*tpx[2] + dAd[11]*tpx[3]);
+  da[3] = (dAd[12]*tpx[0] + dAd[13]*tpx[1] + dAd[14]*tpx[2] + dAd[15]*tpx[3]);
+
+  b[0] = (Ad[ 0]*tpy[0] + Ad[ 1]*tpy[1] + Ad[ 2]*tpy[2] + Ad[ 3]*tpy[3]);
+  b[1] = (Ad[ 4]*tpy[0] + Ad[ 5]*tpy[1] + Ad[ 6]*tpy[2] + Ad[ 7]*tpy[3]);
+  b[2] = (Ad[ 8]*tpy[0] + Ad[ 9]*tpy[1] + Ad[10]*tpy[2] + Ad[11]*tpy[3]);
+  b[3] = (Ad[12]*tpy[0] + Ad[13]*tpy[1] + Ad[14]*tpy[2] + Ad[15]*tpy[3]);
+  db[0] = (dAd[ 0]*tpy[0] + dAd[ 1]*tpy[1] + dAd[ 2]*tpy[2] + dAd[ 3]*tpy[3]);
+  db[1] = (dAd[ 4]*tpy[0] + dAd[ 5]*tpy[1] + dAd[ 6]*tpy[2] + dAd[ 7]*tpy[3]);
+  db[2] = (dAd[ 8]*tpy[0] + dAd[ 9]*tpy[1] + dAd[10]*tpy[2] + dAd[11]*tpy[3]);
+  db[3] = (dAd[12]*tpy[0] + dAd[13]*tpy[1] + dAd[14]*tpy[2] + dAd[15]*tpy[3]);
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+
+  for (int n=0; n<spline->num_splines; n++) {
+    vals[n] = 0.0;
+    grads[2*n+0] = grads[2*n+1] = grads[2*n+2] = 0.0;
+  }
+
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++) {
+      double ab = a[i]*b[j];
+      double dab[2];
+      dab[0] = da[i]* b[j];
+      dab[1] =  a[i]*db[j];
+      
+      double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys);
+      for (int n=0; n<spline->num_splines; n++) {
+	vals [n]     +=   ab   *coefs[n];
+	grads[2*n+0] +=  dab[0]*coefs[n];
+	grads[2*n+1] +=  dab[1]*coefs[n];
+      }
+    }
+
+  double dxInv = spline->x_grid.delta_inv;
+  double dyInv = spline->y_grid.delta_inv;
+  for (int n=0; n<spline->num_splines; n++) {
+    grads[2*n+0] *= dxInv;
+    grads[2*n+1] *= dyInv;
+  }
+}
+
+inline void
+eval_multi_UBspline_2d_d_vgl (multi_UBspline_2d_d *spline,
+			      double x, double y,
+			      double* restrict vals,
+			      double* restrict grads,
+			      double* restrict lapl)	  
+{
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;
+  double ux = x*spline->x_grid.delta_inv;
+  double uy = y*spline->y_grid.delta_inv;
+  double ipartx, iparty, tx, ty;
+  tx = modf (ux, &ipartx);  int ix = (int) ipartx;
+  ty = modf (uy, &iparty);  int iy = (int) iparty;
+  
+  double tpx[4], tpy[4], tpz[4], a[4], b[4], da[4], db[4], d2a[4], d2b[4];
+  tpx[0] = tx*tx*tx;  tpx[1] = tx*tx;  tpx[2] = tx;  tpx[3] = 1.0;
+  tpy[0] = ty*ty*ty;  tpy[1] = ty*ty;  tpy[2] = ty;  tpy[3] = 1.0;
+  double* restrict coefs = spline->coefs;
+
+  a[0]  = (Ad[ 0]*tpx[0] + Ad[ 1]*tpx[1] + Ad[ 2]*tpx[2] + Ad[ 3]*tpx[3]);
+  a[1]  = (Ad[ 4]*tpx[0] + Ad[ 5]*tpx[1] + Ad[ 6]*tpx[2] + Ad[ 7]*tpx[3]);
+  a[2]  = (Ad[ 8]*tpx[0] + Ad[ 9]*tpx[1] + Ad[10]*tpx[2] + Ad[11]*tpx[3]);
+  a[3]  = (Ad[12]*tpx[0] + Ad[13]*tpx[1] + Ad[14]*tpx[2] + Ad[15]*tpx[3]);
+  da[0] = (dAd[ 0]*tpx[0] + dAd[ 1]*tpx[1] + dAd[ 2]*tpx[2] + dAd[ 3]*tpx[3]);
+  da[1] = (dAd[ 4]*tpx[0] + dAd[ 5]*tpx[1] + dAd[ 6]*tpx[2] + dAd[ 7]*tpx[3]);
+  da[2] = (dAd[ 8]*tpx[0] + dAd[ 9]*tpx[1] + dAd[10]*tpx[2] + dAd[11]*tpx[3]);
+  da[3] = (dAd[12]*tpx[0] + dAd[13]*tpx[1] + dAd[14]*tpx[2] + dAd[15]*tpx[3]);
+  d2a[0] = (d2Ad[ 0]*tpx[0] + d2Ad[ 1]*tpx[1] + d2Ad[ 2]*tpx[2] + d2Ad[ 3]*tpx[3]);
+  d2a[1] = (d2Ad[ 4]*tpx[0] + d2Ad[ 5]*tpx[1] + d2Ad[ 6]*tpx[2] + d2Ad[ 7]*tpx[3]);
+  d2a[2] = (d2Ad[ 8]*tpx[0] + d2Ad[ 9]*tpx[1] + d2Ad[10]*tpx[2] + d2Ad[11]*tpx[3]);
+  d2a[3] = (d2Ad[12]*tpx[0] + d2Ad[13]*tpx[1] + d2Ad[14]*tpx[2] + d2Ad[15]*tpx[3]);
+
+  b[0] = (Ad[ 0]*tpy[0] + Ad[ 1]*tpy[1] + Ad[ 2]*tpy[2] + Ad[ 3]*tpy[3]);
+  b[1] = (Ad[ 4]*tpy[0] + Ad[ 5]*tpy[1] + Ad[ 6]*tpy[2] + Ad[ 7]*tpy[3]);
+  b[2] = (Ad[ 8]*tpy[0] + Ad[ 9]*tpy[1] + Ad[10]*tpy[2] + Ad[11]*tpy[3]);
+  b[3] = (Ad[12]*tpy[0] + Ad[13]*tpy[1] + Ad[14]*tpy[2] + Ad[15]*tpy[3]);
+  db[0] = (dAd[ 0]*tpy[0] + dAd[ 1]*tpy[1] + dAd[ 2]*tpy[2] + dAd[ 3]*tpy[3]);
+  db[1] = (dAd[ 4]*tpy[0] + dAd[ 5]*tpy[1] + dAd[ 6]*tpy[2] + dAd[ 7]*tpy[3]);
+  db[2] = (dAd[ 8]*tpy[0] + dAd[ 9]*tpy[1] + dAd[10]*tpy[2] + dAd[11]*tpy[3]);
+  db[3] = (dAd[12]*tpy[0] + dAd[13]*tpy[1] + dAd[14]*tpy[2] + dAd[15]*tpy[3]);
+  d2b[0] = (d2Ad[ 0]*tpy[0] + d2Ad[ 1]*tpy[1] + d2Ad[ 2]*tpy[2] + d2Ad[ 3]*tpy[3]);
+  d2b[1] = (d2Ad[ 4]*tpy[0] + d2Ad[ 5]*tpy[1] + d2Ad[ 6]*tpy[2] + d2Ad[ 7]*tpy[3]);
+  d2b[2] = (d2Ad[ 8]*tpy[0] + d2Ad[ 9]*tpy[1] + d2Ad[10]*tpy[2] + d2Ad[11]*tpy[3]);
+  d2b[3] = (d2Ad[12]*tpy[0] + d2Ad[13]*tpy[1] + d2Ad[14]*tpy[2] + d2Ad[15]*tpy[3]);
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+
+  double lapl2[2*spline->num_splines];
+  for (int n=0; n<spline->num_splines; n++) {
+    vals[n] = 0.0;
+    grads[2*n+0] = grads[2*n+1] = 0.0;
+    lapl2[2*n+0] = lapl2[2*n+1] = 0.0;
+  }
+
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++) {
+      double ab = a[i]*b[j];
+      double dab[3], d2ab[3];
+      dab[0] = da[i]* b[j];
+      dab[1] =  a[i]*db[j];
+      dab[2] =  a[i]* b[j];
+      d2ab[0] = d2a[i]*  b[j];
+      d2ab[1] =   a[i]*d2b[j];
+      d2ab[2] =   a[i]*  b[j];
+      
+      double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys);
+      for (int n=0; n<spline->num_splines; n++) {
+	vals[n]      +=   ab   *coefs[n];
+	grads[2*n+0] +=  dab[0]*coefs[n];
+	grads[2*n+1] +=  dab[1]*coefs[n];
+	lapl2[2*n+0] += d2ab[0]*coefs[n];
+	lapl2[2*n+1] += d2ab[1]*coefs[n];
+      }
+    }
+
+  double dxInv = spline->x_grid.delta_inv;
+  double dyInv = spline->y_grid.delta_inv;
+  for (int n=0; n<spline->num_splines; n++) {
+    grads[2*n+0] *= dxInv;
+    grads[2*n+1] *= dyInv;
+    lapl2[2*n+0] *= dxInv*dxInv;
+    lapl2[2*n+1] *= dyInv*dyInv;
+    lapl[n] = lapl2[2*n+0] + lapl2[2*n+1];
+  }
+}
+
+
+
+
+inline void
+eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
+			      double x, double y, double z,
+			      double* restrict vals,
+			      double* restrict grads,
+			      double* restrict hess)	  
+{
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;
+  double ux = x*spline->x_grid.delta_inv;
+  double uy = y*spline->y_grid.delta_inv;
+  double ipartx, iparty, tx, ty;
+  tx = modf (ux, &ipartx);  int ix = (int) ipartx;
+  ty = modf (uy, &iparty);  int iy = (int) iparty;
+  
+  double tpx[4], tpy[4], a[4], b[4], da[4], db[4], d2a[4], d2b[4];
+  tpx[0] = tx*tx*tx;  tpx[1] = tx*tx;  tpx[2] = tx;  tpx[3] = 1.0;
+  tpy[0] = ty*ty*ty;  tpy[1] = ty*ty;  tpy[2] = ty;  tpy[3] = 1.0;
+  double* restrict coefs = spline->coefs;
+
+  a[0]  = (Ad[ 0]*tpx[0] + Ad[ 1]*tpx[1] + Ad[ 2]*tpx[2] + Ad[ 3]*tpx[3]);
+  a[1]  = (Ad[ 4]*tpx[0] + Ad[ 5]*tpx[1] + Ad[ 6]*tpx[2] + Ad[ 7]*tpx[3]);
+  a[2]  = (Ad[ 8]*tpx[0] + Ad[ 9]*tpx[1] + Ad[10]*tpx[2] + Ad[11]*tpx[3]);
+  a[3]  = (Ad[12]*tpx[0] + Ad[13]*tpx[1] + Ad[14]*tpx[2] + Ad[15]*tpx[3]);
+  da[0] = (dAd[ 0]*tpx[0] + dAd[ 1]*tpx[1] + dAd[ 2]*tpx[2] + dAd[ 3]*tpx[3]);
+  da[1] = (dAd[ 4]*tpx[0] + dAd[ 5]*tpx[1] + dAd[ 6]*tpx[2] + dAd[ 7]*tpx[3]);
+  da[2] = (dAd[ 8]*tpx[0] + dAd[ 9]*tpx[1] + dAd[10]*tpx[2] + dAd[11]*tpx[3]);
+  da[3] = (dAd[12]*tpx[0] + dAd[13]*tpx[1] + dAd[14]*tpx[2] + dAd[15]*tpx[3]);
+  d2a[0] = (d2Ad[ 0]*tpx[0] + d2Ad[ 1]*tpx[1] + d2Ad[ 2]*tpx[2] + d2Ad[ 3]*tpx[3]);
+  d2a[1] = (d2Ad[ 4]*tpx[0] + d2Ad[ 5]*tpx[1] + d2Ad[ 6]*tpx[2] + d2Ad[ 7]*tpx[3]);
+  d2a[2] = (d2Ad[ 8]*tpx[0] + d2Ad[ 9]*tpx[1] + d2Ad[10]*tpx[2] + d2Ad[11]*tpx[3]);
+  d2a[3] = (d2Ad[12]*tpx[0] + d2Ad[13]*tpx[1] + d2Ad[14]*tpx[2] + d2Ad[15]*tpx[3]);
+
+  b[0] = (Ad[ 0]*tpy[0] + Ad[ 1]*tpy[1] + Ad[ 2]*tpy[2] + Ad[ 3]*tpy[3]);
+  b[1] = (Ad[ 4]*tpy[0] + Ad[ 5]*tpy[1] + Ad[ 6]*tpy[2] + Ad[ 7]*tpy[3]);
+  b[2] = (Ad[ 8]*tpy[0] + Ad[ 9]*tpy[1] + Ad[10]*tpy[2] + Ad[11]*tpy[3]);
+  b[3] = (Ad[12]*tpy[0] + Ad[13]*tpy[1] + Ad[14]*tpy[2] + Ad[15]*tpy[3]);
+  db[0] = (dAd[ 0]*tpy[0] + dAd[ 1]*tpy[1] + dAd[ 2]*tpy[2] + dAd[ 3]*tpy[3]);
+  db[1] = (dAd[ 4]*tpy[0] + dAd[ 5]*tpy[1] + dAd[ 6]*tpy[2] + dAd[ 7]*tpy[3]);
+  db[2] = (dAd[ 8]*tpy[0] + dAd[ 9]*tpy[1] + dAd[10]*tpy[2] + dAd[11]*tpy[3]);
+  db[3] = (dAd[12]*tpy[0] + dAd[13]*tpy[1] + dAd[14]*tpy[2] + dAd[15]*tpy[3]);
+  d2b[0] = (d2Ad[ 0]*tpy[0] + d2Ad[ 1]*tpy[1] + d2Ad[ 2]*tpy[2] + d2Ad[ 3]*tpy[3]);
+  d2b[1] = (d2Ad[ 4]*tpy[0] + d2Ad[ 5]*tpy[1] + d2Ad[ 6]*tpy[2] + d2Ad[ 7]*tpy[3]);
+  d2b[2] = (d2Ad[ 8]*tpy[0] + d2Ad[ 9]*tpy[1] + d2Ad[10]*tpy[2] + d2Ad[11]*tpy[3]);
+  d2b[3] = (d2Ad[12]*tpy[0] + d2Ad[13]*tpy[1] + d2Ad[14]*tpy[2] + d2Ad[15]*tpy[3]);
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+
+  for (int n=0; n<spline->num_splines; n++) {
+    vals[n] = 0.0;
+    grads[2*n+0] = grads[2*n+1] = 0.0;
+    for (int i=0; i<4; i++)
+      hess[4*+i] = 0.0;
+  }
+
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++){
+      double ab = a[i]*b[j];
+      double dab[3], d2ab[3];
+      dab[0] = da[i]* b[j];
+      dab[1] =  a[i]*db[j];
+      dab[2] =  a[i]* b[j];
+      d2ab[0] = d2a[i]*  b[j];
+      d2ab[1] =  da[i]* db[j];
+      d2ab[2] =   a[i]* d2b[j];
+
+      double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys);
+      for (int n=0; n<spline->num_splines; n++) {
+	vals[n]      +=   ab   *coefs[n];
+	grads[2*n+0] +=  dab[0]*coefs[n];
+	grads[2*n+1] +=  dab[1]*coefs[n];
+	grads[2*n+2] +=  dab[2]*coefs[n];
+	hess [4*n+0] += d2ab[0]*coefs[n];
+	hess [4*n+1] += d2ab[1]*coefs[n];
+	hess [4*n+3] += d2ab[2]*coefs[n];
+      }
+    }
+
+  double dxInv = spline->x_grid.delta_inv;
+  double dyInv = spline->y_grid.delta_inv;
+  for (int n=0; n<spline->num_splines; n++) {
+    grads[2*n+0] *= dxInv;
+    grads[2*n+1] *= dyInv;
+    hess[4*n+0] *= dxInv*dxInv;
+    hess[4*n+1] *= dxInv*dyInv;
+    hess[4*n+3] *= dyInv*dyInv;
+    // Copy hessian elements into lower half of 3x3 matrix
+    hess[4*n+2] = hess[4*n+1];
+  }
+}
+
+
 
 
 /************************************************************/

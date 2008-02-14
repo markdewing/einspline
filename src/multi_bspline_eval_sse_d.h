@@ -500,9 +500,9 @@ eval_multi_UBspline_3d_d_vgl (multi_UBspline_3d_d *spline,
     grads[3*n+0] *= dxInv;
     grads[3*n+1] *= dyInv;
     grads[3*n+2] *= dzInv;
-    lapl3[3*n+0]  *= dxInv*dxInv;
-    lapl3[3*n+1]  *= dyInv*dyInv;
-    lapl3[3*n+2]  *= dzInv*dzInv;
+    lapl3[3*n+0] *= dxInv*dxInv;
+    lapl3[3*n+1] *= dyInv*dyInv;
+    lapl3[3*n+2] *= dzInv*dzInv;
     lapl[n] = lapl3[3*n+0] + lapl3[3*n+1] + lapl3[3*n+2];
   }
 }

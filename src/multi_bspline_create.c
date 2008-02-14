@@ -618,26 +618,33 @@ create_multi_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, int num_splines)
   spline->num_splines = num_splines;
 
   // Setup internal variables
-  int M = x_grid.num;
-  int N;
+  int Mx = x_grid.num;
+  int Nx;
 
   if (xBC.lCode == PERIODIC) {
     x_grid.delta     = (x_grid.end-x_grid.start)/(double)(x_grid.num);
-    N = M+3;
+    Nx = Mx+3;
   }
   else {
     x_grid.delta     = (x_grid.end-x_grid.start)/(double)(x_grid.num-1);
-    N = M+2;
+    Nx = Mx+2;
   }
 
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
-  spline->x_stride = num_splines;
+
+  int N = num_splines;
+#ifdef HAVE_SSE2
+  // We must pad to keep data aligned for SSE operations
+  if (N & 1)
+    N++;
+#endif
+  spline->x_stride = Nx;
 
 #ifndef HAVE_SSE2
-  spline->coefs = malloc (sizeof(double)*N*num_splines);
+  spline->coefs = malloc (sizeof(double)*Nx*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, sizeof(double)*N*num_splines);
+  posix_memalign ((void**)&spline->coefs, 16, sizeof(double)*Nx*N);
 #endif
     
   init_sse_data();
@@ -681,13 +688,21 @@ create_multi_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
-  spline->x_stride = Ny*num_splines;
-  spline->y_stride = num_splines;
+
+  int N = num_splines;
+
+#ifdef HAVE_SSE2
+  // We must pad to keep data align for SSE operations
+  if (num_splines & 1)
+    N++;
+#endif
+  spline->x_stride = Ny*N;
+  spline->y_stride = N;
 
 #ifndef HAVE_SSE2
-  spline->coefs = malloc (sizeof(double)*Nx*Ny*num_splines);
+  spline->coefs = malloc (sizeof(double)*Nx*Ny*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, (sizeof(double)*Nx*Ny*num_splines));
+  posix_memalign ((void**)&spline->coefs, 16, (sizeof(double)*Nx*Ny*N));
 #endif
 
   init_sse_data();
@@ -763,9 +778,13 @@ create_multi_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   z_grid.delta_inv = 1.0/z_grid.delta;
   spline->z_grid   = z_grid;
 
+
   int N = num_splines;
+#ifdef HAVE_SSE2
+  // We must pad to keep data align for SSE operations
   if (num_splines & 1)
     N++;
+#endif
 
   spline->x_stride = Ny*Nz*N;
   spline->y_stride = Nz*N;
