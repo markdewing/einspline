@@ -69,6 +69,156 @@ do {                                                                  \
 /* 2D double-precision, complex evaulation functions        */
 /************************************************************/
 inline void
+eval_multi_UBspline_2d_d_vgl (multi_UBspline_2d_d *spline,
+			      double x, double y,
+			      double* restrict vals,
+			      double* restrict grads,
+			      double* restrict lapl)
+{
+  _mm_prefetch ((const char*) &A_d[ 0],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[ 2],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 3],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[ 4],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[ 6],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 7],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[ 8],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[10],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[11],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[12],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[13],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[14],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[15],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[16],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[17],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[18],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[19],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[20],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[21],_MM_HINT_T0);  
+  _mm_prefetch ((const char*) &A_d[22],_MM_HINT_T0); _mm_prefetch ((const char*) &A_d[23],_MM_HINT_T0);  
+
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;  
+  double ux = x*spline->x_grid.delta_inv;
+  double uy = y*spline->y_grid.delta_inv;
+  ux = fmin (ux, (double)(spline->x_grid.num)-1.0e-5);
+  uy = fmin (uy, (double)(spline->y_grid.num)-1.0e-5);
+  double ipartx, iparty, tx, ty;
+  tx = modf (ux, &ipartx);  int ix = (int) ipartx;
+  ty = modf (uy, &iparty);  int iy = (int) iparty;
+  
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+  int N  = spline->num_splines;
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // A is 4x4 matrix given by the rows A0, A1, A2, A3
+  __m128d tpx01, tpx23, tpy01, tpy23,
+    a01  ,   b01,   a23,    b23,  
+    da01 ,  db01,  da23,   db23,  
+    d2a01, d2b01, d2a23,  d2b23;
+
+  tpx01 = _mm_set_pd (tx*tx*tx, tx*tx);
+  tpx23 = _mm_set_pd (tx, 1.0);
+  tpy01 = _mm_set_pd (ty*ty*ty, ty*ty);
+  tpy23 = _mm_set_pd (ty, 1.0);
+
+  // x-dependent vectors
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpx01, tpx23, tpx01, tpx23,   a01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpx01, tpx23, tpx01, tpx23,   a23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpx01, tpx23, tpx01, tpx23,  da01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpx01, tpx23, tpx01, tpx23,  da23);
+  _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpx01, tpx23, tpx01, tpx23, d2a01);
+  _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpx01, tpx23, tpx01, tpx23, d2a23);
+
+  // y-dependent vectors
+  _MM_DDOT4_PD (A_d[ 0], A_d[ 1], A_d[ 2], A_d[ 3], tpy01, tpy23, tpy01, tpy23,   b01);
+  _MM_DDOT4_PD (A_d[ 4], A_d[ 5], A_d[ 6], A_d[ 7], tpy01, tpy23, tpy01, tpy23,   b23);
+  _MM_DDOT4_PD (A_d[ 8], A_d[ 9], A_d[10], A_d[11], tpy01, tpy23, tpy01, tpy23,  db01);
+  _MM_DDOT4_PD (A_d[12], A_d[13], A_d[14], A_d[15], tpy01, tpy23, tpy01, tpy23,  db23);
+  _MM_DDOT4_PD (A_d[16], A_d[17], A_d[18], A_d[19], tpy01, tpy23, tpy01, tpy23, d2b01);
+  _MM_DDOT4_PD (A_d[20], A_d[21], A_d[22], A_d[23], tpy01, tpy23, tpy01, tpy23, d2b23);
+
+  // Zero-out values
+  int Nh = (N+1)/2;
+  __m128d mvals[Nh], mgrads[2*Nh], mlapl[2*Nh];
+  for (int n=0; n<Nh; n++) {
+    mvals[n] = _mm_sub_pd (mvals[n], mvals[n]);
+    for (int i=0; i<2; i++) {
+      mgrads[2*n+i] = _mm_sub_pd (mgrads[2*n+i], mgrads[2*n+i]);
+      mlapl [2*n+i] = _mm_sub_pd (mlapl [2*n+i], mlapl [2*n+i]);
+    }
+  }
+
+  __m128d a[4], b[4], da[4], db[4], d2a[4], d2b[4];
+  a[0]=_mm_unpacklo_pd(a01,a01); da[0]=_mm_unpacklo_pd(da01,da01); d2a[0]=_mm_unpacklo_pd(d2a01,d2a01);
+  a[1]=_mm_unpackhi_pd(a01,a01); da[1]=_mm_unpackhi_pd(da01,da01); d2a[1]=_mm_unpackhi_pd(d2a01,d2a01);
+  a[2]=_mm_unpacklo_pd(a23,a23); da[2]=_mm_unpacklo_pd(da23,da23); d2a[2]=_mm_unpacklo_pd(d2a23,d2a23);
+  a[3]=_mm_unpackhi_pd(a23,a23); da[3]=_mm_unpackhi_pd(da23,da23); d2a[3]=_mm_unpackhi_pd(d2a23,d2a23);
+				 				   				  
+  b[0]=_mm_unpacklo_pd(b01,b01); db[0]=_mm_unpacklo_pd(db01,db01); d2b[0]=_mm_unpacklo_pd(d2b01,d2b01);
+  b[1]=_mm_unpackhi_pd(b01,b01); db[1]=_mm_unpackhi_pd(db01,db01); d2b[1]=_mm_unpackhi_pd(d2b01,d2b01);
+  b[2]=_mm_unpacklo_pd(b23,b23); db[2]=_mm_unpacklo_pd(db23,db23); d2b[2]=_mm_unpacklo_pd(d2b23,d2b23);
+  b[3]=_mm_unpackhi_pd(b23,b23); db[3]=_mm_unpackhi_pd(db23,db23); d2b[3]=_mm_unpackhi_pd(d2b23,d2b23);
+				 				   				  
+  // Main computation loop
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++) { 
+      __m128d ab, d_ab[2], d2_ab[2];
+      
+      ab         = _mm_mul_pd(a[i], b[j]);
+      
+      d_ab[0]    = _mm_mul_pd(da[i],   b[j]);
+      d_ab[1]    = _mm_mul_pd( a[i],  db[j]);
+      
+      d2_ab[0]   = _mm_mul_pd(d2a[i],   b[j]);
+      d2_ab[1]   = _mm_mul_pd(  a[i], d2b[j]);
+      __m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys);
+      
+      for (int n=0; n<Nh; n++) {
+	mvals[n]      = _mm_add_pd (mvals[n],      _mm_mul_pd (   ab   , coefs[n]));
+	mgrads[2*n+0] = _mm_add_pd (mgrads[2*n+0], _mm_mul_pd ( d_ab[0], coefs[n]));
+	mgrads[2*n+1] = _mm_add_pd (mgrads[2*n+1], _mm_mul_pd ( d_ab[1], coefs[n]));
+	mlapl[2*n+0]  = _mm_add_pd (mlapl[2*n+0],  _mm_mul_pd (d2_ab[0], coefs[n]));
+	mlapl[2*n+1]  = _mm_add_pd (mlapl[2*n+1],  _mm_mul_pd (d2_ab[1], coefs[n]));
+      }
+    }
+  
+  double dxInv = spline->x_grid.delta_inv;
+  double dyInv = spline->y_grid.delta_inv;
+  double lapl2[2*N];
+
+  for (int n=0; n<N/2; n++) {
+    _mm_storeu_pd((double*)(vals+2*n),mvals[n]);
+
+    _mm_storel_pd((double*)(grads+4*n+0), mgrads[2*n+0]);
+    _mm_storeh_pd((double*)(grads+4*n+2), mgrads[2*n+0]);
+    _mm_storel_pd((double*)(grads+4*n+1), mgrads[2*n+1]);
+    _mm_storeh_pd((double*)(grads+4*n+3), mgrads[2*n+1]);
+
+    _mm_storel_pd((double*)(lapl2+4*n+0), mlapl [2*n+0]);
+    _mm_storeh_pd((double*)(lapl2+4*n+2), mlapl [2*n+0]);
+    _mm_storel_pd((double*)(lapl2+4*n+1), mlapl [2*n+1]);
+    _mm_storeh_pd((double*)(lapl2+4*n+3), mlapl [2*n+1]);
+  }
+
+  if (N&1) {
+    _mm_storel_pd((double*)(vals+N-1),mvals[Nh-1]);
+
+    _mm_storel_pd((double*)(grads+2*(N-1)+0),mgrads[2*(Nh-1)+0]);
+    _mm_storel_pd((double*)(grads+2*(N-1)+1),mgrads[2*(Nh-1)+1]);
+
+    _mm_storel_pd((double*)(lapl2+2*(N-1)+0),  mlapl [2*(Nh-1)+0]);
+    _mm_storel_pd((double*)(lapl2+2*(N-1)+1),  mlapl [2*(Nh-1)+1]);
+  }
+
+  for (int n=0; n<N; n++) {
+    grads[2*n+0] *= dxInv;
+    grads[2*n+1] *= dyInv;
+    lapl2[2*n+0] *= dxInv*dxInv;
+    lapl2[2*n+1] *= dyInv*dyInv;
+    lapl [n] = lapl2[2*n+0] + lapl2[2*n+1];
+  }
+}
+
+
+
+inline void
 eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
 			      double x, double y,
 			      double* restrict vals,
@@ -141,7 +291,7 @@ eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
     mvals[n] = _mm_sub_pd (mvals[n], mvals[n]);
     for (int i=0; i<2; i++)
       mgrads[2*n+i] = _mm_sub_pd (mgrads[2*n+i],mgrads[2*n+i]);
-    for (int i=0; i<6; i++)
+    for (int i=0; i<3; i++)
       mhess[3*n+i]  = _mm_sub_pd (mhess[3*n+i], mhess[3*n+i]);
   }
 
@@ -205,7 +355,6 @@ eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
 
     _mm_storel_pd((double*)(grads+2*(N-1)+0),mgrads[2*(Nh-1)+0]);
     _mm_storel_pd((double*)(grads+2*(N-1)+1),mgrads[2*(Nh-1)+1]);
-    _mm_storel_pd((double*)(grads+2*(N-1)+2),mgrads[2*(Nh-1)+2]);
 
     _mm_storel_pd((double*)(hess+4*(N-1)+0),  mhess [3*(Nh-1)+0]);
     _mm_storel_pd((double*)(hess+4*(N-1)+1),  mhess [3*(Nh-1)+1]);

@@ -103,28 +103,28 @@ test_2d_double_all()
 //     }
 
 
-//     ///////////////////////
-//     // Check VGL routine //
-//     ///////////////////////
-//     eval_multi_UBspline_2d_d_vgl (multi_spline, x, y, 
-// 				  multi_vals, multi_grads, multi_lapl);
-//     for (int j=0; j<num_splines; j++)
-//       eval_UBspline_2d_d_vgl (norm_splines[j], x, y, &(norm_vals[j]),
-// 			  &(norm_grads[2*j]), &(norm_lapl[j]));
-//     for (int j=0; j<num_splines; j++) {
-//       // Check value
-//       if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
-// 	return -3;
+    ///////////////////////
+    // Check VGL routine //
+    ///////////////////////
+    eval_multi_UBspline_2d_d_vgl (multi_spline, x, y, 
+				  multi_vals, multi_grads, multi_lapl);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_2d_d_vgl (norm_splines[j], x, y, &(norm_vals[j]),
+			  &(norm_grads[2*j]), &(norm_lapl[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -3;
 
-//       // Check gradients
-//       for (int n=0; n<2; n++) 
-// 	if (diff (norm_grads[2*j+n], multi_grads[2*j+n], 1.0e-10))
-// 	  return -4;
+      // Check gradients
+      for (int n=0; n<2; n++) 
+	if (diff (norm_grads[2*j+n], multi_grads[2*j+n], 1.0e-10))
+	  return -4;
 
-//       // Check laplacian
-//       if (diff (norm_lapl[j], multi_lapl[j], 1.0e-10)) 
-// 	return -5;
-//     }
+      // Check laplacian
+      if (diff (norm_lapl[j], multi_lapl[j], 1.0e-10)) 
+	return -5;
+    }
 
 
     ///////////////////////
