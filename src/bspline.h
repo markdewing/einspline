@@ -36,6 +36,8 @@
 #include "bspline_eval_sse_c.h"
 #include "bspline_eval_sse_d.h"
 #include "bspline_eval_sse_z.h"
+#include "multi_bspline_eval_sse_s.h"
+#include "multi_bspline_eval_sse_c.h"
 #include "multi_bspline_eval_sse_d.h"
 #include "multi_bspline_eval_sse_z.h"
 #elif defined HAVE_SSE
@@ -43,6 +45,8 @@
 #include "bspline_eval_std_c.h"
 #include "bspline_eval_std_d.h"
 #include "bspline_eval_std_z.h"
+#include "multi_bspline_eval_std_s.h"
+#include "multi_bspline_eval_std_c.h"
 #include "multi_bspline_eval_std_d.h"
 #include "multi_bspline_eval_std_z.h"
 #elif defined USE_ALTIVEC
@@ -50,6 +54,8 @@
 #include "bspline_eval_std_c.h"
 #include "bspline_eval_std_d.h"
 #include "bspline_eval_std_z.h"
+#include "multi_bspline_eval_std_s.h"
+#include "multi_bspline_eval_std_c.h"
 #include "multi_bspline_eval_std_d.h"
 #include "multi_bspline_eval_std_z.h"
 #else
@@ -57,6 +63,8 @@
 #include "bspline_eval_std_c.h"
 #include "bspline_eval_std_d.h"
 #include "bspline_eval_std_z.h"
+#include "multi_bspline_eval_std_s.h"
+#include "multi_bspline_eval_std_c.h"
 #include "multi_bspline_eval_std_d.h"
 #include "multi_bspline_eval_std_z.h"
 #endif
