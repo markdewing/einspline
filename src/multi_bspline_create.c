@@ -989,29 +989,30 @@ set_multi_UBspline_2d_z (multi_UBspline_2d_z* spline, int num,
   yBC_i.lVal  = spline->yBC.lVal_i; yBC_i.rVal  = spline->yBC.rVal_i;
 
   complex_double *coefs = spline->coefs + num;
+  int ys = spline->y_stride;
 
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) {
     int doffset = 2*iy;
-    int coffset = 2*iy;
+    int coffset = 2*iy*ys;
     // Real part
     find_coefs_1d_d (spline->x_grid, xBC_r, ((double*)data+doffset), 2*My,
-		     (double*)coefs+coffset, 2*Ny);
+		     (double*)coefs+coffset, 2*Ny*ys);
     // Imag part
     find_coefs_1d_d (spline->x_grid, xBC_i, ((double*)data)+doffset+1, 2*My,
-		     ((double*)coefs)+coffset+1, 2*Ny);
+		     ((double*)coefs)+coffset+1, 2*Ny*ys);
   }
   
   // Now, solve in the Y-direction
   for (int ix=0; ix<Nx; ix++) {
-    int doffset = 2*ix*Ny;
-    int coffset = 2*ix*Ny;
+    int doffset = 2*ix*Ny*ys;
+    int coffset = 2*ix*Ny*ys;
     // Real part
-    find_coefs_1d_d (spline->y_grid, yBC_r, ((double*)coefs)+doffset, 2, 
-		     (double*)coefs+coffset, 2);
+    find_coefs_1d_d (spline->y_grid, yBC_r, ((double*)coefs)+doffset, 2*ys, 
+		     (double*)coefs+coffset, 2*ys);
     // Imag part
-    find_coefs_1d_d (spline->y_grid, yBC_i, (double*)coefs+doffset+1, 2, 
-		     ((double*)coefs)+coffset+1, 2);
+    find_coefs_1d_d (spline->y_grid, yBC_i, (double*)coefs+doffset+1, 2*ys, 
+		     ((double*)coefs)+coffset+1, 2*ys);
   }
 }
 
