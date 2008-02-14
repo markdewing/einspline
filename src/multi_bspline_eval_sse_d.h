@@ -455,9 +455,9 @@ eval_multi_UBspline_3d_d_vgl (multi_UBspline_3d_d *spline,
 	  mgrads[3*n+0] = _mm_add_pd (mgrads[3*n+0], _mm_mul_pd ( d_abc[0], coefs[n]));
 	  mgrads[3*n+1] = _mm_add_pd (mgrads[3*n+1], _mm_mul_pd ( d_abc[1], coefs[n]));
 	  mgrads[3*n+2] = _mm_add_pd (mgrads[3*n+2], _mm_mul_pd ( d_abc[2], coefs[n]));
-	  mlapl[3*n+0]  = _mm_add_pd (mlapl[6*n+0],  _mm_mul_pd (d2_abc[0], coefs[n]));
-	  mlapl[3*n+1]  = _mm_add_pd (mlapl[6*n+1],  _mm_mul_pd (d2_abc[1], coefs[n]));
-	  mlapl[3*n+2]  = _mm_add_pd (mlapl[6*n+2],  _mm_mul_pd (d2_abc[2], coefs[n]));
+	  mlapl[3*n+0]  = _mm_add_pd (mlapl [3*n+0], _mm_mul_pd (d2_abc[0], coefs[n]));
+	  mlapl[3*n+1]  = _mm_add_pd (mlapl [3*n+1], _mm_mul_pd (d2_abc[1], coefs[n]));
+	  mlapl[3*n+2]  = _mm_add_pd (mlapl [3*n+2], _mm_mul_pd (d2_abc[2], coefs[n]));
 	}
       }
   
