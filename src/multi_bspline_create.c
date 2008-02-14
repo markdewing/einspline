@@ -723,21 +723,21 @@ set_multi_UBspline_2d_d (multi_UBspline_2d_d* spline, int num, double *data)
   if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
   else                                   Ny = My+2;
 
-  int N = spline->num_splines;
+  int ys = spline->y_stride;
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) {
     int doffset = iy;
-    int coffset = iy*N;
+    int coffset = iy*ys;
     find_coefs_1d_d (spline->x_grid, spline->xBC, data+doffset, My,
-		     coefs+coffset, Ny*N);
+		     coefs+coffset, Ny*ys);
   }
   
   // Now, solve in the Y-direction
   for (int ix=0; ix<Nx; ix++) {
-    int doffset = ix*Ny*N;
-    int coffset = ix*Ny*N;
-    find_coefs_1d_d (spline->y_grid, spline->yBC, coefs+doffset, N, 
-		     coefs+coffset, N);
+    int doffset = ix*Ny*ys;
+    int coffset = ix*Ny*ys;
+    find_coefs_1d_d (spline->y_grid, spline->yBC, coefs+doffset, ys, 
+		     coefs+coffset, ys);
   }
 }
 
@@ -782,14 +782,14 @@ create_multi_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   int N = num_splines;
 #ifdef HAVE_SSE2
   // We must pad to keep data align for SSE operations
-  if (num_splines & 1)
+  if (N & 1)
     N++;
 #endif
-
+  
   spline->x_stride = Ny*Nz*N;
   spline->y_stride = Nz*N;
   spline->z_stride = N;
-
+  
 #ifndef HAVE_SSE2
   spline->coefs      = malloc ((size_t)sizeof(double)*Nx*Ny*Nz*N);
 #else

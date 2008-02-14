@@ -33,9 +33,9 @@ extern const double* restrict d2Ad;
 /* 1D double-precision, real evaulation functions        */
 /************************************************************/
 inline void
-eval_multi_UBspline_1d_d_v (multi_UBspline_1d_d *spline,
-			    double x,
-			    double* restrict vals)
+eval_multi_UBspline_1d_d (multi_UBspline_1d_d *spline,
+			  double x,
+			  double* restrict vals)
 {
   x -= spline->x_grid.start;
   double ux = x*spline->x_grid.delta_inv;

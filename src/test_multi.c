@@ -83,48 +83,48 @@ test_2d_double_all()
     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
 
-    ///////////////////////
-    // Check VG routine  //
-    ///////////////////////
-    eval_multi_UBspline_2d_d_vg (multi_spline, x, y, 
-				  multi_vals, multi_grads);
-    for (int j=0; j<num_splines; j++)
-      eval_UBspline_2d_d_vg (norm_splines[j], x, y, &(norm_vals[j]),
-			  &(norm_grads[2*j]));
-    for (int j=0; j<num_splines; j++) {
-      // Check value
-      if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
-	return -1;
+//     ///////////////////////
+//     // Check VG routine  //
+//     ///////////////////////
+//     eval_multi_UBspline_2d_d_vg (multi_spline, x, y, 
+// 				  multi_vals, multi_grads);
+//     for (int j=0; j<num_splines; j++)
+//       eval_UBspline_2d_d_vg (norm_splines[j], x, y, &(norm_vals[j]),
+// 			  &(norm_grads[2*j]));
+//     for (int j=0; j<num_splines; j++) {
+//       // Check value
+//       if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
+// 	return -1;
       
-      // Check gradients
-      for (int n=0; n<2; n++) 
-	if (diff (norm_grads[2*j+n], multi_grads[2*j+n], 1.0e-12))
-	  return -2;
-    }
+//       // Check gradients
+//       for (int n=0; n<2; n++) 
+// 	if (diff (norm_grads[2*j+n], multi_grads[2*j+n], 1.0e-12))
+// 	  return -2;
+//     }
 
 
-    ///////////////////////
-    // Check VGL routine //
-    ///////////////////////
-    eval_multi_UBspline_2d_d_vgl (multi_spline, x, y, 
-				  multi_vals, multi_grads, multi_lapl);
-    for (int j=0; j<num_splines; j++)
-      eval_UBspline_2d_d_vgl (norm_splines[j], x, y, &(norm_vals[j]),
-			  &(norm_grads[2*j]), &(norm_lapl[j]));
-    for (int j=0; j<num_splines; j++) {
-      // Check value
-      if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
-	return -3;
+//     ///////////////////////
+//     // Check VGL routine //
+//     ///////////////////////
+//     eval_multi_UBspline_2d_d_vgl (multi_spline, x, y, 
+// 				  multi_vals, multi_grads, multi_lapl);
+//     for (int j=0; j<num_splines; j++)
+//       eval_UBspline_2d_d_vgl (norm_splines[j], x, y, &(norm_vals[j]),
+// 			  &(norm_grads[2*j]), &(norm_lapl[j]));
+//     for (int j=0; j<num_splines; j++) {
+//       // Check value
+//       if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
+// 	return -3;
 
-      // Check gradients
-      for (int n=0; n<2; n++) 
-	if (diff (norm_grads[2*j+n], multi_grads[2*j+n], 1.0e-10))
-	  return -4;
+//       // Check gradients
+//       for (int n=0; n<2; n++) 
+// 	if (diff (norm_grads[2*j+n], multi_grads[2*j+n], 1.0e-10))
+// 	  return -4;
 
-      // Check laplacian
-      if (diff (norm_lapl[j], multi_lapl[j], 1.0e-10)) 
-	return -5;
-    }
+//       // Check laplacian
+//       if (diff (norm_lapl[j], multi_lapl[j], 1.0e-10)) 
+// 	return -5;
+//     }
 
 
     ///////////////////////
@@ -134,11 +134,15 @@ test_2d_double_all()
 				  multi_vals, multi_grads, multi_hess);
     for (int j=0; j<num_splines; j++)
       eval_UBspline_2d_d_vgh (norm_splines[j], x, y, &(norm_vals[j]),
-			  &(norm_grads[2*j]), &(norm_hess[4*j]));
+			      &(norm_grads[2*j]), &(norm_hess[4*j]));
     for (int j=0; j<num_splines; j++) {
       // Check value
-      if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
-	return -6;
+      if (diff(norm_vals[j], multi_vals[j], 1.0e-12)) {
+	fprintf (stderr, "j = %d\n", j);
+	fprintf (stderr, "norm_vals[j]  = %1.14e\n",  norm_vals[j]);
+	fprintf (stderr, "multi_vals[j] = %1.14e\n", multi_vals[j]);
+	//return -6;
+      }
 
       // Check gradients
       for (int n=0; n<2; n++) 
@@ -147,8 +151,12 @@ test_2d_double_all()
 
       // Check hessian
       for (int n=0; n<4; n++) 
-	if (diff (norm_hess[4*j+n], multi_hess[4*j+n], 1.0e-10)) 
-	  return -8;
+	if (diff (norm_hess[4*j+n], multi_hess[4*j+n], 1.0e-10)) {
+	  fprintf (stderr, "j = %d n = %d \n", j, n);
+	  fprintf (stderr, "norm_hess[j]  = %1.14e\n",  norm_hess[4*j+n]);
+	  fprintf (stderr, "multi_hess[j] = %1.14e\n", multi_hess[4*j+n]);
+	  //return -8;
+	}
     }
   }
   return 0;
