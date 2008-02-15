@@ -36,6 +36,99 @@ inline double diff (double a, double b, double tol)
 
 
 int 
+test_1d_double_all()
+{
+  int Nx=73;
+  int num_splines = 21;
+
+  Ugrid x_grid;
+  x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
+
+  BCtype_d xBC;
+  xBC.lCode = xBC.rCode = PERIODIC;
+
+  // First, create splines the normal way
+  UBspline_1d_d* norm_splines[num_splines];
+  multi_UBspline_1d_d *multi_spline;
+  
+  // First, create multispline
+  multi_spline = create_multi_UBspline_1d_d (x_grid, xBC, num_splines);
+
+  double data[Nx];
+  // Now, create normal splines and set multispline data
+  for (int i=0; i<num_splines; i++) {
+    for (int j=0; j<Nx; j++)
+      data[j] = (drand48()-0.5);
+    norm_splines[i] = create_UBspline_1d_d (x_grid, xBC, data);
+    set_multi_UBspline_1d_d (multi_spline, i, data);
+  }
+  
+  // Now, test random values
+  int num_vals = 100;
+  double  multi_vals[num_splines], norm_vals [num_splines];
+  double multi_grads[num_splines], norm_grads[num_splines];
+  double  multi_lapl[num_splines], norm_lapl [num_splines];
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+
+    //////////////////////////
+    // Check value routine  //
+    //////////////////////////
+    eval_multi_UBspline_1d_d (multi_spline, x, multi_vals);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_1d_d (norm_splines[j], x, &(norm_vals[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -1;
+    }
+
+    ///////////////////////
+    // Check VG routine  //
+    ///////////////////////
+    eval_multi_UBspline_1d_d_vg (multi_spline, x, 
+				  multi_vals, multi_grads);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_1d_d_vg (norm_splines[j], x, &(norm_vals[j]),
+			  &(norm_grads[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -1;
+      
+      // Check gradients
+      if (diff (norm_grads[j], multi_grads[j], 1.0e-12))
+	return -2;
+    }
+
+
+    ///////////////////////
+    // Check VGL routine //
+    ///////////////////////
+    eval_multi_UBspline_1d_d_vgl (multi_spline, x, multi_vals, multi_grads, multi_lapl);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_1d_d_vgl (norm_splines[j], x, &(norm_vals[j]),
+			  &(norm_grads[j]), &(norm_lapl[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (diff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -3;
+
+      // Check gradients
+      if (diff (norm_grads[j], multi_grads[j], 1.0e-10))
+	return -4;
+
+      // Check laplacian
+      if (diff (norm_lapl[j], multi_lapl[j], 1.0e-10)) 
+	return -5;
+    }
+  }
+  return 0;
+}
+
+
+
+int 
 test_2d_double_all()
 {
   int Nx=73; int Ny=91;
@@ -415,6 +508,113 @@ cdiff (complex_double a, complex_double b, double tol)
   else
     return 0;
 }
+
+
+int 
+test_1d_complex_double_all()
+{
+  int Nx=73;
+  int num_splines = 21;
+
+  Ugrid x_grid;
+  x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
+
+  BCtype_z xBC;
+  xBC.lCode = xBC.rCode = PERIODIC;
+
+  // First, create splines the normal way
+  UBspline_1d_z* norm_splines[num_splines];
+  multi_UBspline_1d_z *multi_spline;
+  
+  // First, create multispline
+  multi_spline = create_multi_UBspline_1d_z (x_grid, xBC, num_splines);
+
+  complex_double data[Nx];
+  // Now, create normal splines and set multispline data
+  for (int i=0; i<num_splines; i++) {
+    for (int j=0; j<Nx; j++)
+      data[j] = (drand48()-0.5) + (drand48()-0.5)*1.0i;
+    norm_splines[i] = create_UBspline_1d_z (x_grid, xBC, data);
+    set_multi_UBspline_1d_z (multi_spline, i, data);
+  }
+  
+//   fprintf (stderr, "\nnorm coef  = %1.14e + %1.14ei\n",
+// 	   creal(norm_splines[19]->coefs[27]),
+// 	   cimag(norm_splines[19]->coefs[27]));
+//   fprintf (stderr, "multi coef = %1.14e + %1.14ei\n",
+// 	   creal(multi_spline->coefs[19+27*multi_spline->x_stride]),
+// 	   cimag(multi_spline->coefs[19+27*multi_spline->x_stride]));
+
+
+  // Now, test random values
+  int num_vals = 100;
+  complex_double  multi_vals[num_splines], norm_vals [num_splines];
+  complex_double multi_grads[num_splines], norm_grads[num_splines];
+  complex_double  multi_lapl[num_splines], norm_lapl [num_splines];
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+
+    //////////////////////////
+    // Check value routine  //
+    //////////////////////////
+    eval_multi_UBspline_1d_z (multi_spline, x, multi_vals);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_1d_z (norm_splines[j], x, &(norm_vals[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (cdiff(norm_vals[j], multi_vals[j], 1.0e-12)) {
+	fprintf (stderr, " norm_vals[j] = %1.14e + %1.14ei\n",
+		 creal (norm_vals[j]), cimag(norm_vals[j]));
+	fprintf (stderr, "multi_vals[j] = %1.14e + %1.14ei\n",
+		 creal (multi_vals[j]), cimag(multi_vals[j]));
+	
+	return -1;
+      }
+    }
+
+    ///////////////////////
+    // Check VG routine  //
+    ///////////////////////
+    eval_multi_UBspline_1d_z_vg (multi_spline, x, 
+				  multi_vals, multi_grads);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_1d_z_vg (norm_splines[j], x, &(norm_vals[j]),
+			  &(norm_grads[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (cdiff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -1;
+      
+      // Check gradients
+      if (cdiff (norm_grads[j], multi_grads[j], 1.0e-12))
+	return -2;
+    }
+
+
+    ///////////////////////
+    // Check VGL routine //
+    ///////////////////////
+    eval_multi_UBspline_1d_z_vgl (multi_spline, x, multi_vals, multi_grads, multi_lapl);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_1d_z_vgl (norm_splines[j], x, &(norm_vals[j]),
+			  &(norm_grads[j]), &(norm_lapl[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (cdiff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -3;
+
+      // Check gradients
+      if (cdiff (norm_grads[j], multi_grads[j], 1.0e-10))
+	return -4;
+
+      // Check laplacian
+      if (cdiff (norm_lapl[j], multi_lapl[j], 1.0e-10)) 
+	return -5;
+    }
+  }
+  return 0;
+}
+
 
 int 
 test_2d_complex_double_all()
@@ -1066,10 +1266,15 @@ main()
   int code;
   //test_complex_double();
   //test_complex_double_vgh();
+  fprintf (stderr, "Testing 1D real    double-precision multiple cubic B-spline routines:     ");
+  code = test_1d_double_all();          PrintPassFail (code);
   fprintf (stderr, "Testing 2D real    double-precision multiple cubic B-spline routines:     ");
   code = test_2d_double_all();          PrintPassFail (code);
   fprintf (stderr, "Testing 3D real    double-precision multiple cubic B-spline routines:     ");
   code = test_3d_double_all();          PrintPassFail (code);
+
+  fprintf (stderr, "Testing 1D complex double-precision multiple cubic B-spline routines:     ");
+  code = test_1d_complex_double_all();  PrintPassFail (code);
   fprintf (stderr, "Testing 2D complex double-precision multiple cubic B-spline routines:     ");
   code = test_2d_complex_double_all();  PrintPassFail (code);
   fprintf (stderr, "Testing 3D complex double-precision multiple cubic B-spline routines:     ");

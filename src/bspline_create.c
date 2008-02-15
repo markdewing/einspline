@@ -1355,7 +1355,7 @@ create_UBspline_1d_z (Ugrid x_grid, BCtype_z xBC, complex_double *data)
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 #ifndef HAVE_SSE2
-  spline->coefs = malloc (sizeof(double)*N);
+  spline->coefs = malloc (2*sizeof(double)*N);
 #else
   posix_memalign ((void**)&spline->coefs, 16, 2*sizeof(double)*N);
 #endif
