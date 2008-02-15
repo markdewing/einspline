@@ -241,6 +241,97 @@ eval_multi_UBspline_3d_s (multi_UBspline_3d_s *spline,
 			  double x, double y, double z,
 			  float* restrict vals)
 {
+  _mm_prefetch ((const char*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 3],_MM_HINT_T0);
+
+  /// SSE mesh point determination
+  __m128 xyz       = _mm_set_ps (x, y, z, 0.0);
+  __m128 x0y0z0    = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 
+				 spline->z_grid.start, 0.0);
+  __m128 delta_inv = _mm_set_ps (spline->x_grid.delta_inv,spline->y_grid.delta_inv, 
+				 spline->z_grid.delta_inv, 0.0);
+  xyz = _mm_sub_ps (xyz, x0y0z0);
+  // ux = (x - x0)/delta_x and same for y and z
+  __m128 uxuyuz    = _mm_mul_ps (xyz, delta_inv);
+  // intpart = trunc (ux, uy, uz)
+  __m128i intpart  = _mm_cvttps_epi32(uxuyuz);
+  __m128i ixiyiz;
+  _mm_storeu_si128 (&ixiyiz, intpart);
+  // Store to memory for use in C expressions
+  // xmm registers are stored to memory in reverse order
+  int ix = ((int *)&ixiyiz)[3];
+  int iy = ((int *)&ixiyiz)[2];
+  int iz = ((int *)&ixiyiz)[1];
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+  int zs = spline->z_stride;
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+  // tpz = [t_z^3 t_z^2 t_z 1]
+  __m128 ipart  = _mm_cvtepi32_ps (intpart);
+  __m128 txtytz = _mm_sub_ps (uxuyuz, ipart);
+  __m128 one    = _mm_set_ps (1.0, 1.0, 1.0, 1.0);
+  __m128 t2     = _mm_mul_ps (txtytz, txtytz);
+  __m128 t3     = _mm_mul_ps (t2, txtytz);
+  __m128 tpx    = t3;
+  __m128 tpy    = t2;
+  __m128 tpz    = txtytz;
+  __m128 zero   = one;
+  _MM_TRANSPOSE4_PS(zero, tpz, tpy, tpx);
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
+  __m128 a4, b4, c4;
+  
+  // x-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a4);
+  // y-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b4);
+  // z-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpz,   c4);
+
+  __m128 a[4], b[4], c[4];
+  __m128 tmp;
+
+  // Unpack a values
+  tmp=_mm_unpacklo_ps(  a4,   a4);   a[0]=_mm_unpacklo_ps(tmp, tmp);   a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  a4,   a4);   a[2]=_mm_unpacklo_ps(tmp, tmp);   a[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack b values
+  tmp=_mm_unpacklo_ps(  b4,   b4);   b[0]=_mm_unpacklo_ps(tmp, tmp);   b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  b4,   b4);   b[2]=_mm_unpacklo_ps(tmp, tmp);   b[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack c values
+  tmp=_mm_unpacklo_ps(  c4,   c4);   c[0]=_mm_unpacklo_ps(tmp, tmp);   c[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  c4,   c4);   c[2]=_mm_unpacklo_ps(tmp, tmp);   c[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  int N = spline->num_splines;
+  int Nm = (N+3)/4;
+
+  __m128 mvals[Nm];
+
+  // Zero out values;
+  __m128 mzero = _mm_set_ps(0.0, 0.0, 0.0, 0.0);
+  for (int n=0; n<Nm; n++)     mvals[n] = _mm_setzero_ps();
+
+  // Main compute loop
+  __m128 abc;
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++)
+      for (int k=0; k<4; k++) {
+	abc      = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j],  c[k]));
+	__m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+	for (int n=0; n<Nm; n++) 
+	  mvals[n]     = _mm_add_ps (mvals[n], _mm_mul_ps(  abc   , coefs[n]));
+      }
+  
+  // Now, store results back
+  for (int n=0; n<N; n++) 
+    vals[n] = ((float*)mvals)[n];
+  
 }
 
 
@@ -251,6 +342,126 @@ eval_multi_UBspline_3d_s_vg (multi_UBspline_3d_s *spline,
 			     float* restrict vals,
 			     float* restrict grads)
 {
+  _mm_prefetch ((const char*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 7],_MM_HINT_T0);
+
+  /// SSE mesh point determination
+  __m128 xyz       = _mm_set_ps (x, y, z, 0.0);
+  __m128 x0y0z0    = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 
+				 spline->z_grid.start, 0.0);
+  __m128 delta_inv = _mm_set_ps (spline->x_grid.delta_inv,spline->y_grid.delta_inv, 
+				 spline->z_grid.delta_inv, 0.0);
+  xyz = _mm_sub_ps (xyz, x0y0z0);
+  // ux = (x - x0)/delta_x and same for y and z
+  __m128 uxuyuz    = _mm_mul_ps (xyz, delta_inv);
+  // intpart = trunc (ux, uy, uz)
+  __m128i intpart  = _mm_cvttps_epi32(uxuyuz);
+  __m128i ixiyiz;
+  _mm_storeu_si128 (&ixiyiz, intpart);
+  // Store to memory for use in C expressions
+  // xmm registers are stored to memory in reverse order
+  int ix = ((int *)&ixiyiz)[3];
+  int iy = ((int *)&ixiyiz)[2];
+  int iz = ((int *)&ixiyiz)[1];
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+  int zs = spline->z_stride;
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+  // tpz = [t_z^3 t_z^2 t_z 1]
+  __m128 ipart  = _mm_cvtepi32_ps (intpart);
+  __m128 txtytz = _mm_sub_ps (uxuyuz, ipart);
+  __m128 one    = _mm_set_ps (1.0, 1.0, 1.0, 1.0);
+  __m128 t2     = _mm_mul_ps (txtytz, txtytz);
+  __m128 t3     = _mm_mul_ps (t2, txtytz);
+  __m128 tpx    = t3;
+  __m128 tpy    = t2;
+  __m128 tpz    = txtytz;
+  __m128 zero   = one;
+  _MM_TRANSPOSE4_PS(zero, tpz, tpy, tpx);
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
+  __m128 a4, b4, c4, da4, db4, dc4;
+  
+  // x-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da4);
+  // y-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db4);
+  // z-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpz,   c4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpz,  dc4);
+
+  __m128 a[4], b[4], c[4], da[4], db[4], dc[4];
+  __m128 tmp;
+
+  // Unpack a values
+  tmp=_mm_unpacklo_ps(  a4,   a4);   a[0]=_mm_unpacklo_ps(tmp, tmp);   a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  a4,   a4);   a[2]=_mm_unpacklo_ps(tmp, tmp);   a[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( da4,  da4);  da[0]=_mm_unpacklo_ps(tmp, tmp);  da[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( da4,  da4);  da[2]=_mm_unpacklo_ps(tmp, tmp);  da[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack b values
+  tmp=_mm_unpacklo_ps(  b4,   b4);   b[0]=_mm_unpacklo_ps(tmp, tmp);   b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  b4,   b4);   b[2]=_mm_unpacklo_ps(tmp, tmp);   b[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( db4,  db4);  db[0]=_mm_unpacklo_ps(tmp, tmp);  db[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( db4,  db4);  db[2]=_mm_unpacklo_ps(tmp, tmp);  db[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack c values
+  tmp=_mm_unpacklo_ps(  c4,   c4);   c[0]=_mm_unpacklo_ps(tmp, tmp);   c[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  c4,   c4);   c[2]=_mm_unpacklo_ps(tmp, tmp);   c[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( dc4,  dc4);  dc[0]=_mm_unpacklo_ps(tmp, tmp);  dc[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( dc4,  dc4);  dc[2]=_mm_unpacklo_ps(tmp, tmp);  dc[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  int N = spline->num_splines;
+  int Nm = (N+3)/4;
+
+  __m128 mvals[Nm], mgrad[3*Nm];
+
+  // Zero out values;
+  __m128 mzero = _mm_set_ps(0.0, 0.0, 0.0, 0.0);
+  for (int n=0; n<Nm; n++)     mvals[n] = _mm_setzero_ps();
+  for (int n=0; n<3*Nm; n++)   mgrad[n] = _mm_setzero_ps();
+
+  // Main compute loop
+  __m128 abc, dabc[3];
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++)
+      for (int k=0; k<4; k++) {
+	abc      = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j],  c[k]));
+	dabc[0]  = _mm_mul_ps ( da[i], _mm_mul_ps(  b[j],  c[k]));
+	dabc[1]  = _mm_mul_ps (  a[i], _mm_mul_ps( db[j],  c[k]));
+	dabc[2]  = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j],  dc[k]));
+
+	__m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+	for (int n=0; n<Nm; n++) {
+	  mvals[n]     = _mm_add_ps (mvals[n], _mm_mul_ps(  abc   , coefs[n]));
+	  mgrad[3*n+0] = _mm_add_ps (mgrad[3*n+0], _mm_mul_ps( dabc[0], coefs[n]));
+	  mgrad[3*n+1] = _mm_add_ps (mgrad[3*n+1], _mm_mul_ps( dabc[1], coefs[n]));
+	  mgrad[3*n+2] = _mm_add_ps (mgrad[3*n+2], _mm_mul_ps( dabc[2], coefs[n]));
+	}
+      }
+  
+  // Now, store results back
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  float dzInv = spline->z_grid.delta_inv;
+  for (int n=0; n<N; n++) {
+    int nd4 = n>>2;
+    int nm4 = n & 3;
+    vals[n] = ((float*)mvals)[n];
+    grads[3*n+0] = ((float*)mgrad)[nd4*12 + 4*0 + nm4] * dxInv;
+    grads[3*n+1] = ((float*)mgrad)[nd4*12 + 4*1 + nm4] * dyInv;
+    grads[3*n+2] = ((float*)mgrad)[nd4*12 + 4*2 + nm4] * dzInv;
+  }
 }
 
 
@@ -262,7 +473,152 @@ eval_multi_UBspline_3d_s_vgl (multi_UBspline_3d_s *spline,
 			      float* restrict grads,
 			      float* restrict lapl)
 {
+  _mm_prefetch ((const char*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 7],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_s[ 8],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[10],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[11],_MM_HINT_T0);  
+
+  /// SSE mesh point determination
+  __m128 xyz       = _mm_set_ps (x, y, z, 0.0);
+  __m128 x0y0z0    = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 
+				 spline->z_grid.start, 0.0);
+  __m128 delta_inv = _mm_set_ps (spline->x_grid.delta_inv,spline->y_grid.delta_inv, 
+				 spline->z_grid.delta_inv, 0.0);
+  xyz = _mm_sub_ps (xyz, x0y0z0);
+  // ux = (x - x0)/delta_x and same for y and z
+  __m128 uxuyuz    = _mm_mul_ps (xyz, delta_inv);
+  // intpart = trunc (ux, uy, uz)
+  __m128i intpart  = _mm_cvttps_epi32(uxuyuz);
+  __m128i ixiyiz;
+  _mm_storeu_si128 (&ixiyiz, intpart);
+  // Store to memory for use in C expressions
+  // xmm registers are stored to memory in reverse order
+  int ix = ((int *)&ixiyiz)[3];
+  int iy = ((int *)&ixiyiz)[2];
+  int iz = ((int *)&ixiyiz)[1];
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+  int zs = spline->z_stride;
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+  // tpz = [t_z^3 t_z^2 t_z 1]
+  __m128 ipart  = _mm_cvtepi32_ps (intpart);
+  __m128 txtytz = _mm_sub_ps (uxuyuz, ipart);
+  __m128 one    = _mm_set_ps (1.0, 1.0, 1.0, 1.0);
+  __m128 t2     = _mm_mul_ps (txtytz, txtytz);
+  __m128 t3     = _mm_mul_ps (t2, txtytz);
+  __m128 tpx    = t3;
+  __m128 tpy    = t2;
+  __m128 tpz    = txtytz;
+  __m128 zero   = one;
+  _MM_TRANSPOSE4_PS(zero, tpz, tpy, tpx);
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
+  __m128 a4, b4, c4, da4, db4, dc4, d2a4, d2b4, d2c4,
+    cP[4], dcP[4], d2cP[4], bcP, dbcP, bdcP, d2bcP, dbdcP, bd2cP,
+    tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+  
+  // x-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da4);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a4);
+  // y-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db4);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2b4);
+  // z-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpz,   c4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpz,  dc4);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpz, d2c4);
+
+  __m128 a[4], b[4], c[4], da[4], db[4], dc[4], d2a[4], d2b[4], d2c[4];
+  __m128 tmp;
+
+  // Unpack a values
+  tmp=_mm_unpacklo_ps(  a4,   a4);   a[0]=_mm_unpacklo_ps(tmp, tmp);   a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  a4,   a4);   a[2]=_mm_unpacklo_ps(tmp, tmp);   a[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( da4,  da4);  da[0]=_mm_unpacklo_ps(tmp, tmp);  da[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( da4,  da4);  da[2]=_mm_unpacklo_ps(tmp, tmp);  da[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d2a4, d2a4); d2a[0]=_mm_unpacklo_ps(tmp, tmp); d2a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d2a4, d2a4); d2a[2]=_mm_unpacklo_ps(tmp, tmp); d2a[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack b values
+  tmp=_mm_unpacklo_ps(  b4,   b4);   b[0]=_mm_unpacklo_ps(tmp, tmp);   b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  b4,   b4);   b[2]=_mm_unpacklo_ps(tmp, tmp);   b[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( db4,  db4);  db[0]=_mm_unpacklo_ps(tmp, tmp);  db[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( db4,  db4);  db[2]=_mm_unpacklo_ps(tmp, tmp);  db[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d2b4, d2b4); d2b[0]=_mm_unpacklo_ps(tmp, tmp); d2b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d2b4, d2b4); d2b[2]=_mm_unpacklo_ps(tmp, tmp); d2b[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack c values
+  tmp=_mm_unpacklo_ps(  c4,   c4);   c[0]=_mm_unpacklo_ps(tmp, tmp);   c[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  c4,   c4);   c[2]=_mm_unpacklo_ps(tmp, tmp);   c[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( dc4,  dc4);  dc[0]=_mm_unpacklo_ps(tmp, tmp);  dc[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( dc4,  dc4);  dc[2]=_mm_unpacklo_ps(tmp, tmp);  dc[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d2c4, d2c4); d2c[0]=_mm_unpacklo_ps(tmp, tmp); d2c[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d2c4, d2c4); d2c[2]=_mm_unpacklo_ps(tmp, tmp); d2c[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  int N = spline->num_splines;
+  int Nm = (N+3)/4;
+
+  __m128 mvals[Nm], mgrad[3*Nm], mlapl[3*Nm];
+
+  // Zero out values;
+  __m128 mzero = _mm_set_ps(0.0, 0.0, 0.0, 0.0);
+  for (int n=0; n<Nm; n++)     mvals[n] = _mm_setzero_ps();
+  for (int n=0; n<3*Nm; n++)   mgrad[n] = _mm_setzero_ps();
+  for (int n=0; n<3*Nm; n++)   mlapl[n] = _mm_setzero_ps();
+
+  // Main compute loop
+  __m128 abc, dabc[3], d2abc[3];
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++)
+      for (int k=0; k<4; k++) {
+	abc      = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j],  c[k]));
+	dabc[0]  = _mm_mul_ps ( da[i], _mm_mul_ps(  b[j],  c[k]));
+	dabc[1]  = _mm_mul_ps (  a[i], _mm_mul_ps( db[j],  c[k]));
+	dabc[2]  = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j],  dc[k]));
+	d2abc[0] = _mm_mul_ps (d2a[i], _mm_mul_ps(  b[j],  c[k]));
+	d2abc[1] = _mm_mul_ps (  a[i], _mm_mul_ps(d2b[j],  c[k]));
+	d2abc[2] = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j], d2c[k]));
+
+
+	__m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+	for (int n=0; n<Nm; n++) {
+	  mvals[n]     = _mm_add_ps (mvals[n], _mm_mul_ps(  abc   , coefs[n]));
+	  mgrad[3*n+0] = _mm_add_ps (mgrad[3*n+0], _mm_mul_ps( dabc[0], coefs[n]));
+	  mgrad[3*n+1] = _mm_add_ps (mgrad[3*n+1], _mm_mul_ps( dabc[1], coefs[n]));
+	  mgrad[3*n+2] = _mm_add_ps (mgrad[3*n+2], _mm_mul_ps( dabc[2], coefs[n]));
+	  mlapl[3*n+0] = _mm_add_ps (mlapl[3*n+0], _mm_mul_ps(d2abc[0], coefs[n]));
+	  mlapl[3*n+1] = _mm_add_ps (mlapl[3*n+1], _mm_mul_ps(d2abc[1], coefs[n]));
+	  mlapl[3*n+2] = _mm_add_ps (mlapl[3*n+2], _mm_mul_ps(d2abc[2], coefs[n]));
+	}
+      }
+  
+  // Now, store results back
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  float dzInv = spline->z_grid.delta_inv;
+  for (int n=0; n<N; n++) {
+    int nd4 = n>>2;
+    int nm4 = n & 3;
+    vals[n] = ((float*)mvals)[n];
+    grads[3*n+0] = ((float*)mgrad)[nd4*12 + 4*0 + nm4] * dxInv;
+    grads[3*n+1] = ((float*)mgrad)[nd4*12 + 4*1 + nm4] * dyInv;
+    grads[3*n+2] = ((float*)mgrad)[nd4*12 + 4*2 + nm4] * dzInv;
+    lapl [n]     = (((float*)mlapl)[nd4*12 + 4*0 + nm4] * dxInv*dxInv +
+		    ((float*)mlapl)[nd4*12 + 4*1 + nm4] * dyInv*dyInv +
+		    ((float*)mlapl)[nd4*12 + 4*2 + nm4] * dzInv*dzInv);
+  }
 }
+  
 
 
 inline void
@@ -408,19 +764,22 @@ eval_multi_UBspline_3d_s_vgh (multi_UBspline_3d_s *spline,
       }
   
   // Now, store results back
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  float dzInv = spline->z_grid.delta_inv;
   for (int n=0; n<N; n++) {
     int nd4 = n>>2;
     int nm4 = n & 3;
     vals[n] = ((float*)mvals)[n];
-    grads[3*n+0] = ((float*)mgrad)[nd4*12 + 4*0 + nm4];
-    grads[3*n+1] = ((float*)mgrad)[nd4*12 + 4*1 + nm4];
-    grads[3*n+2] = ((float*)mgrad)[nd4*12 + 4*2 + nm4];
-    hess [9*n+0] = ((float*)mhess)[nd4*24 + 4*0 + nm4];
-    hess [9*n+1] = ((float*)mhess)[nd4*24 + 4*1 + nm4];
-    hess [9*n+2] = ((float*)mhess)[nd4*24 + 4*2 + nm4];
-    hess [9*n+4] = ((float*)mhess)[nd4*24 + 4*3 + nm4];
-    hess [9*n+5] = ((float*)mhess)[nd4*24 + 4*4 + nm4];
-    hess [9*n+8] = ((float*)mhess)[nd4*24 + 4*5 + nm4];
+    grads[3*n+0] = ((float*)mgrad)[nd4*12 + 4*0 + nm4] * dxInv;
+    grads[3*n+1] = ((float*)mgrad)[nd4*12 + 4*1 + nm4] * dyInv;
+    grads[3*n+2] = ((float*)mgrad)[nd4*12 + 4*2 + nm4] * dzInv;
+    hess [9*n+0]               = ((float*)mhess)[nd4*24 + 4*0 + nm4] * dxInv*dxInv;
+    hess [9*n+1] = hess[9*n+3] = ((float*)mhess)[nd4*24 + 4*1 + nm4] * dxInv*dyInv;
+    hess [9*n+2] = hess[9*n+6] = ((float*)mhess)[nd4*24 + 4*2 + nm4] * dxInv*dzInv;
+    hess [9*n+4]               = ((float*)mhess)[nd4*24 + 4*3 + nm4] * dyInv*dyInv;
+    hess [9*n+5] = hess[9*n+7] = ((float*)mhess)[nd4*24 + 4*4 + nm4] * dyInv*dzInv;
+    hess [9*n+8]               = ((float*)mhess)[nd4*24 + 4*5 + nm4] * dzInv*dzInv;
   }
 
 
@@ -480,23 +839,21 @@ eval_multi_UBspline_3d_s_vgh (multi_UBspline_3d_s *spline,
 //     hess[9*(nlast+n)+8] = ((float*)mhess)[6*nlast+4*5+n];
 //   }
 
-  float dxInv = spline->x_grid.delta_inv;
-  float dyInv = spline->y_grid.delta_inv;
-  float dzInv = spline->z_grid.delta_inv;
-  for (int n=0; n<N; n++) {
-    grads[3*n+0] *= dxInv;
-    grads[3*n+1] *= dyInv;
-    grads[3*n+2] *= dzInv;
-    hess [9*n+0] *= dxInv * dxInv;
-    hess [9*n+1] *= dxInv * dyInv;
-    hess [9*n+2] *= dxInv * dzInv;
-    hess [9*n+4] *= dyInv * dyInv;
-    hess [9*n+5] *= dyInv * dzInv;
-    hess [9*n+8] *= dzInv * dzInv;
-    hess [9*n+3] = hess[9*n+1];
-    hess [9*n+6] = hess[9*n+2];
-    hess [9*n+7] = hess[9*n+5];
-  }
+
+//   for (int n=0; n<N; n++) {
+//     grads[3*n+0] *= dxInv;
+//     grads[3*n+1] *= dyInv;
+//     grads[3*n+2] *= dzInv;
+//     hess [9*n+0] *= dxInv * dxInv;
+//     hess [9*n+1] *= dxInv * dyInv;
+//     hess [9*n+2] *= dxInv * dzInv;
+//     hess [9*n+4] *= dyInv * dyInv;
+//     hess [9*n+5] *= dyInv * dzInv;
+//     hess [9*n+8] *= dzInv * dzInv;
+//     hess [9*n+3] = hess[9*n+1];
+//     hess [9*n+6] = hess[9*n+2];
+//     hess [9*n+7] = hess[9*n+5];
+//   }
 
 }
 

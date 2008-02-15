@@ -284,7 +284,7 @@ int
 test_3d_float_all()
 {
   int Nx=73; int Ny=91; int Nz = 29;
-  int num_splines = 204;
+  int num_splines = 23;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -330,50 +330,61 @@ test_3d_float_all()
     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
     double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
-    
 
-//     ///////////////////////
-//     // Check VG routine  //
-//     ///////////////////////
-//     eval_multi_UBspline_3d_s_vg (multi_spline, x, y, z, 
-// 				  multi_vals, multi_grads);
-//     for (int j=0; j<num_splines; j++)
-//       eval_UBspline_3d_s_vg (norm_splines[j], x, y, z, &(norm_vals[j]),
-// 			  &(norm_grads[3*j]));
-//     for (int j=0; j<num_splines; j++) {
-//       // Check value
-//       if (diff(norm_vals[j], multi_vals[j], 1.0e-6))
-// 	return -1;
+    //////////////////////////
+    // Check value routine  //
+    /////////////////////////
+    eval_multi_UBspline_3d_s (multi_spline, x, y, z, multi_vals);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s (norm_splines[j], x, y, z, &(norm_vals[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (diff(norm_vals[j], multi_vals[j], 1.0e-6))
+	return -1;
+    }
+
+    ///////////////////////
+    // Check VG routine  //
+    ///////////////////////
+    eval_multi_UBspline_3d_s_vg (multi_spline, x, y, z, 
+				  multi_vals, multi_grads);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s_vg (norm_splines[j], x, y, z, &(norm_vals[j]),
+			  &(norm_grads[3*j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (diff(norm_vals[j], multi_vals[j], 1.0e-6))
+	return -1;
       
-//       // Check gradients
-//       for (int n=0; n<3; n++) 
-// 	if (diff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-4))
-// 	  return -2;
-//     }
+      // Check gradients
+      for (int n=0; n<3; n++) 
+	if (diff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-4))
+	  return -2;
+    }
 
 
-//     ///////////////////////
-//     // Check VGL routine //
-//     ///////////////////////
-//     eval_multi_UBspline_3d_s_vgl (multi_spline, x, y, z, 
-// 				  multi_vals, multi_grads, multi_lapl);
-//     for (int j=0; j<num_splines; j++)
-//       eval_UBspline_3d_s_vgl (norm_splines[j], x, y, z, &(norm_vals[j]),
-// 			  &(norm_grads[3*j]), &(norm_lapl[j]));
-//     for (int j=0; j<num_splines; j++) {
-//       // Check value
-//       if (diff(norm_vals[j], multi_vals[j], 1.0e-6))
-// 	return -3;
+    ///////////////////////
+    // Check VGL routine //
+    ///////////////////////
+    eval_multi_UBspline_3d_s_vgl (multi_spline, x, y, z, 
+				  multi_vals, multi_grads, multi_lapl);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s_vgl (norm_splines[j], x, y, z, &(norm_vals[j]),
+			  &(norm_grads[3*j]), &(norm_lapl[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (diff(norm_vals[j], multi_vals[j], 1.0e-6))
+	return -3;
 
-//       // Check gradients
-//       for (int n=0; n<3; n++) 
-// 	if (diff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-4))
-// 	  return -4;
+      // Check gradients
+      for (int n=0; n<3; n++) 
+	if (diff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-4))
+	  return -4;
 
-//       // Check laplacian
-//       if (diff (norm_lapl[j], multi_lapl[j], 1.0e-3)) 
-// 	return -5;
-//     }
+      // Check laplacian
+      if (diff (norm_lapl[j], multi_lapl[j], 1.0e-3)) 
+	return -5;
+    }
 
 
     ///////////////////////
