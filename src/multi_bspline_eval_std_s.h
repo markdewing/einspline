@@ -510,10 +510,10 @@ eval_multi_UBspline_3d_s (multi_UBspline_3d_s *spline,
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) 
       for (int k=0; k<4; k++) {
-	float prefactor = a[i]*b[j]*c[k];
+	float abc = a[i]*b[j]*c[k];
 	float* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
 	for (int n=0; n<spline->num_splines; n++) 
-	  vals[n] += prefactor*coefs[n];
+	  vals[n] += abc*coefs[n];
       }
 }
 
