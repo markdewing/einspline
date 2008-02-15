@@ -408,51 +408,77 @@ eval_multi_UBspline_3d_s_vgh (multi_UBspline_3d_s *spline,
       }
   
   // Now, store results back
-  for (int n=0; n<N/4; n++) {
-    _mm_storeu_ps ((float*)&vals[n*4], mvals[n]);
-    for (int i=0; i<3; i++) {
-      _mm_store_ss  ((float*)&grads[12*n+i+0], mgrad[3*n+i]);
-      _mm_store_ss  ((float*)&grads[12*n+i+3],_mm_shuffle_ps (mgrad[3*n+i], mgrad[3*n+i],_MM_SHUFFLE(1,1,1,1)));
-      _mm_store_ss  ((float*)&grads[12*n+i+6],_mm_shuffle_ps (mgrad[3*n+i], mgrad[3*n+i],_MM_SHUFFLE(2,2,2,2)));
-      _mm_store_ss  ((float*)&grads[12*n+i+9],_mm_shuffle_ps (mgrad[3*n+i], mgrad[3*n+i],_MM_SHUFFLE(3,3,3,3)));
-    }
-    _mm_store_ss  ((float*)&hess[36*n+0+ 0],                mhess[6*n+0]);
-    _mm_store_ss  ((float*)&hess[36*n+0+ 9],_mm_shuffle_ps (mhess[6*n+0], mhess[6*n+0],_MM_SHUFFLE(1,1,1,1)));
-    _mm_store_ss  ((float*)&hess[36*n+0+18],_mm_shuffle_ps (mhess[6*n+0], mhess[6*n+0],_MM_SHUFFLE(2,2,2,2)));
-    _mm_store_ss  ((float*)&hess[36*n+0+27],_mm_shuffle_ps (mhess[6*n+0], mhess[6*n+0],_MM_SHUFFLE(3,3,3,3)));
-
-    _mm_store_ss  ((float*)&hess[36*n+1+ 0],                mhess[6*n+1]);
-    _mm_store_ss  ((float*)&hess[36*n+1+ 9],_mm_shuffle_ps (mhess[6*n+1], mhess[6*n+1],_MM_SHUFFLE(1,1,1,1)));
-    _mm_store_ss  ((float*)&hess[36*n+1+18],_mm_shuffle_ps (mhess[6*n+1], mhess[6*n+1],_MM_SHUFFLE(2,2,2,2)));
-    _mm_store_ss  ((float*)&hess[36*n+1+27],_mm_shuffle_ps (mhess[6*n+1], mhess[6*n+1],_MM_SHUFFLE(3,3,3,3)));
-
-    _mm_store_ss  ((float*)&hess[36*n+2+ 0],                mhess[6*n+2]);
-    _mm_store_ss  ((float*)&hess[36*n+2+ 9],_mm_shuffle_ps (mhess[6*n+2], mhess[6*n+2],_MM_SHUFFLE(1,1,1,1)));
-    _mm_store_ss  ((float*)&hess[36*n+2+18],_mm_shuffle_ps (mhess[6*n+2], mhess[6*n+2],_MM_SHUFFLE(2,2,2,2)));
-    _mm_store_ss  ((float*)&hess[36*n+2+27],_mm_shuffle_ps (mhess[6*n+2], mhess[6*n+2],_MM_SHUFFLE(3,3,3,3)));
-
-    _mm_store_ss  ((float*)&hess[36*n+4+ 0],                mhess[6*n+3]);
-    _mm_store_ss  ((float*)&hess[36*n+4+ 9],_mm_shuffle_ps (mhess[6*n+3], mhess[6*n+3],_MM_SHUFFLE(1,1,1,1)));
-    _mm_store_ss  ((float*)&hess[36*n+4+18],_mm_shuffle_ps (mhess[6*n+3], mhess[6*n+3],_MM_SHUFFLE(2,2,2,2)));
-    _mm_store_ss  ((float*)&hess[36*n+4+27],_mm_shuffle_ps (mhess[6*n+3], mhess[6*n+3],_MM_SHUFFLE(3,3,3,3)));
-
-    _mm_store_ss  ((float*)&hess[36*n+5+ 0],                mhess[6*n+4]);
-    _mm_store_ss  ((float*)&hess[36*n+5+ 9],_mm_shuffle_ps (mhess[6*n+4], mhess[6*n+4],_MM_SHUFFLE(1,1,1,1)));
-    _mm_store_ss  ((float*)&hess[36*n+5+18],_mm_shuffle_ps (mhess[6*n+4], mhess[6*n+4],_MM_SHUFFLE(2,2,2,2)));
-    _mm_store_ss  ((float*)&hess[36*n+5+27],_mm_shuffle_ps (mhess[6*n+4], mhess[6*n+4],_MM_SHUFFLE(3,3,3,3)));
-
-    _mm_store_ss  ((float*)&hess[36*n+8+ 0],                mhess[6*n+5]);
-    _mm_store_ss  ((float*)&hess[36*n+8+ 9],_mm_shuffle_ps (mhess[6*n+5], mhess[6*n+5],_MM_SHUFFLE(1,1,1,1)));
-    _mm_store_ss  ((float*)&hess[36*n+8+18],_mm_shuffle_ps (mhess[6*n+5], mhess[6*n+5],_MM_SHUFFLE(2,2,2,2)));
-    _mm_store_ss  ((float*)&hess[36*n+8+27],_mm_shuffle_ps (mhess[6*n+5], mhess[6*n+5],_MM_SHUFFLE(3,3,3,3)));
+  for (int n=0; n<N; n++) {
+    int nd4 = n>>2;
+    int nm4 = n & 3;
+    vals[n] = ((float*)mvals)[n];
+    grads[3*n+0] = ((float*)mgrad)[nd4*12 + 4*0 + nm4];
+    grads[3*n+1] = ((float*)mgrad)[nd4*12 + 4*1 + nm4];
+    grads[3*n+2] = ((float*)mgrad)[nd4*12 + 4*2 + nm4];
+    hess [9*n+0] = ((float*)mhess)[nd4*24 + 4*0 + nm4];
+    hess [9*n+1] = ((float*)mhess)[nd4*24 + 4*1 + nm4];
+    hess [9*n+2] = ((float*)mhess)[nd4*24 + 4*2 + nm4];
+    hess [9*n+4] = ((float*)mhess)[nd4*24 + 4*3 + nm4];
+    hess [9*n+5] = ((float*)mhess)[nd4*24 + 4*4 + nm4];
+    hess [9*n+8] = ((float*)mhess)[nd4*24 + 4*5 + nm4];
   }
 
-  // Store remainders
-  int mlast = Nm-1;
-  int nlast = 4*mlast;
-  for (int n=0; n<(N%4); n++) {
 
-  }
+//   for (int n=0; n<N/4; n++) {
+//     _mm_storeu_ps ((float*)&vals[n*4], mvals[n]);
+//     for (int i=0; i<3; i++) {
+//       _mm_store_ss  ((float*)&grads[12*n+i+0], mgrad[3*n+i]);
+//       _mm_store_ss  ((float*)&grads[12*n+i+3],_mm_shuffle_ps (mgrad[3*n+i], mgrad[3*n+i],_MM_SHUFFLE(1,1,1,1)));
+//       _mm_store_ss  ((float*)&grads[12*n+i+6],_mm_shuffle_ps (mgrad[3*n+i], mgrad[3*n+i],_MM_SHUFFLE(2,2,2,2)));
+//       _mm_store_ss  ((float*)&grads[12*n+i+9],_mm_shuffle_ps (mgrad[3*n+i], mgrad[3*n+i],_MM_SHUFFLE(3,3,3,3)));
+//     }
+//     _mm_store_ss  ((float*)&hess[36*n+0+ 0],                mhess[6*n+0]);
+//     _mm_store_ss  ((float*)&hess[36*n+0+ 9],_mm_shuffle_ps (mhess[6*n+0], mhess[6*n+0],_MM_SHUFFLE(1,1,1,1)));
+//     _mm_store_ss  ((float*)&hess[36*n+0+18],_mm_shuffle_ps (mhess[6*n+0], mhess[6*n+0],_MM_SHUFFLE(2,2,2,2)));
+//     _mm_store_ss  ((float*)&hess[36*n+0+27],_mm_shuffle_ps (mhess[6*n+0], mhess[6*n+0],_MM_SHUFFLE(3,3,3,3)));
+
+//     _mm_store_ss  ((float*)&hess[36*n+1+ 0],                mhess[6*n+1]);
+//     _mm_store_ss  ((float*)&hess[36*n+1+ 9],_mm_shuffle_ps (mhess[6*n+1], mhess[6*n+1],_MM_SHUFFLE(1,1,1,1)));
+//     _mm_store_ss  ((float*)&hess[36*n+1+18],_mm_shuffle_ps (mhess[6*n+1], mhess[6*n+1],_MM_SHUFFLE(2,2,2,2)));
+//     _mm_store_ss  ((float*)&hess[36*n+1+27],_mm_shuffle_ps (mhess[6*n+1], mhess[6*n+1],_MM_SHUFFLE(3,3,3,3)));
+
+//     _mm_store_ss  ((float*)&hess[36*n+2+ 0],                mhess[6*n+2]);
+//     _mm_store_ss  ((float*)&hess[36*n+2+ 9],_mm_shuffle_ps (mhess[6*n+2], mhess[6*n+2],_MM_SHUFFLE(1,1,1,1)));
+//     _mm_store_ss  ((float*)&hess[36*n+2+18],_mm_shuffle_ps (mhess[6*n+2], mhess[6*n+2],_MM_SHUFFLE(2,2,2,2)));
+//     _mm_store_ss  ((float*)&hess[36*n+2+27],_mm_shuffle_ps (mhess[6*n+2], mhess[6*n+2],_MM_SHUFFLE(3,3,3,3)));
+
+//     _mm_store_ss  ((float*)&hess[36*n+4+ 0],                mhess[6*n+3]);
+//     _mm_store_ss  ((float*)&hess[36*n+4+ 9],_mm_shuffle_ps (mhess[6*n+3], mhess[6*n+3],_MM_SHUFFLE(1,1,1,1)));
+//     _mm_store_ss  ((float*)&hess[36*n+4+18],_mm_shuffle_ps (mhess[6*n+3], mhess[6*n+3],_MM_SHUFFLE(2,2,2,2)));
+//     _mm_store_ss  ((float*)&hess[36*n+4+27],_mm_shuffle_ps (mhess[6*n+3], mhess[6*n+3],_MM_SHUFFLE(3,3,3,3)));
+
+//     _mm_store_ss  ((float*)&hess[36*n+5+ 0],                mhess[6*n+4]);
+//     _mm_store_ss  ((float*)&hess[36*n+5+ 9],_mm_shuffle_ps (mhess[6*n+4], mhess[6*n+4],_MM_SHUFFLE(1,1,1,1)));
+//     _mm_store_ss  ((float*)&hess[36*n+5+18],_mm_shuffle_ps (mhess[6*n+4], mhess[6*n+4],_MM_SHUFFLE(2,2,2,2)));
+//     _mm_store_ss  ((float*)&hess[36*n+5+27],_mm_shuffle_ps (mhess[6*n+4], mhess[6*n+4],_MM_SHUFFLE(3,3,3,3)));
+
+//     _mm_store_ss  ((float*)&hess[36*n+8+ 0],                mhess[6*n+5]);
+//     _mm_store_ss  ((float*)&hess[36*n+8+ 9],_mm_shuffle_ps (mhess[6*n+5], mhess[6*n+5],_MM_SHUFFLE(1,1,1,1)));
+//     _mm_store_ss  ((float*)&hess[36*n+8+18],_mm_shuffle_ps (mhess[6*n+5], mhess[6*n+5],_MM_SHUFFLE(2,2,2,2)));
+//     _mm_store_ss  ((float*)&hess[36*n+8+27],_mm_shuffle_ps (mhess[6*n+5], mhess[6*n+5],_MM_SHUFFLE(3,3,3,3)));
+//   }
+
+
+
+//   // Store remainders
+//   int mlast = Nm-1;
+//   int nlast = 4*mlast;
+//   for (int n=0; n<(N%4); n++) {
+//     vals[nlast+n] = ((float*)mvals)[nlast+n];
+//     for (int i=0; i<3; i++)
+//       grads[3*(nlast+n)+i] = ((float*)mgrad)[3*nlast+4*i+n];
+//     hess[9*(nlast+n)+0] = ((float*)mhess)[6*nlast+4*0+n];
+//     hess[9*(nlast+n)+1] = ((float*)mhess)[6*nlast+4*1+n];
+//     hess[9*(nlast+n)+2] = ((float*)mhess)[6*nlast+4*2+n];
+//     hess[9*(nlast+n)+4] = ((float*)mhess)[6*nlast+4*3+n];
+//     hess[9*(nlast+n)+5] = ((float*)mhess)[6*nlast+4*4+n];
+//     hess[9*(nlast+n)+8] = ((float*)mhess)[6*nlast+4*5+n];
+//   }
 
   float dxInv = spline->x_grid.delta_inv;
   float dyInv = spline->y_grid.delta_inv;
