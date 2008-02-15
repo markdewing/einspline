@@ -66,7 +66,7 @@ test_1d_float_all()
     set_multi_UBspline_1d_s (multi_spline, i, data);
   }
 
-//   fprintf (stderr, "norm coef  = %1.14e\n",
+//   fprintf (stderr, "\nnorm coef  = %1.14e\n",
 //  	   norm_splines[19]->coefs[27]);
 //   fprintf (stderr, "multi coef = %1.14e\n",
 // 	   multi_spline->coefs[19+27*multi_spline->x_stride]);
@@ -105,11 +105,11 @@ test_1d_float_all()
     for (int j=0; j<num_splines; j++) {
       // Check value
       if (diff(norm_vals[j], multi_vals[j], 1.0e-6))
-	return -1;
+	return -2;
       
       // Check gradients
-      if (diff (norm_grads[j], multi_grads[j], 1.0e-6))
-	return -2;
+      if (diff (norm_grads[j], multi_grads[j], 1.0e-5))
+	return -3;
     }
 
 
@@ -123,15 +123,15 @@ test_1d_float_all()
     for (int j=0; j<num_splines; j++) {
       // Check value
       if (diff(norm_vals[j], multi_vals[j], 1.0e-6))
-	return -3;
-
-      // Check gradients
-      if (diff (norm_grads[j], multi_grads[j], 1.0e-6))
 	return -4;
 
-      // Check laplacian
-      if (diff (norm_lapl[j], multi_lapl[j], 1.0e-4)) 
+      // Check gradients
+      if (diff (norm_grads[j], multi_grads[j], 1.0e-5))
 	return -5;
+
+      // Check laplacian
+      if (diff (norm_lapl[j], multi_lapl[j], 1.0e-3)) 
+	return -6;
     }
   }
   return 0;
@@ -418,44 +418,44 @@ test_3d_float_all()
   }
   
 
-  num_vals = 100000;
+//   num_vals = 100000;
 
-  // Now do timing
-  clock_t norm_start, norm_end, multi_start, multi_end, rand_start, rand_end;
-  rand_start = clock();
-  for (int i=0; i<num_vals; i++) {
-    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
-    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
-    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
-  }
-  rand_end = clock();
+//   // Now do timing
+//   clock_t norm_start, norm_end, multi_start, multi_end, rand_start, rand_end;
+//   rand_start = clock();
+//   for (int i=0; i<num_vals; i++) {
+//     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+//     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+//     double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+//   }
+//   rand_end = clock();
   
-  norm_start = clock();
-  for (int i=0; i<num_vals; i++) {
-    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
-    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
-    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+//   norm_start = clock();
+//   for (int i=0; i<num_vals; i++) {
+//     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+//     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+//     double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
     
-    for (int j=0; j<num_splines; j++)
-      eval_UBspline_3d_s_vgh (norm_splines[j], x, y, z, &(norm_vals[j]),
-			      &(norm_grads[3*j]), &norm_hess[9*j]);
-  }
-  norm_end = clock();
+//     for (int j=0; j<num_splines; j++)
+//       eval_UBspline_3d_s_vgh (norm_splines[j], x, y, z, &(norm_vals[j]),
+// 			      &(norm_grads[3*j]), &norm_hess[9*j]);
+//   }
+//   norm_end = clock();
   
-  multi_start = clock();
-  for (int i=0; i<num_vals; i++) {
-    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
-    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
-    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
-    eval_multi_UBspline_3d_s_vgh (multi_spline, x, y, z, multi_vals,
-				  multi_grads, multi_hess);
-  }
-  multi_end = clock();
+//   multi_start = clock();
+//   for (int i=0; i<num_vals; i++) {
+//     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+//     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+//     double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+//     eval_multi_UBspline_3d_s_vgh (multi_spline, x, y, z, multi_vals,
+// 				  multi_grads, multi_hess);
+//   }
+//   multi_end = clock();
   
-  fprintf (stderr, "Normal spline time = %1.5f\n",
-	   (double)(norm_end-norm_start+rand_start-rand_end)/CLOCKS_PER_SEC);
-  fprintf (stderr, "Multi  spline time = %1.5f\n",
-	   (double)(multi_end-multi_start+rand_start-rand_end)/CLOCKS_PER_SEC);
+//   fprintf (stderr, "Normal spline time = %1.5f\n",
+// 	   (double)(norm_end-norm_start+rand_start-rand_end)/CLOCKS_PER_SEC);
+//   fprintf (stderr, "Multi  spline time = %1.5f\n",
+// 	   (double)(multi_end-multi_start+rand_start-rand_end)/CLOCKS_PER_SEC);
   
   return 0;
 }
@@ -1698,10 +1698,10 @@ main()
   //test_complex_double();
   //test_complex_double_vgh();
 
-//   fprintf (stderr, "Testing 1D real    single-precision multiple cubic B-spline routines:     ");
-//   code = test_1d_float_all();           PrintPassFail (code);
-//   fprintf (stderr, "Testing 2D real    single-precision multiple cubic B-spline routines:     ");
-//   code = test_2d_float_all();           PrintPassFail (code);
+  fprintf (stderr, "Testing 1D real    single-precision multiple cubic B-spline routines:     ");
+  code = test_1d_float_all();           PrintPassFail (code);
+  fprintf (stderr, "Testing 2D real    single-precision multiple cubic B-spline routines:     ");
+  code = test_2d_float_all();           PrintPassFail (code);
   fprintf (stderr, "Testing 3D real    single-precision multiple cubic B-spline routines:     ");
   code = test_3d_float_all();           PrintPassFail (code);
 
