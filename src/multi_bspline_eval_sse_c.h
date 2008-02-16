@@ -61,7 +61,7 @@ do {                                                                  \
 #endif
 
 /************************************************************/
-/* 1D double-precision, complex evaulation functions        */
+/* 1D single-precision, complex evaulation functions        */
 /************************************************************/
 inline void
 eval_multi_UBspline_1d_c (multi_UBspline_1d_c *spline,
@@ -196,13 +196,75 @@ eval_multi_UBspline_1d_c_vgl (multi_UBspline_1d_c *spline,
 
 
 /************************************************************/
-/* 2D double-precision, complex evaulation functions        */
+/* 2D single-precision, complex evaulation functions        */
 /************************************************************/
 inline void
 eval_multi_UBspline_2d_c (multi_UBspline_2d_c *spline,
 			  double x, double y,
 			  complex_float* restrict vals)
 {
+  _mm_prefetch ((const char*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 3],_MM_HINT_T0);
+
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;
+  float ux = x*spline->x_grid.delta_inv;
+  float uy = y*spline->y_grid.delta_inv;
+  float ipartx, iparty, tx, ty;
+  tx = modff (ux, &ipartx);
+  ty = modff (uy, &iparty);
+  int ix = (int) ipartx;
+  int iy = (int) iparty;
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+  __m128 tpx = _mm_set_ps (tx*tx*tx, tx*tx, tx, 1.0);
+  __m128 tpy = _mm_set_ps (ty*ty*ty, ty*ty, ty, 1.0);
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
+  __m128 a4, b4;  
+  // x-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a4);
+  // y-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b4);
+
+  __m128 a[4], b[4];
+  __m128 tmp;
+
+  // Unpack a values
+  tmp=_mm_unpacklo_ps(  a4,   a4);   a[0]=_mm_unpacklo_ps(tmp, tmp);   a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  a4,   a4);   a[2]=_mm_unpacklo_ps(tmp, tmp);   a[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack b values
+  tmp=_mm_unpacklo_ps(  b4,   b4);   b[0]=_mm_unpacklo_ps(tmp, tmp);   b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  b4,   b4);   b[2]=_mm_unpacklo_ps(tmp, tmp);   b[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  int N = spline->num_splines;
+  int Nm = (N+1)/2;
+
+  __m128 mvals[Nm];
+
+  // Zero out values;
+  for (int n=0; n<Nm; n++)     mvals[n] = _mm_setzero_ps();
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+
+  // Main compute loop
+  __m128 ab;
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++){
+      ab      = _mm_mul_ps (  a[i],  b[j]);
+      __m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys);
+      for (int n=0; n<Nm; n++) 
+	mvals[n]     = _mm_add_ps (mvals[n],     _mm_mul_ps(  ab   , coefs[n]));
+    }
+  
+  // Now, store results back
+  for (int n=0; n<N; n++) 
+    vals[n]      =  ((complex_float*)mvals)[n];
 }
 
 
@@ -212,6 +274,91 @@ eval_multi_UBspline_2d_c_vg (multi_UBspline_2d_c *spline,
 			     complex_float* restrict vals,
 			     complex_float* restrict grads)
 {
+  _mm_prefetch ((const char*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 7],_MM_HINT_T0);
+
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;
+  float ux = x*spline->x_grid.delta_inv;
+  float uy = y*spline->y_grid.delta_inv;
+  float ipartx, iparty, tx, ty;
+  tx = modff (ux, &ipartx);
+  ty = modff (uy, &iparty);
+  int ix = (int) ipartx;
+  int iy = (int) iparty;
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+  __m128 tpx = _mm_set_ps (tx*tx*tx, tx*tx, tx, 1.0);
+  __m128 tpy = _mm_set_ps (ty*ty*ty, ty*ty, ty, 1.0);
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
+  __m128 a4, b4, da4, db4;  
+  // x-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da4);
+  // y-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db4);
+
+  __m128 a[4], b[4], da[4], db[4];
+  __m128 tmp;
+
+  // Unpack a values
+  tmp=_mm_unpacklo_ps(  a4,   a4);   a[0]=_mm_unpacklo_ps(tmp, tmp);   a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  a4,   a4);   a[2]=_mm_unpacklo_ps(tmp, tmp);   a[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( da4,  da4);  da[0]=_mm_unpacklo_ps(tmp, tmp);  da[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( da4,  da4);  da[2]=_mm_unpacklo_ps(tmp, tmp);  da[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack b values
+  tmp=_mm_unpacklo_ps(  b4,   b4);   b[0]=_mm_unpacklo_ps(tmp, tmp);   b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  b4,   b4);   b[2]=_mm_unpacklo_ps(tmp, tmp);   b[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( db4,  db4);  db[0]=_mm_unpacklo_ps(tmp, tmp);  db[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( db4,  db4);  db[2]=_mm_unpacklo_ps(tmp, tmp);  db[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  int N = spline->num_splines;
+  int Nm = (N+1)/2;
+
+  __m128 mvals[Nm], mgrad[2*Nm];
+
+  // Zero out values;
+  for (int n=0; n<Nm; n++)     mvals[n] = _mm_setzero_ps();
+  for (int n=0; n<2*Nm; n++)   mgrad[n] = _mm_setzero_ps();
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+
+  // Main compute loop
+  __m128 ab, dab[2];
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++){
+      ab      = _mm_mul_ps (  a[i],  b[j]);
+      dab[0]  = _mm_mul_ps ( da[i],  b[j]);
+      dab[1]  = _mm_mul_ps (  a[i], db[j]);
+      
+      __m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys);
+      for (int n=0; n<Nm; n++) {
+	mvals[n]     = _mm_add_ps (mvals[n],     _mm_mul_ps(  ab   , coefs[n]));
+	mgrad[2*n+0] = _mm_add_ps (mgrad[2*n+0], _mm_mul_ps( dab[0], coefs[n]));
+	mgrad[2*n+1] = _mm_add_ps (mgrad[2*n+1], _mm_mul_ps( dab[1], coefs[n]));
+      }
+    }
+  
+  // Now, store results back
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  for (int n=0; n<N; n++) {
+    int nd2 = n>>1;
+    int nm2 = n & 1;
+    vals[n]      =  ((complex_float*)mvals)[n];
+    grads[2*n+0] =  ((complex_float*)mgrad)[nd2*4 + 2*0 + nm2] * dxInv;
+    grads[2*n+1] =  ((complex_float*)mgrad)[nd2*4 + 2*1 + nm2] * dyInv;
+  }
 }
 
 inline void
@@ -221,6 +368,107 @@ eval_multi_UBspline_2d_c_vgl (multi_UBspline_2d_c *spline,
 			      complex_float* restrict grads,
 			      complex_float* restrict lapl)	  
 {
+  _mm_prefetch ((const char*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 7],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_s[ 8],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[10],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[11],_MM_HINT_T0);  
+
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;
+  float ux = x*spline->x_grid.delta_inv;
+  float uy = y*spline->y_grid.delta_inv;
+  float ipartx, iparty, tx, ty;
+  tx = modff (ux, &ipartx);
+  ty = modff (uy, &iparty);
+  int ix = (int) ipartx;
+  int iy = (int) iparty;
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+  __m128 tpx = _mm_set_ps (tx*tx*tx, tx*tx, tx, 1.0);
+  __m128 tpy = _mm_set_ps (ty*ty*ty, ty*ty, ty, 1.0);
+
+  // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
+  // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
+  // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
+  __m128 a4, b4, da4, db4, d2a4, d2b4;  
+  // x-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da4);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a4);
+  // y-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db4);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2b4);
+
+  __m128 a[4], b[4], da[4], db[4], d2a[4], d2b[4];
+  __m128 tmp;
+
+  // Unpack a values
+  tmp=_mm_unpacklo_ps(  a4,   a4);   a[0]=_mm_unpacklo_ps(tmp, tmp);   a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  a4,   a4);   a[2]=_mm_unpacklo_ps(tmp, tmp);   a[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( da4,  da4);  da[0]=_mm_unpacklo_ps(tmp, tmp);  da[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( da4,  da4);  da[2]=_mm_unpacklo_ps(tmp, tmp);  da[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d2a4, d2a4); d2a[0]=_mm_unpacklo_ps(tmp, tmp); d2a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d2a4, d2a4); d2a[2]=_mm_unpacklo_ps(tmp, tmp); d2a[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack b values
+  tmp=_mm_unpacklo_ps(  b4,   b4);   b[0]=_mm_unpacklo_ps(tmp, tmp);   b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  b4,   b4);   b[2]=_mm_unpacklo_ps(tmp, tmp);   b[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( db4,  db4);  db[0]=_mm_unpacklo_ps(tmp, tmp);  db[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( db4,  db4);  db[2]=_mm_unpacklo_ps(tmp, tmp);  db[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d2b4, d2b4); d2b[0]=_mm_unpacklo_ps(tmp, tmp); d2b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d2b4, d2b4); d2b[2]=_mm_unpacklo_ps(tmp, tmp); d2b[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  int N = spline->num_splines;
+  int Nm = (N+1)/2;
+
+  __m128 mvals[Nm], mgrad[2*Nm], mlapl[2*Nm];
+
+  // Zero out values;
+  __m128 mzero = _mm_set_ps(0.0, 0.0, 0.0, 0.0);
+  for (int n=0; n<Nm; n++)     mvals[n] = _mm_setzero_ps();
+  for (int n=0; n<2*Nm; n++)   mgrad[n] = _mm_setzero_ps();
+  for (int n=0; n<2*Nm; n++)   mlapl[n] = _mm_setzero_ps();
+
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+
+  // Main compute loop
+  __m128 ab, dab[2], d2ab[2];
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++){
+      ab      = _mm_mul_ps (  a[i],  b[j]);
+      dab[0]  = _mm_mul_ps ( da[i],  b[j]);
+      dab[1]  = _mm_mul_ps (  a[i], db[j]);
+      d2ab[0] = _mm_mul_ps (d2a[i],  b[j]);
+      d2ab[1] = _mm_mul_ps (  a[i],d2b[j]);
+      
+      __m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys);
+      for (int n=0; n<Nm; n++) {
+	mvals[n]     = _mm_add_ps (mvals[n],     _mm_mul_ps(  ab   , coefs[n]));
+	mgrad[2*n+0] = _mm_add_ps (mgrad[2*n+0], _mm_mul_ps( dab[0], coefs[n]));
+	mgrad[2*n+1] = _mm_add_ps (mgrad[2*n+1], _mm_mul_ps( dab[1], coefs[n]));
+	mlapl[2*n+0] = _mm_add_ps (mlapl[2*n+0], _mm_mul_ps(d2ab[0], coefs[n]));
+	mlapl[2*n+1] = _mm_add_ps (mlapl[2*n+1], _mm_mul_ps(d2ab[1], coefs[n]));
+      }
+    }
+  
+  // Now, store results back
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  for (int n=0; n<N; n++) {
+    int nd2 = n>>1;
+    int nm2 = n & 1;
+    vals[n]      =  ((complex_float*)mvals)[n];
+    grads[2*n+0] =  ((complex_float*)mgrad)[nd2*4 + 2*0 + nm2] * dxInv;
+    grads[2*n+1] =  ((complex_float*)mgrad)[nd2*4 + 2*1 + nm2] * dyInv;
+    lapl [n]     = (((complex_float*)mlapl)[nd2*4 + 2*0 + nm2] * dxInv*dxInv +
+		    ((complex_float*)mlapl)[nd2*4 + 2*1 + nm2] * dyInv*dyInv);
+  }
 }
 
 inline void
@@ -236,44 +484,55 @@ eval_multi_UBspline_2d_c_vgh (multi_UBspline_2d_c *spline,
   _mm_prefetch ((const char*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 7],_MM_HINT_T0);
   _mm_prefetch ((const char*)  &A_s[ 8],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 9],_MM_HINT_T0);  
   _mm_prefetch ((const char*)  &A_s[10],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[11],_MM_HINT_T0);  
-  /// SSE mesh point determination
-  __m128 xy        = _mm_set_ps (x, y, 0.0, 0.0);
-  __m128 x0y0      = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 0.0, 0.0);
-  __m128 delta_inv = _mm_set_ps (spline->x_grid.delta_inv,spline->y_grid.delta_inv, 0.0, 0.0);
-  xy = _mm_sub_ps (xy, x0y0);
-  // ux = (x - x0)/delta_x and same for y
-  __m128 uxuy    = _mm_mul_ps (xy, delta_inv);
-  // intpart = trunc (ux, uy)
-  __m128i intpart  = _mm_cvttps_epi32(uxuy);
-  __m128i ixiy;
-  _mm_storeu_si128 (&ixiy, intpart);
-  // Store to memory for use in C expressions
-  // xmm registers are stored to memory in reverse order
-  int ix = ((int *)&ixiy)[3];
-  int iy = ((int *)&ixiy)[2];
-
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+//   /// SSE mesh point determination
+//   __m128 xy        = _mm_set_ps (x, y, 0.0, 0.0);
+//   __m128 x0y0      = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 0.0, 0.0);
+//   __m128 delta_inv = _mm_set_ps (spline->x_grid.delta_inv,spline->y_grid.delta_inv, 0.0, 0.0);
+//   xy = _mm_sub_ps (xy, x0y0);
+//   // ux = (x - x0)/delta_x and same for y
+//   __m128 uxuy    = _mm_mul_ps (xy, delta_inv);
+//   // intpart = trunc (ux, uy)
+//   __m128i intpart  = _mm_cvttps_epi32(uxuy);
+//   __m128i ixiy;
+//   _mm_storeu_si128 (&ixiy, intpart);
+//   // Store to memory for use in C expressions
+//   // xmm registers are stored to memory in reverse order
+//   int ix = ((int *)&ixiy)[3];
+//   int iy = ((int *)&ixiy)[2];
+//   // Now compute the vectors:
+//   // tpx = [t_x^3 t_x^2 t_x 1]
+//   // tpy = [t_y^3 t_y^2 t_y 1]
+//   // tpz = [t_z^3 t_z^2 t_z 1]
+//   __m128 ipart  = _mm_cvtepi32_ps (intpart);
+//   __m128 txty   = _mm_sub_ps (uxuy, ipart);
+//   __m128 one    = _mm_set_ps (1.0, 1.0, 1.0, 1.0);
+//   __m128 t2     = _mm_mul_ps (txty, txty);
+//   __m128 t3     = _mm_mul_ps (t2, txty);
+//   __m128 tpx    = t3;
+//   __m128 tpy    = t2;
+//   __m128 tpz    = txty;
+//   __m128 zero   = one;
+//   _MM_TRANSPOSE4_PS(zero, tpz, tpy, tpx);
+  x -= spline->x_grid.start;
+  y -= spline->y_grid.start;
+  float ux = x*spline->x_grid.delta_inv;
+  float uy = y*spline->y_grid.delta_inv;
+  float ipartx, iparty, tx, ty;
+  tx = modff (ux, &ipartx);
+  ty = modff (uy, &iparty);
+  int ix = (int) ipartx;
+  int iy = (int) iparty;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
   // tpy = [t_y^3 t_y^2 t_y 1]
-  // tpz = [t_z^3 t_z^2 t_z 1]
-  __m128 ipart  = _mm_cvtepi32_ps (intpart);
-  __m128 txty   = _mm_sub_ps (uxuy, ipart);
-  __m128 one    = _mm_set_ps (1.0, 1.0, 1.0, 1.0);
-  __m128 t2     = _mm_mul_ps (txty, txty);
-  __m128 t3     = _mm_mul_ps (t2, txty);
-  __m128 tpx    = t3;
-  __m128 tpy    = t2;
-  __m128 tpz    = txty;
-  __m128 zero   = one;
-  _MM_TRANSPOSE4_PS(zero, tpz, tpy, tpx);
+  __m128 tpx = _mm_set_ps (tx*tx*tx, tx*tx, tx, 1.0);
+  __m128 tpy = _mm_set_ps (ty*ty*ty, ty*ty, ty, 1.0);
 
   // a  =  A * tpx,   b =  A * tpy,   c =  A * tpz
   // da = dA * tpx,  db = dA * tpy,  dc = dA * tpz, etc.
   // A is 4x4 matrix given by the rows A_s[0], A_s[1], A_s[ 2], A_s[ 3]
-  __m128 a4, b4, c4, da4, db4, dc4, d2a4, d2b4, d2c4;  
+  __m128 a4, b4, da4, db4, d2a4, d2b4;  
   // x-dependent vectors
   _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a4);
   _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da4);
@@ -313,28 +572,30 @@ eval_multi_UBspline_2d_c_vgh (multi_UBspline_2d_c *spline,
   for (int n=0; n<2*Nm; n++)   mgrad[n] = _mm_setzero_ps();
   for (int n=0; n<3*Nm; n++)   mhess[n] = _mm_setzero_ps();
 
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+
   // Main compute loop
   __m128 ab, dab[2], d2ab[3];
   for (int i=0; i<4; i++)
-    for (int j=0; j<4; j++)
-      for (int k=0; k<4; k++) {
-	ab      = _mm_mul_ps (  a[i],  b[j]);
-	dab[0]  = _mm_mul_ps ( da[i],  b[j]);
-	dab[1]  = _mm_mul_ps (  a[i], db[j]);
-	d2ab[0] = _mm_mul_ps (d2a[i],  b[j]);
-	d2ab[1] = _mm_mul_ps ( da[i], db[j]);
-	d2ab[2] = _mm_mul_ps (  a[i],d2b[j]);
-
-	__m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys);
-	for (int n=0; n<Nm; n++) {
-	  mvals[n]     = _mm_add_ps (mvals[n],     _mm_mul_ps(  ab   , coefs[n]));
-	  mgrad[2*n+0] = _mm_add_ps (mgrad[2*n+0], _mm_mul_ps( dab[0], coefs[n]));
-	  mgrad[2*n+1] = _mm_add_ps (mgrad[2*n+1], _mm_mul_ps( dab[1], coefs[n]));
-	  mhess[3*n+0] = _mm_add_ps (mhess[3*n+0], _mm_mul_ps(d2ab[0], coefs[n]));
-	  mhess[3*n+1] = _mm_add_ps (mhess[3*n+1], _mm_mul_ps(d2ab[1], coefs[n]));
-	  mhess[3*n+2] = _mm_add_ps (mhess[3*n+2], _mm_mul_ps(d2ab[2], coefs[n]));
-	}
+    for (int j=0; j<4; j++){
+      ab      = _mm_mul_ps (  a[i],  b[j]);
+      dab[0]  = _mm_mul_ps ( da[i],  b[j]);
+      dab[1]  = _mm_mul_ps (  a[i], db[j]);
+      d2ab[0] = _mm_mul_ps (d2a[i],  b[j]);
+      d2ab[1] = _mm_mul_ps ( da[i], db[j]);
+      d2ab[2] = _mm_mul_ps (  a[i],d2b[j]);
+      
+      __m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys);
+      for (int n=0; n<Nm; n++) {
+	mvals[n]     = _mm_add_ps (mvals[n],     _mm_mul_ps(  ab   , coefs[n]));
+	mgrad[2*n+0] = _mm_add_ps (mgrad[2*n+0], _mm_mul_ps( dab[0], coefs[n]));
+	mgrad[2*n+1] = _mm_add_ps (mgrad[2*n+1], _mm_mul_ps( dab[1], coefs[n]));
+	mhess[3*n+0] = _mm_add_ps (mhess[3*n+0], _mm_mul_ps(d2ab[0], coefs[n]));
+	mhess[3*n+1] = _mm_add_ps (mhess[3*n+1], _mm_mul_ps(d2ab[1], coefs[n]));
+	mhess[3*n+2] = _mm_add_ps (mhess[3*n+2], _mm_mul_ps(d2ab[2], coefs[n]));
       }
+    }
   
   // Now, store results back
   float dxInv = spline->x_grid.delta_inv;
@@ -353,7 +614,7 @@ eval_multi_UBspline_2d_c_vgh (multi_UBspline_2d_c *spline,
 
 
 /************************************************************/
-/* 3D double-precision, complex evaulation functions        */
+/* 3D single-precision, complex evaulation functions        */
 /************************************************************/
 inline void
 eval_multi_UBspline_3d_c (multi_UBspline_3d_c *spline,
@@ -381,10 +642,6 @@ eval_multi_UBspline_3d_c (multi_UBspline_3d_c *spline,
   int ix = ((int *)&ixiyiz)[3];
   int iy = ((int *)&ixiyiz)[2];
   int iz = ((int *)&ixiyiz)[1];
-
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -433,10 +690,13 @@ eval_multi_UBspline_3d_c (multi_UBspline_3d_c *spline,
   __m128 mvals[Nm];
 
   // Zero out values;
-  __m128 mzero = _mm_set_ps(0.0, 0.0, 0.0, 0.0);
   for (int n=0; n<Nm; n++)     mvals[n] = _mm_setzero_ps();
 
   // Main compute loop
+  int xs = spline->x_stride;
+  int ys = spline->y_stride;
+  int zs = spline->z_stride;
+
   __m128 abc;
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++)

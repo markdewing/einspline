@@ -422,8 +422,8 @@ create_multi_UBspline_2d_c (Ugrid x_grid, Ugrid y_grid,
 #else
   posix_memalign ((void**)&spline->coefs, 16, 
 		  2*sizeof(float)*Nx*Ny*N);
-  init_sse_data();
 #endif
+  init_sse_data();
 
   return spline;
 }
