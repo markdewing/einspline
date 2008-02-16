@@ -328,7 +328,7 @@ eval_multi_UBspline_2d_c_vgl (multi_UBspline_2d_c *spline,
   int xs = spline->x_stride;
   int ys = spline->y_stride;
 
-  float lapl2[2*spline->num_splines];
+  complex_float lapl2[2*spline->num_splines];
   for (int n=0; n<spline->num_splines; n++) {
     vals[n] = 0.0;
     grads[2*n+0] = grads[2*n+1] = 0.0;
