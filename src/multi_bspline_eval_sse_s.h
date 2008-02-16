@@ -216,16 +216,6 @@ eval_multi_UBspline_2d_s(multi_UBspline_2d_s *spline,
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-  // This macro is used to give the pointer to coefficient data.
-  // i and j should be in the range [0,3].  Coefficients are read four
-  // at a time, so no j value is needed.
-#define P(i) (spline->coefs+(ix+(i))*xs+iy)
-  // Prefetch the data from main memory into cache so it's available
-  // when we need to use it.
-  _mm_prefetch ((const char*)P(0), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(1), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(3), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -317,16 +307,6 @@ eval_multi_UBspline_2d_s_vg (multi_UBspline_2d_s *spline,
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-  // This macro is used to give the pointer to coefficient data.
-  // i and j should be in the range [0,3].  Coefficients are read four
-  // at a time, so no j value is needed.
-#define P(i) (spline->coefs+(ix+(i))*xs+iy)
-  // Prefetch the data from main memory into cache so it's available
-  // when we need to use it.
-  _mm_prefetch ((const char*)P(0), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(1), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(3), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -440,16 +420,6 @@ eval_multi_UBspline_2d_s_vgl (multi_UBspline_2d_s *spline,
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-  // This macro is used to give the pointer to coefficient data.
-  // i and j should be in the range [0,3].  Coefficients are read four
-  // at a time, so no j value is needed.
-#define P(i) (spline->coefs+(ix+(i))*xs+iy)
-  // Prefetch the data from main memory into cache so it's available
-  // when we need to use it.
-  _mm_prefetch ((const char*)P(0), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(1), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(3), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -576,16 +546,6 @@ eval_multi_UBspline_2d_s_vgh (multi_UBspline_2d_s *spline,
 
   int xs = spline->x_stride;
   int ys = spline->y_stride;
-  // This macro is used to give the pointer to coefficient data.
-  // i and j should be in the range [0,3].  Coefficients are read four
-  // at a time, so no j value is needed.
-#define P(i) (spline->coefs+(ix+(i))*xs+iy)
-  // Prefetch the data from main memory into cache so it's available
-  // when we need to use it.
-  _mm_prefetch ((const char*)P(0), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(1), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(2), _MM_HINT_T0);
-  _mm_prefetch ((const char*)P(3), _MM_HINT_T0);
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]

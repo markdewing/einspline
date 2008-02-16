@@ -1307,8 +1307,8 @@ eval_UBspline_3d_c_vgl (UBspline_3d_c * restrict spline,
   *lapl = std::complex<float>(sec_deriv[0] + sec_deriv[2] * sec_deriv[4],
 			      sec_deriv[1] + sec_deriv[3] * sec_deriv[5]);
 #else
-  *lapl = (sec_deriv[0] + sec_deriv[2] * sec_deriv[4]) +
-    1.0fi*(sec_deriv[1] + sec_deriv[3] * sec_deriv[5]);
+  *lapl = (sec_deriv[0] + sec_deriv[2] + sec_deriv[4]) +
+    1.0fi*(sec_deriv[1] + sec_deriv[3] + sec_deriv[5]);
 #endif
 
 #undef P
