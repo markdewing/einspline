@@ -7,6 +7,13 @@
 
 <body bgcolor=#FFFFD0>
 <!--#include virtual="header.shtml" -->
+<h2> 1/18/08 </h2>
+Releasing einspline-0.8.0.  This release contains new functions which, for a 
+given evaluation point, evaluate a whole set of splines with a single
+evaluation call.  For large numbers of splines, this can result in
+a very significant speedup -- in some cases 4x!  The functions are
+very similar to the single-spline version.  Only uniform multi-splines
+have been implemented so far.
 <h2> 10/31/07 </h2>
 einspline-0.7.7 was released today.  It fixes an off-by-one error in the 
 construction of nonuniform B-spline bases.
