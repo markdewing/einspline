@@ -8,7 +8,7 @@
 <body bgcolor=#FFFFD0>
 <!--#include virtual="header.shtml" -->
 
-<center><h1> Fortran 77 interface </h1></center>
+<center><h1> Fortran 77 interface for multiple uniform splines </h1></center>
 The Fortran 77 wrappers provide a very similar interface to the
 einspline library as in C, with a few exceptions:
 <ul>
@@ -17,7 +17,7 @@ einspline library as in C, with a few exceptions:
   to ensure proper functioning on 64-bit platforms.  </li>
   <li> Since F77 has no concept of structures, uniform grid objects
   have been replaced by extra parameters to the
-  create_UBspline_<i>x</i> routines.
+  create_Multi_Ubspline_<i>x</i> routines.
   <li> For 2D and 3D splines, data is assumed to be stored in
   contiguous, row-order format (C-style).  If the data is statically
   allocated in F77, care must be take to ensure all element data is
@@ -30,7 +30,8 @@ The subroutine names and parameters are given below:
 <h3> <u>One-dimensional:</u></h3>
 <h4> Single-precision real</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_1D_S (x0, x1, num_x, x0_code, x0_val, x1_code, x1_val, data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_1D_S (x0, x1, num_x, x0_code, x0_val, 
+                                        x1_code, x1_val, num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -41,13 +42,24 @@ The subroutine names and parameters are given below:
 <tr> <td> x0_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Left BC value            </td> </tr>
 <tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
 <tr> <td> x1_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Right BC value           </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> REAL*4    </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*4    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_1D_S (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> REAL*4    </td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Double-precision real</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_1D_D (x0, x1, num_x, x0_code, x0_val, x1_code, x1_val, data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_1D_D (x0, x1, num_x, x0_code, x0_val, 
+                                        x1_code, x1_val, num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -58,13 +70,24 @@ The subroutine names and parameters are given below:
 <tr> <td> x0_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Left BC value            </td> </tr>
 <tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
 <tr> <td> x1_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Right BC value           </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> REAL*8    </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*8    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_1D_D (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> REAL*8    </td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Single-precision complex</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_1D_C (x0, x1, num_x, x0_code, x0_val, x1_code, x1_val, data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_1D_C (x0, x1, num_x, x0_code, x0_val, 
+                                        x1_code, x1_val, num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -75,13 +98,24 @@ The subroutine names and parameters are given below:
 <tr> <td> x0_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Left BC value            </td> </tr>
 <tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
 <tr> <td> x1_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Right BC value           </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_1D_C (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Double-precision complex</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_1D_Z (x0, x1, num_x, x0_code, x0_val, x1_code, x1_val, data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_1D_Z (x0, x1, num_x, x0_code, x0_val, 
+                                        x1_code, x1_val, num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -92,17 +126,27 @@ The subroutine names and parameters are given below:
 <tr> <td> x0_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Left BC value            </td> </tr>
 <tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
 <tr> <td> x1_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Right BC value           </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_1D_Z (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Data to interpolate      </td> </tr>
 </table>
 
 <h3> <u>Two-dimensional:</u></h3>
 <h4> Single-precision real</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_2D_S (x0, x1, num_x, y0, y1, num_y, 
-                                  x0_code, x0_val, x1_code, x1_val, 
-				  y0_code, y0_val, y1_code, y1_val, 
-                                  data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_2D_S (x0, x1, num_x, y0, y1, num_y, 
+                                        x0_code, x0_val, x1_code, x1_val, 
+			    	        y0_code, y0_val, y1_code, y1_val, 
+                                        num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -120,16 +164,26 @@ The subroutine names and parameters are given below:
 <tr> <td> y0_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Left y BC value          </td> </tr>
 <tr> <td> y1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right y BC type          </td> </tr>
 <tr> <td> y1_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Right y BC value         </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> REAL*4    </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*4    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_2D_S (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> REAL*4    </td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Double-precision real</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_2D_D (x0, x1, num_x, y0, y1, num_y, 
-                                  x0_code, x0_val, x1_code, x1_val, 
-				  y0_code, y0_val, y1_code, y1_val, 
-                                  data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_2D_D (x0, x1, num_x, y0, y1, num_y, 
+                                        x0_code, x0_val, x1_code, x1_val, 
+				        y0_code, y0_val, y1_code, y1_val, 
+                                        num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -147,16 +201,26 @@ The subroutine names and parameters are given below:
 <tr> <td> y0_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Left y BC value          </td> </tr>
 <tr> <td> y1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right y BC type          </td> </tr>
 <tr> <td> y1_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Right y BC value         </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> REAL*8    </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*8    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_2D_D (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> REAL*8    </td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Single-precision complex</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_2D_C (x0, x1, num_x, y0, y1, num_y, 
-                                  x0_code, x0_val, x1_code, x1_val, 
-				  y0_code, y0_val, y1_code, y1_val, 
-                                  data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_2D_C (x0, x1, num_x, y0, y1, num_y, 
+                                        x0_code, x0_val, x1_code, x1_val, 
+				        y0_code, y0_val, y1_code, y1_val, 
+                                        num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -174,16 +238,26 @@ The subroutine names and parameters are given below:
 <tr> <td> y0_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Left y BC value          </td> </tr>
 <tr> <td> y1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right y BC type          </td> </tr>
 <tr> <td> y1_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Right y BC value         </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_2D_C (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> COMPLEX*8</td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Double-precision complex</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_2D_Z (x0, x1, num_x, y0, y1, num_y, 
-                                  x0_code, x0_val, x1_code, x1_val, 
-				  y0_code, y0_val, y1_code, y1_val, 
-                                  data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_2D_Z (x0, x1, num_x, y0, y1, num_y, 
+                                        x0_code, x0_val, x1_code, x1_val, 
+				        y0_code, y0_val, y1_code, y1_val, 
+                                        num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -201,19 +275,29 @@ The subroutine names and parameters are given below:
 <tr> <td> y0_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Left y BC value          </td> </tr>
 <tr> <td> y1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right y BC type          </td> </tr>
 <tr> <td> y1_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Right y BC value         </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_2D_Z (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 
 <h3> <u>Three-dimensional:</u></h3>
 <h4> Single-precision real</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_3D_S (x0, x1, num_x, y0, y1, num_y, z0, z1, num_z,
-                                  x0_code, x0_val, x1_code, x1_val, 
-				  y0_code, y0_val, y1_code, y1_val, 
-				  z0_code, z0_val, z1_code, z1_val, 
-                                  data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_3D_S (x0, x1, num_x, y0, y1, num_y, z0, z1, num_z,
+                                        x0_code, x0_val, x1_code, x1_val, 
+				        y0_code, y0_val, y1_code, y1_val, 
+				        z0_code, z0_val, z1_code, z1_val, 
+                                        num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -238,17 +322,27 @@ The subroutine names and parameters are given below:
 <tr> <td> z0_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Left z BC value          </td> </tr>
 <tr> <td> z1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right z BC type          </td> </tr>
 <tr> <td> z1_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Right z BC value         </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> REAL*4    </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*4    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<br/>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_3D_S (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> REAL*4   </td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Double-precision real</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_3D_D (x0, x1, num_x, y0, y1, num_y, z0, z1, num_z,
-                                  x0_code, x0_val, x1_code, x1_val, 
-				  y0_code, y0_val, y1_code, y1_val, 
-				  z0_code, z0_val, z1_code, z1_val, 
-                                  data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_3D_D (x0, x1, num_x, y0, y1, num_y, z0, z1, num_z,
+                                        x0_code, x0_val, x1_code, x1_val, 
+				        y0_code, y0_val, y1_code, y1_val, 
+				        z0_code, z0_val, z1_code, z1_val, 
+                                        num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -273,17 +367,26 @@ The subroutine names and parameters are given below:
 <tr> <td> z0_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Left z BC value          </td> </tr>
 <tr> <td> z1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right z BC type          </td> </tr>
 <tr> <td> z1_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Right z BC value         </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> REAL*8    </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*8    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_3D_D (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> REAL*8   </td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Single-precision complex</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_3D_C (x0, x1, num_x, y0, y1, num_y, z0, z1, num_z,
-                                  x0_code, x0_val, x1_code, x1_val, 
-				  y0_code, y0_val, y1_code, y1_val, 
-				  z0_code, z0_val, z1_code, z1_val, 
-                                  data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_3D_C (x0, x1, num_x, y0, y1, num_y, z0, z1, num_z,
+                                        x0_code, x0_val, x1_code, x1_val, 
+				        y0_code, y0_val, y1_code, y1_val, 
+				        z0_code, z0_val, z1_code, z1_val, 
+                                        num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -308,17 +411,26 @@ The subroutine names and parameters are given below:
 <tr> <td> z0_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Left z BC value          </td> </tr>
 <tr> <td> z1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right z BC type          </td> </tr>
 <tr> <td> z1_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Right z BC value         </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_3D_C (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> COMPLEX*8</td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <h4> Double-precision complex</h4>
 <pre>
-<font color="blue" size="5">SUBROUTINE FCREATE_UBSPLINE_3D_Z (x0, x1, num_x, y0, y1, num_y, z0, z1, num_z,
-                                  x0_code, x0_val, x1_code, x1_val, 
-				  y0_code, y0_val, y1_code, y1_val, 
-				  z0_code, z0_val, z1_code, z1_val, 
-                                  data, spline)</font>
+<font color="blue" size="5">SUBROUTINE FCREATE_MULTI_UBSPLINE_3D_Z (x0, x1, num_x, y0, y1, num_y, z0, z1, num_z,
+                                        x0_code, x0_val, x1_code, x1_val, 
+				        y0_code, y0_val, y1_code, y1_val, 
+				        z0_code, z0_val, z1_code, z1_val, 
+                                        num_splines, spline)</font>
 </pre>
 <table CELLPADDING=2 frame=border rules=all>
 <tr> <td> Argument </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
@@ -343,8 +455,17 @@ The subroutine names and parameters are given below:
 <tr> <td> z0_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Left z BC value          </td> </tr>
 <tr> <td> z1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right z BC type          </td> </tr>
 <tr> <td> z1_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Right z BC value         </td> </tr>
-<tr> <td> data     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Data to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+</table>
+<pre>
+<font color="blue" size="5">SUBROUTINE FSET_MULTI_UBSPLINE_3D_Z (spline, spline_num, data)</font>
+</pre>
+<table CELLPADDING=2 frame=border rules=all>
+<tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
+<tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
+<tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> COMPLEX*16/td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <center> <h2><u> Spline destruction routine </u></h2> </center>
@@ -359,109 +480,114 @@ refer to them.
 </table>
 <br/>
 
-<center> <h2><u> Uniform spline evaulation routines </u></h2> </center>
+<center> <h2><u> Multiple, uniform spline evalulation routines </u></h2> </center>
+The evaluation routines for the multi-spline functions are very similiar to the single
+spline routines, but take arrays for the output arguments rather than single
+values.  Below, N in the number of splines in the multi-spline object and
+D is the dimensionality (i.e. 1,2, or 3).
+
 <h3><u> One-dimensional </u></h3>
 <pre>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S     (spline, x, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_D     (spline, x, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_C     (spline, x, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_Z     (spline, x, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_S     (spline, x, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_D     (spline, x, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_C     (spline, x, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_Z     (spline, x, val)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S_VG  (spline, x, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_D_VG  (spline, x, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_C_VG  (spline, x, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_Z_VG  (spline, x, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_S_VG  (spline, x, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_D_VG  (spline, x, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_C_VG  (spline, x, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_Z_VG  (spline, x, val, grad)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S_VGL (spline, x, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_D_VGL (spline, x, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_C_VGL (spline, x, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_Z_VGL (spline, x, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_S_VGL (spline, x, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_D_VGL (spline, x, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_C_VGL (spline, x, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_Z_VGL (spline, x, val, grad, lapl)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S_VGH (spline, x, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_D_VGH (spline, x, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_C_VGH (spline, x, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_Z_VGH (spline, x, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_S_VGH (spline, x, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_D_VGH (spline, x, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_C_VGH (spline, x, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_1D_Z_VGH (spline, x, val, grad, hess)</font>
 </pre>
 
 <table CELLPADDING=2 frame=border rules=all>
-<tr> <td> Argument </td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                   </td> </tr>
-<tr> <td> spline   </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                 </td> </tr>
-<tr> <td> x        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> Interpolation position        </td> </tr>
-<tr> <td> val      </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value            </td> </tr>
-<tr> <td> grad     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated first derivative </td> </tr>
-<tr> <td> lapl     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated second derivative </td> </tr>
-<tr> <td> hess     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated second derivative </td> </tr>
+<tr> <td> Argument </td> <td> Dimension</td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                   </td> </tr>
+<tr> <td> spline   </td> <td>          </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                 </td> </tr>
+<tr> <td> x        </td> <td>          </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> Interpolation position        </td> </tr>
+<tr> <td> val      </td> <td>    N     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value            </td> </tr>
+<tr> <td> grad     </td> <td>   D*N    </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated first derivative </td> </tr>
+<tr> <td> lapl     </td> <td>    N     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated second derivative </td> </tr>
+<tr> <td> hess     </td> <td>  D*D*N   </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated second derivative </td> </tr>
 </table>
 <br/>
 
 <h3><u> Two-dimensional </u></h3>
 <pre>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_S     (spline, x, y, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_D     (spline, x, y, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_C     (spline, x, y, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_Z     (spline, x, y, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_S     (spline, x, y, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_D     (spline, x, y, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_C     (spline, x, y, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_Z     (spline, x, y, val)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_S_VG  (spline, x, y, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_D_VG  (spline, x, y, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_C_VG  (spline, x, y, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_Z_VG  (spline, x, y, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_S_VG  (spline, x, y, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_D_VG  (spline, x, y, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_C_VG  (spline, x, y, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_Z_VG  (spline, x, y, val, grad)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_S_VGL (spline, x, y, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_D_VGL (spline, x, y, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_C_VGL (spline, x, y, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_Z_VGL (spline, x, y, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_S_VGL (spline, x, y, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_D_VGL (spline, x, y, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_C_VGL (spline, x, y, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_Z_VGL (spline, x, y, val, grad, lapl)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_S_VGH (spline, x, y, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_D_VGH (spline, x, y, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_C_VGH (spline, x, y, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_2D_Z_VGH (spline, x, y, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_S_VGH (spline, x, y, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_D_VGH (spline, x, y, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_C_VGH (spline, x, y, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_2D_Z_VGH (spline, x, y, val, grad, hess)</font>
 </pre>
 
 <table CELLPADDING=2 frame=border rules=all>
-<tr> <td> Argument </td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                        </td> </tr>
-<tr> <td> spline   </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                      </td> </tr>
-<tr> <td> x        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> x coordinate for interpolation     </td> </tr>
-<tr> <td> y        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> y coordinate for interpolation     </td> </tr>
-<tr> <td> val      </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value                 </td> </tr>
-<tr> <td> grad     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated gradient (2 elements) </td> </tr>
-<tr> <td> lapl     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Laplacian             </td> </tr>
-<tr> <td> hess     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Hessian (4 elements)  </td> </tr>
+<tr> <td> Argument </td> <td> Dimension</td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                        </td> </tr>
+<tr> <td> spline   </td> <td>          </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                      </td> </tr>
+<tr> <td> x        </td> <td>          </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> x coordinate for interpolation     </td> </tr>
+<tr> <td> y        </td> <td>          </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> y coordinate for interpolation     </td> </tr>
+<tr> <td> val      </td> <td>    N     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value                 </td> </tr>
+<tr> <td> grad     </td> <td>   D*N    </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated gradient (2 elements) </td> </tr>
+<tr> <td> lapl     </td> <td>    N     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Laplacian             </td> </tr>
+<tr> <td> hess     </td> <td>  D*D*N   </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Hessian (4 elements)  </td> </tr>
 </table>
 <br/>
 
 <h3><u> Three-dimensional </u></h3>
 <pre>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_S     (spline, x, y, z, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_D     (spline, x, y, z, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_C     (spline, x, y, z, val)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_Z     (spline, x, y, z, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_S     (spline, x, y, z, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_D     (spline, x, y, z, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_C     (spline, x, y, z, val)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_Z     (spline, x, y, z, val)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_S_VG  (spline, x, y, z, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_D_VG  (spline, x, y, z, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_C_VG  (spline, x, y, z, val, grad)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_Z_VG  (spline, x, y, z, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_S_VG  (spline, x, y, z, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_D_VG  (spline, x, y, z, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_C_VG  (spline, x, y, z, val, grad)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_Z_VG  (spline, x, y, z, val, grad)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_S_VGL (spline, x, y, z, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_D_VGL (spline, x, y, z, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_C_VGL (spline, x, y, z, val, grad, lapl)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_Z_VGL (spline, x, y, z, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_S_VGL (spline, x, y, z, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_D_VGL (spline, x, y, z, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_C_VGL (spline, x, y, z, val, grad, lapl)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_Z_VGL (spline, x, y, z, val, grad, lapl)</font>
 
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_S_VGH (spline, x, y, z, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_D_VGH (spline, x, y, z, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_C_VGH (spline, x, y, z, val, grad, hess)</font>
-<font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_3D_Z_VGH (spline, x, y, z, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_S_VGH (spline, x, y, z, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_D_VGH (spline, x, y, z, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_C_VGH (spline, x, y, z, val, grad, hess)</font>
+<font color="blue" size="5">SUBROUTINE FEVAL_MULTI_UBSPLINE_3D_Z_VGH (spline, x, y, z, val, grad, hess)</font>
 </pre>
 
 <table CELLPADDING=2 frame=border rules=all>
-<tr> <td> Argument </td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                        </td> </tr>
-<tr> <td> spline   </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                      </td> </tr>
-<tr> <td> x        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> x coordinate for interpolation     </td> </tr>
-<tr> <td> y        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> y coordinate for interpolation     </td> </tr>
-<tr> <td> z        </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> z coordinate for interpolation     </td> </tr>
-<tr> <td> val      </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value                 </td> </tr>
-<tr> <td> grad     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated gradient (3 elements) </td> </tr>
-<tr> <td> lapl     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Laplacian             </td> </tr>
-<tr> <td> hess     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Hessian (9 elements)  </td> </tr>
+<tr> <td> Argument </td> <td> Dimension</td> <td> Intent </td> <td> _S Type   </td> <td> _D Type   </td> <td> _C Type   </td> <td> _Z Type    </td> <td> Description                        </td> </tr>
+<tr> <td> spline   </td> <td>          </td> <td> IN     </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8 </td> <td> INTEGER*8  </td> <td> Spline handle                      </td> </tr>
+<tr> <td> x        </td> <td>          </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> x coordinate for interpolation     </td> </tr>
+<tr> <td> y        </td> <td>          </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> y coordinate for interpolation     </td> </tr>
+<tr> <td> z        </td> <td>          </td> <td> IN     </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8    </td> <td> REAL*8     </td> <td> z coordinate for interpolation     </td> </tr>
+<tr> <td> val      </td> <td>    N     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated value                 </td> </tr>
+<tr> <td> grad     </td> <td>   D*N    </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated gradient (3 elements) </td> </tr>
+<tr> <td> lapl     </td> <td>    N     </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Laplacian             </td> </tr>
+<tr> <td> hess     </td> <td>  D*D*N   </td> <td> OUT    </td> <td> REAL*4    </td> <td> REAL*8    </td> <td> COMPLEX*8 </td> <td> COMPLEX*16 </td> <td> Interpolated Hessian (9 elements)  </td> </tr>
 </table>
 <!--#include virtual="footer.shtml" -->
 </body>

@@ -359,7 +359,7 @@ refer to them.
 </table>
 <br/>
 
-<center> <h2><u> Uniform spline evaulation routines </u></h2> </center>
+<center> <h2><u> Uniform spline evalulation routines </u></h2> </center>
 <h3><u> One-dimensional </u></h3>
 <pre>
 <font color="blue" size="5">SUBROUTINE FEVAL_UBSPLINE_1D_S     (spline, x, val)</font>
