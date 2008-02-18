@@ -46,12 +46,14 @@ specified on a uniform grid (or multidimensional mesh), and those on
 nonuniform grids.  The uniform versions of the routines are documented
 below, followed by the nonuniform versions.
 
-<h3><a href="UBinterface.shtml"> Uniform Splines </a></h3>
-<h3><a href="NUBinterface.shtml"> Nonuniform Splines </a></h3>
+<h3><a href="UBinterface.shtml"> Single uniform Splines </a></h3>
+<h3><a href="multiUBinterface.shtml"> Multiple uniform Splines </a></h3>
+<h3><a href="NUBinterface.shtml"> Single nonuniform Splines </a></h3>
 
 <h2> FORTRAN 77 interface </h2>
-<h3><a href="F77uniform.shtml">    Uniform splines    </a></h3>
-<h3><a href="F77nonuniform.shtml"> Nonuniform splines </a></h3>
+<h3><a href="F77uniform.shtml">    Single uniform splines    </a></h3>
+<h3><a href="F77multi.shtml">    Multiple uniform splines    </a></h3>
+<h3><a href="F77nonuniform.shtml"> Single nonuniform splines </a></h3>
 
 <center>
 <h1> Python interface </h1>
