@@ -195,6 +195,17 @@ eval_multi_UBspline_1d_c_vgl (multi_UBspline_1d_c *spline,
 }
 
 
+inline void
+eval_multi_UBspline_1d_c_vgh (multi_UBspline_1d_c *spline,
+			      double x,
+			      complex_float* restrict vals,
+			      complex_float* restrict grads,
+			      complex_float* restrict hess)
+{
+  eval_multi_UBspline_1d_c_vgl (spline, x, vals, grads, hess);
+}
+
+
 /************************************************************/
 /* 2D single-precision, complex evaulation functions        */
 /************************************************************/

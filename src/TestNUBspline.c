@@ -30,6 +30,8 @@
 #define M_PI 3.1415926535897932384626433
 #endif
 
+double drand48();
+
 void
 PrintPassFail(bool pass)
 {
