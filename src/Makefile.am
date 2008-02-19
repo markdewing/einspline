@@ -26,7 +26,7 @@ AM_CCFLAGS = -g
 TestBspline_LDADD    = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 TestNUBspline_LDADD  = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_fbspline_LDADD  = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
-test_fmulti_bspline_LDADD=libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
+test_fmulti_bspline_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_blip_LDADD      = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_s_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_d_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
@@ -105,7 +105,7 @@ include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
                   bspline_eval_sse_z.h bspline_eval_std_c.h                   \
                   bspline_eval_std_d.h bspline_eval_std_s.h                   \
                   bspline_eval_std_z.h bspline.h bspline_structs.h            \
-                  fbspline.h fmulti_bspline fnubspline.h                      \
+                  fbspline.h fmulti_bspline.h  fnubspline.h                   \
                   multi_bspline_create.h      multi_bspline_structs.h         \
                   multi_bspline_eval_sse_c.h  multi_bspline_eval_sse_c.h      \
                   multi_bspline_eval_sse_d.h  multi_bspline_eval_sse_d.h      \

@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <math.h>
 extern __m128d *restrict A_d;
+extern double *restrict Ad, *restrict dAd, *restrict d2Ad;
 #include "multi_bspline_structs.h"
 
 #ifndef _MM_DDOT4_PD

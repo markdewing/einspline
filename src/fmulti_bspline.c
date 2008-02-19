@@ -1,5 +1,5 @@
 #include "multi_bspline_create.h"
-#include "bspline.h"
+#include "multi_bspline.h"
 #include "fmulti_bspline.h"
 #include "config.h"
 

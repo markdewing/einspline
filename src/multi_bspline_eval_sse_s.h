@@ -26,7 +26,10 @@
 #include <pmmintrin.h>
 #include <stdio.h>
 #include <math.h>
-extern __m128d *restrict A_d;
+extern __m128 *restrict A_s;
+extern const float* restrict   Af;
+extern const float* restrict  dAf;
+extern const float* restrict d2Af;
 #include "multi_bspline_structs.h"
 
 
