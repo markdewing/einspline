@@ -19,6 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "multi_bspline.h"
+#include "bspline.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -1216,7 +1217,7 @@ test_3d_complex_float_all()
 	  return -5;
 
       // Check laplacian
-      if (cdiff (norm_lapl[j], multi_lapl[j], 1.0e-3)) 
+      if (cdiff (norm_lapl[j], multi_lapl[j], 1.0e-2)) 
 	return -6;
     }
 
@@ -1241,7 +1242,7 @@ test_3d_complex_float_all()
 
       // Check hessian
       for (int n=0; n<9; n++) 
-	if (cdiff (norm_hess[9*j+n], multi_hess[9*j+n], 1.0e-3)) 
+	if (cdiff (norm_hess[9*j+n], multi_hess[9*j+n], 1.0e-2)) 
 	  return -9;
     }
   }
