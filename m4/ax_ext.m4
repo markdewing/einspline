@@ -52,6 +52,22 @@ AC_DEFUN([AX_EXT],
     fi
   ])
 
+ AC_CACHE_CHECK([whether sse4.1 is supported], [ax_have_sse4_1_ext],
+  [
+    ax_have_sse4_1_ext=no
+    if test "$((0x$ecx>>19&0x01))" = 1; then
+      ax_have_sse4_1_ext=yes
+    fi
+  ])
+
+ AC_CACHE_CHECK([whether sse4.2 is supported], [ax_have_sse4_2_ext],
+  [
+    ax_have_sse4_2_ext=no
+    if test "$((0x$ecx>>20&0x01))" = 1; then
+      ax_have_sse4_2_ext=yes
+    fi
+  ])
+
   if test "$ax_have_mmx_ext" = yes; then
     AC_DEFINE(HAVE_MMX,,[Support mmx instructions])
     AX_CHECK_COMPILER_FLAGS(-mmmx, SIMD_FLAGS="$SIMD_FLAGS -mmmx", [])
@@ -74,6 +90,14 @@ AC_DEFUN([AX_EXT],
 
   if test "$ax_have_ssse3_ext" = yes; then
     AC_DEFINE(HAVE_SSSE3,,[Support SSSE3 (Supplemental Streaming SIMD Extensions 3) instructions])
+  fi
+
+  if test "$ax_have_sse4_1_ext" = yes; then
+    AC_DEFINE(HAVE_SSE4_1,,[Support SSE4.1 (Streaming SIMD Extensions 4.1) instructions])
+  fi
+
+  if test "$ax_have_sse4_2_ext" = yes; then
+    AC_DEFINE(HAVE_SSE4_2,,[Support SSE4.2 (Streaming SIMD Extensions 4.2) instructions])
   fi
 
   AC_SUBST(SIMD_FLAGS)
