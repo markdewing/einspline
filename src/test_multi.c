@@ -1102,7 +1102,7 @@ test_2d_complex_float_all()
       // Check hessian
       for (int n=0; n<4; n++) 
 	if (cdiff (norm_hess[4*j+n], multi_hess[4*j+n], 1.0e-2)) {
-	  fprintf (stderr, "j = %d n = %d \n", j, n);
+	  fprintf (stderr, "\nj = %d n = %d \n", j, n);
 	  fprintf (stderr, "norm_hess[j]  = %1.6f + %1.6fi\n",  
 		   creal(norm_hess[4*j+n]), cimag(norm_hess[4*j+n]));
 	  fprintf (stderr, "multi_hess[j] = %1.6f + %1.6fi\n", 
@@ -1580,7 +1580,7 @@ test_2d_complex_double_all()
 		 creal(norm_lapl[j]), cimag(norm_lapl[j]));
 	fprintf (stderr, "multi_lapl[j] = %1.14e + %1.14ei\n",
 		 creal(multi_lapl[j]), cimag(multi_lapl[j]));
-	//return -5;
+	return -5;
       }
     }
 
@@ -1601,7 +1601,7 @@ test_2d_complex_double_all()
 		 creal(norm_vals[j]), cimag(norm_vals[j]));
 	fprintf (stderr, "multi_vals[j] = %1.14e + %1.14ei\n", 
 		 creal(multi_vals[j]), cimag(multi_vals[j]));
-	//return -6;
+	return -6;
       }
 
       // Check gradients
@@ -1617,7 +1617,7 @@ test_2d_complex_double_all()
 		   creal(norm_hess[4*j+n]), cimag(norm_hess[4*j+n]));
 	  fprintf (stderr, "multi_hess[j] = %1.14e + %1.15ei\n", 
 		   creal(multi_hess[4*j+n]), cimag(multi_hess[4*j+n]));
-	  //return -8;
+	  return -8;
 	}
     }
   }
@@ -1629,7 +1629,7 @@ int
 test_3d_complex_double_all()
 {
   int Nx=73; int Ny=91; int Nz = 29;
-  int num_splines = 21;
+  int num_splines = 20;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -1741,8 +1741,14 @@ test_3d_complex_double_all()
 
       // Check hessian
       for (int n=0; n<9; n++) 
-	if (zdiff (norm_hess[9*j+n], multi_hess[9*j+n], 1.0e-10)) 
+	if (zdiff (norm_hess[9*j+n], multi_hess[9*j+n], 1.0e-10))  {
+	  fprintf (stderr, "\nj = %d n = %d \n", j, n);
+	  fprintf (stderr, "norm_hess[j]  = %1.14e + %1.14ei\n",  
+		   creal(norm_hess[9*j+n]), cimag(norm_hess[9*j+n]));
+	  fprintf (stderr, "multi_hess[j] = %1.14e + %1.15ei\n", 
+		   creal(multi_hess[9*j+n]), cimag(multi_hess[9*j+n]));
 	  return -8;
+	}
     }
   }
   return 0;

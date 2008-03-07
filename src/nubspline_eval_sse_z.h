@@ -32,6 +32,7 @@
 
 
 #ifdef HAVE_SSE3
+#include <pmmintrin.h>
 #define _MM_DDOT4_PD(a0, a1, a2, a3, b0, b1, b2, b3, r)               \
 do {                                                                  \
    __m128d t0 = _mm_add_pd(_mm_mul_pd (a0, b0),_mm_mul_pd (a1, b1));  \

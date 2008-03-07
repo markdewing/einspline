@@ -684,6 +684,8 @@ eval_UBspline_2d_z_vgh (UBspline_2d_z * restrict spline,
   _MM_DOT4_PD (a01, a23, d2bP01i, d2bP23i, dhess[7]);
   _MM_DOT4_PD (da01, da23, dbP01r, dbP23r, dhess[2]);
   _MM_DOT4_PD (da01, da23, dbP01i, dbP23i, dhess[3]);
+  _MM_DOT4_PD (da01, da23, dbP01r, dbP23r, dhess[4]);
+  _MM_DOT4_PD (da01, da23, dbP01i, dbP23i, dhess[5]);
   
   // Multiply gradients and hessians by appropriate grid inverses
   double dxInv = spline->x_grid.delta_inv;
@@ -692,8 +694,8 @@ eval_UBspline_2d_z_vgh (UBspline_2d_z * restrict spline,
   grad[1] *= dyInv;
   hess[0] *= dxInv*dxInv;
   hess[1] *= dxInv*dyInv;
+  hess[2] *= dxInv*dyInv;
   hess[3] *= dyInv*dyInv;
-  hess[2] = hess[1];
 #undef P
 }
 
@@ -1915,26 +1917,31 @@ eval_UBspline_3d_z_vgh (UBspline_3d_z * restrict spline,
   _MM_DOT4_PD ( a01,  a23, bdcP01r, bdcP23r, dgrad[4]);
   _MM_DOT4_PD ( a01,  a23, bdcP01i, bdcP23i, dgrad[5]);
   
-  double *dhess = (double*) hess;
   // Compute hessian
   // d2x
-  _MM_DOT4_PD (d2a01, d2a23, bcP01r, bcP23r, dhess[0]);
-  _MM_DOT4_PD (d2a01, d2a23, bcP01i, bcP23i, dhess[1]);
+  _MM_DOT4_PD (d2a01, d2a23, bcP01r, bcP23r, ((double*)hess)[0]);
+  _MM_DOT4_PD (d2a01, d2a23, bcP01i, bcP23i, ((double*)hess)[1]);
   // d2y
-  _MM_DOT4_PD (a01, a23, d2bcP01r, d2bcP23r, dhess[8]);
-  _MM_DOT4_PD (a01, a23, d2bcP01i, d2bcP23i, dhess[9]);
+  _MM_DOT4_PD (a01, a23, d2bcP01r, d2bcP23r, ((double*)hess)[8]);
+  _MM_DOT4_PD (a01, a23, d2bcP01i, d2bcP23i, ((double*)hess)[9]);
   // d2z
-  _MM_DOT4_PD (a01, a23, bd2cP01r, bd2cP23r, dhess[16]);
-  _MM_DOT4_PD (a01, a23, bd2cP01i, bd2cP23i, dhess[17]);
+  _MM_DOT4_PD (a01, a23, bd2cP01r, bd2cP23r, ((double*)hess)[16]);
+  _MM_DOT4_PD (a01, a23, bd2cP01i, bd2cP23i, ((double*)hess)[17]);
   // dx dy
-  _MM_DOT4_PD (da01, da23, dbcP01r, dbcP23r, dhess[2]);
-  _MM_DOT4_PD (da01, da23, dbcP01i, dbcP23i, dhess[3]);
+  _MM_DOT4_PD (da01, da23, dbcP01r, dbcP23r, ((double*)hess)[2]);
+  _MM_DOT4_PD (da01, da23, dbcP01i, dbcP23i, ((double*)hess)[3]);
+  _MM_DOT4_PD (da01, da23, dbcP01r, dbcP23r, ((double*)hess)[6]);
+  _MM_DOT4_PD (da01, da23, dbcP01i, dbcP23i, ((double*)hess)[7]);
   // dx dz
-  _MM_DOT4_PD (da01, da23, bdcP01r, bdcP23r, dhess[4]);
-  _MM_DOT4_PD (da01, da23, bdcP01i, bdcP23i, dhess[5]);
+  _MM_DOT4_PD (da01, da23, bdcP01r, bdcP23r, ((double*)hess)[4]);
+  _MM_DOT4_PD (da01, da23, bdcP01i, bdcP23i, ((double*)hess)[5]);
+  _MM_DOT4_PD (da01, da23, bdcP01r, bdcP23r, ((double*)hess)[12]);
+  _MM_DOT4_PD (da01, da23, bdcP01i, bdcP23i, ((double*)hess)[13]);
   // dy dz
-  _MM_DOT4_PD (a01, a23, dbdcP01r, dbdcP23r, dhess[10]);
-  _MM_DOT4_PD (a01, a23, dbdcP01i, dbdcP23i, dhess[11]);
+  _MM_DOT4_PD (a01, a23, dbdcP01r, dbdcP23r, ((double*)hess)[10]);
+  _MM_DOT4_PD (a01, a23, dbdcP01i, dbdcP23i, ((double*)hess)[11]);
+  _MM_DOT4_PD (a01, a23, dbdcP01r, dbdcP23r, ((double*)hess)[14]);
+  _MM_DOT4_PD (a01, a23, dbdcP01i, dbdcP23i, ((double*)hess)[15]);
   // Multiply gradients and hessians by appropriate grid inverses
   double dxInv = spline->x_grid.delta_inv;
   double dyInv = spline->y_grid.delta_inv;
@@ -1946,12 +1953,15 @@ eval_UBspline_3d_z_vgh (UBspline_3d_z * restrict spline,
   hess[4] *= dyInv*dyInv;
   hess[8] *= dzInv*dzInv;
   hess[1] *= dxInv*dyInv;
+  hess[3] *= dxInv*dyInv;
   hess[2] *= dxInv*dzInv;
+  hess[6] *= dxInv*dzInv;
   hess[5] *= dyInv*dzInv;
+  hess[7] *= dyInv*dzInv;
   // Copy hessian elements into lower half of 3x3 matrix
-  hess[3] = hess[1];
-  hess[6] = hess[2];
-  hess[7] = hess[5];
+  // hess[3] = hess[1];
+  // hess[6] = hess[2];
+  // hess[7] = hess[5];
 
 #undef P
 }

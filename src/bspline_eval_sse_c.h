@@ -691,6 +691,8 @@ eval_UBspline_2d_c_vgh (UBspline_2d_c * restrict spline,
   float *hess_d2y_i  = ((float*)hess)+7;
   float *hess_dxdy_r = ((float*)hess)+2;
   float *hess_dxdy_i = ((float*)hess)+3;
+  float *hess_dydx_r = ((float*)hess)+4;
+  float *hess_dydx_i = ((float*)hess)+5;
   // Compute value
   _MM_DOT4_PS (a, bPr, *valr);
   _MM_DOT4_PS (a, bPi, *vali);
@@ -706,6 +708,8 @@ eval_UBspline_2d_c_vgh (UBspline_2d_c * restrict spline,
   _MM_DOT4_PS (a, d2bPi, *hess_d2y_i);
   _MM_DOT4_PS (da, dbPr, *hess_dxdy_r);
   _MM_DOT4_PS (da, dbPi, *hess_dxdy_i);
+  _MM_DOT4_PS (da, dbPr, *hess_dydx_r);
+  _MM_DOT4_PS (da, dbPi, *hess_dydx_i);
   
   float dxInv = spline->x_grid.delta_inv;
   float dyInv = spline->y_grid.delta_inv;
@@ -713,8 +717,8 @@ eval_UBspline_2d_c_vgh (UBspline_2d_c * restrict spline,
   grad[1] *= dyInv;
   hess[0] *= dxInv*dxInv;
   hess[1] *= dxInv*dyInv;
+  hess[2] *= dxInv*dyInv;
   hess[3] *= dyInv*dyInv;
-  hess[2] = hess[1];
 #undef P
 }
 
