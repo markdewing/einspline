@@ -55,6 +55,8 @@ case $host_cpu in
      case $ax_cv_gcc_x86_cpuid_0 in
        *:756e6547:*:*) # Intel
           case $ax_cv_gcc_x86_cpuid_1 in
+            *6f?:*:*:*) ax_gcc_arch="core2 nocona pentium3";;
+            1067?:*:*:*) ax_gcc_arch="core2 nocona pentium3";;
 	    *5[[48]]?:*:*:*) ax_gcc_arch="pentium-mmx pentium" ;;
 	    *5??:*:*:*) ax_gcc_arch=pentium ;;
 	    *6[[3456]]?:*:*:*) ax_gcc_arch="pentium2 pentiumpro" ;;

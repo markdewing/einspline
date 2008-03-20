@@ -6,7 +6,9 @@ endif
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
                   test_bspline_s test_bspline_d test_multi \
-                  test_fmulti_bspline time_multi $(CHECK_BLIPS)
+                  test_fmulti_bspline $(CHECK_BLIPS)
+
+bin_PROGRAMS = time_multi
 
 
 TestBspline_SOURCES         = TestBspline.c
