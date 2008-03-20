@@ -6,7 +6,7 @@ endif
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
                   test_bspline_s test_bspline_d test_multi \
-                  test_fmulti_bspline $(CHECK_BLIPS)
+                  test_fmulti_bspline time_multi $(CHECK_BLIPS)
 
 
 TestBspline_SOURCES         = TestBspline.c
@@ -19,6 +19,7 @@ endif
 test_bspline_s_SOURCES = test_bspline_s.c
 test_bspline_d_SOURCES = test_bspline_d.c
 test_multi_SOURCES     = test_multi.c
+time_multi_SOURCES     = time_multi.c
 
 LDADD = 
 AM_CCFLAGS = -g 
@@ -31,6 +32,7 @@ test_blip_LDADD      = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_s_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_d_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
+time_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 
 
 lib_LTLIBRARIES = libeinspline.la
