@@ -30,6 +30,14 @@ AC_MSG_CHECKING([optimal compiler flags])
 CFLAGS="${CFLAGS} -g"
 AC_MSG_RESULT([${CFLAGS}])
 
+# Check if we want static-only binaries
+AC_ARG_ENABLE(all-static, AC_HELP_STRING([--enable-all-static], [build static binaries (default=no)]))
+if test "$enable_all_static" = "yes"; then
+  ALL_STATIC="-all-static"
+else
+  ALL_STATIC=""
+fi
+AC_SUBST(ALL_STATIC)
 
 AC_ARG_ENABLE(altivec,[  --enable-altivec        enable PowerPC SIMD extensions])
 if test "x$enable_altivec" = "xyes"; then

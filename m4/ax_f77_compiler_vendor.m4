@@ -15,7 +15,7 @@ dnl @author Steven G. Johnson <stevenj@alum.mit.edu> with Matteo Frigo
 AC_DEFUN([AX_F77_COMPILER_VENDOR],
 [
 FSAVE="$FFLAGS"
-FFLAGS="$FFLAGS -fpp"
+dnl FFLAGS="$FFLAGS -fpp"
 AC_CACHE_CHECK([for _AC_LANG compiler vendor], ax_cv_[]_AC_LANG_ABBREV[]_compiler_vendor,
  [ax_cv_[]_AC_LANG_ABBREV[]_compiler_vendor=unknown
   # note: don't check for gcc first since some other compilers define __GNUC__

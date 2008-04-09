@@ -1,3 +1,5 @@
+AM_LDFLAGS = $(ALL_STATIC)
+
 if WANT_BLIPS
    MAYBE_BLIPS = blip_create.c blip_create.h
    CHECK_BLIPS = test_blip
