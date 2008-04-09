@@ -1157,14 +1157,10 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 
 
   // Zero-out values
-  __m128d mvals[N], mgrads[3*N], mhess[6*N];
-  for (int n=0; n<N; n++) {
-    mvals[n] = _mm_sub_pd (mvals[n], mvals[n]);
-    for (int i=0; i<3; i++)
-      mgrads[3*n+i] = _mm_sub_pd (mgrads[3*n+i],mgrads[3*n+i]);
-    for (int i=0; i<6; i++)
-      mhess[6*n+i]  = _mm_sub_pd (mhess[6*n+i], mhess[6*n+i]);
-  }   
+  //__m128d mvals[N], mgrads[3*N], mhess[6*N];
+  __m128d mpack[10*N];
+  for (int n=0; n<10*N; n++) 
+    mpack[n] = _mm_setzero_pd();
 
   __m128d a[4], b[4], c[4], da[4], db[4], dc[4], d2a[4], d2b[4], d2c[4];
   a[0]=_mm_unpacklo_pd(a01,a01); da[0]=_mm_unpacklo_pd(da01,da01); d2a[0]=_mm_unpacklo_pd(d2a01,d2a01);
@@ -1205,16 +1201,16 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 	__m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
 
 	for (int n=0; n<N; n++) {
-	  mvals[n]      = _mm_add_pd (mvals[n],      _mm_mul_pd (   abc   , coefs[n]));
-	  mgrads[3*n+0] = _mm_add_pd (mgrads[3*n+0], _mm_mul_pd ( d_abc[0], coefs[n]));
-	  mgrads[3*n+1] = _mm_add_pd (mgrads[3*n+1], _mm_mul_pd ( d_abc[1], coefs[n]));
-	  mgrads[3*n+2] = _mm_add_pd (mgrads[3*n+2], _mm_mul_pd ( d_abc[2], coefs[n]));
-	  mhess[6*n+0]  = _mm_add_pd (mhess[6*n+0],  _mm_mul_pd (d2_abc[0], coefs[n]));
-	  mhess[6*n+1]  = _mm_add_pd (mhess[6*n+1],  _mm_mul_pd (d2_abc[1], coefs[n]));
-	  mhess[6*n+2]  = _mm_add_pd (mhess[6*n+2],  _mm_mul_pd (d2_abc[2], coefs[n]));
-	  mhess[6*n+3]  = _mm_add_pd (mhess[6*n+3],  _mm_mul_pd (d2_abc[3], coefs[n]));
-	  mhess[6*n+4]  = _mm_add_pd (mhess[6*n+4],  _mm_mul_pd (d2_abc[4], coefs[n]));
-	  mhess[6*n+5]  = _mm_add_pd (mhess[6*n+5],  _mm_mul_pd (d2_abc[5], coefs[n]));
+	  mpack[10*n+0] = _mm_add_pd (mpack[10*n+0], _mm_mul_pd (   abc   , coefs[n]));
+	  mpack[10*n+1] = _mm_add_pd (mpack[10*n+1], _mm_mul_pd ( d_abc[0], coefs[n]));
+	  mpack[10*n+2] = _mm_add_pd (mpack[10*n+2], _mm_mul_pd ( d_abc[1], coefs[n]));
+	  mpack[10*n+3] = _mm_add_pd (mpack[10*n+3], _mm_mul_pd ( d_abc[2], coefs[n]));
+	  mpack[10*n+4] = _mm_add_pd (mpack[10*n+4], _mm_mul_pd (d2_abc[0], coefs[n]));
+	  mpack[10*n+5] = _mm_add_pd (mpack[10*n+5], _mm_mul_pd (d2_abc[1], coefs[n]));
+	  mpack[10*n+6] = _mm_add_pd (mpack[10*n+6], _mm_mul_pd (d2_abc[2], coefs[n]));
+	  mpack[10*n+7] = _mm_add_pd (mpack[10*n+7], _mm_mul_pd (d2_abc[3], coefs[n]));
+	  mpack[10*n+8] = _mm_add_pd (mpack[10*n+8], _mm_mul_pd (d2_abc[4], coefs[n]));
+	  mpack[10*n+9] = _mm_add_pd (mpack[10*n+9], _mm_mul_pd (d2_abc[5], coefs[n]));
 	}
       }
   
@@ -1223,16 +1219,16 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   double dzInv = spline->z_grid.delta_inv; 
   
   for (int n=0; n<N; n++) {
-    _mm_storeu_pd((double*)(vals+n),mvals[n]);
-    _mm_storeu_pd((double*)(grads+3*n+0),mgrads[3*n+0]);
-    _mm_storeu_pd((double*)(grads+3*n+1),mgrads[3*n+1]);
-    _mm_storeu_pd((double*)(grads+3*n+2),mgrads[3*n+2]);
-    _mm_storeu_pd((double*)(hess+9*n+0), mhess [6*n+0]);
-    _mm_storeu_pd((double*)(hess+9*n+1), mhess [6*n+1]);
-    _mm_storeu_pd((double*)(hess+9*n+2), mhess [6*n+2]);
-    _mm_storeu_pd((double*)(hess+9*n+4), mhess [6*n+3]);
-    _mm_storeu_pd((double*)(hess+9*n+5), mhess [6*n+4]);
-    _mm_storeu_pd((double*)(hess+9*n+8), mhess [6*n+5]);
+    _mm_storeu_pd((double*)(vals+n)     , mpack[10*n+0]);
+    _mm_storeu_pd((double*)(grads+3*n+0), mpack[10*n+1]);
+    _mm_storeu_pd((double*)(grads+3*n+1), mpack[10*n+2]);
+    _mm_storeu_pd((double*)(grads+3*n+2), mpack[10*n+3]);
+    _mm_storeu_pd((double*)(hess+9*n+0),  mpack[10*n+4]);
+    _mm_storeu_pd((double*)(hess+9*n+1),  mpack[10*n+5]);
+    _mm_storeu_pd((double*)(hess+9*n+2),  mpack[10*n+6]);
+    _mm_storeu_pd((double*)(hess+9*n+4),  mpack[10*n+7]);
+    _mm_storeu_pd((double*)(hess+9*n+5),  mpack[10*n+8]);
+    _mm_storeu_pd((double*)(hess+9*n+8),  mpack[10*n+9]);
   }
   for (int n=0; n<N; n++) {
     grads[3*n+0] *= dxInv;
