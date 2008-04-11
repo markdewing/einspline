@@ -1179,12 +1179,25 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   c[3]=_mm_unpackhi_pd(c23,c23); dc[3]=_mm_unpackhi_pd(dc23,dc23); d2c[3]=_mm_unpackhi_pd(d2c23,d2c23);
  
   // Main computation loop
-  const int bs = 64;
+  const int bs = 128;
   for (int nstart=0; nstart<N; nstart += bs) {
     for (int i=0; i<4; i++)
       for (int j=0; j<4; j++) 
 	for (int k=0; k<4; k++) {
 	  __m128d abc, d_abc[3], d2_abc[6];
+	  __m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+
+#ifdef USE_PREFETCH
+	  int nextIndex = i<<4 + j<<2 + k + 1;
+	  int iNext = nextIndex >> 4; 
+	  int jNext = (nextIndex >> 2) & 3;
+	  int kNext = nextIndex & 3;
+	  if (nextIndex < 64) {
+	    __m128d* restrict nextCoefs = (__m128d*)(spline->coefs + (ix+iNext)*xs + (iy +jNext)*ys + (iz+kNext)*zs);
+	    for (int i=0,n=nstart; (n<N && i<bs); n++,i++)
+	      _mm_prefetch((const char*) &nextCoefs[n], _MM_HINT_NTA);
+	  }
+#endif
 	  
 	  abc         = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
 	  
@@ -1200,7 +1213,6 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 	  d2_abc[5]   = _mm_mul_pd (_mm_mul_pd(  a[i],   b[j]), d2c[k]);
 	  
 	  
-	  __m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
 	  
 	  for (int i=0,n=nstart; (n<N && i<bs); n++,i++) {
 	    mpack[10*n+0] = _mm_add_pd (mpack[10*n+0], _mm_mul_pd (   abc   , coefs[n]));
