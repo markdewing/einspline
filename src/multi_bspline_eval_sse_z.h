@@ -1179,13 +1179,15 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   c[3]=_mm_unpackhi_pd(c23,c23); dc[3]=_mm_unpackhi_pd(dc23,dc23); d2c[3]=_mm_unpackhi_pd(d2c23,d2c23);
  
   // Main computation loop
-  const int bs = 128;
+  const int bs = 64;
   for (int nstart=0; nstart<N; nstart += bs) {
     for (int i=0; i<4; i++)
-      for (int j=0; j<4; j++) 
-	for (int k=0; k<4; k++) {
-	  __m128d abc, d_abc[3], d2_abc[6];
-	  __m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+      for (int j=0; j<4; j++) {
+	  __m128d abc[40];
+	  __m128d* restrict c0 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+0)*zs);
+	  __m128d* restrict c1 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+1)*zs);
+	  __m128d* restrict c2 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+2)*zs);
+	  __m128d* restrict c3 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+3)*zs);
 
 #ifdef USE_PREFETCH
 	  int nextIndex = i<<4 + j<<2 + k + 1;
@@ -1198,35 +1200,38 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 	      _mm_prefetch((const char*) &nextCoefs[n], _MM_HINT_NTA);
 	  }
 #endif
-	  
-	  abc         = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
-	  
-	  d_abc[0]    = _mm_mul_pd (_mm_mul_pd(da[i],  b[j]),  c[k]);
-	  d_abc[1]    = _mm_mul_pd (_mm_mul_pd( a[i], db[j]),  c[k]);
-	  d_abc[2]    = _mm_mul_pd (_mm_mul_pd( a[i],  b[j]), dc[k]);
-	  
-	  d2_abc[0]   = _mm_mul_pd (_mm_mul_pd(d2a[i],   b[j]),   c[k]);
-	  d2_abc[1]   = _mm_mul_pd (_mm_mul_pd( da[i],  db[j]),   c[k]);
-	  d2_abc[2]   = _mm_mul_pd (_mm_mul_pd( da[i],   b[j]),  dc[k]);
-	  d2_abc[3]   = _mm_mul_pd (_mm_mul_pd(  a[i], d2b[j]),   c[k]);
-	  d2_abc[4]   = _mm_mul_pd (_mm_mul_pd(  a[i],  db[j]),  dc[k]);
-	  d2_abc[5]   = _mm_mul_pd (_mm_mul_pd(  a[i],   b[j]), d2c[k]);
-	  
-	  
-	  
-	  for (int i=0,n=nstart; (n<N && i<bs); n++,i++) {
-	    mpack[10*n+0] = _mm_add_pd (mpack[10*n+0], _mm_mul_pd (   abc   , coefs[n]));
-	    mpack[10*n+1] = _mm_add_pd (mpack[10*n+1], _mm_mul_pd ( d_abc[0], coefs[n]));
-	    mpack[10*n+2] = _mm_add_pd (mpack[10*n+2], _mm_mul_pd ( d_abc[1], coefs[n]));
-	    mpack[10*n+3] = _mm_add_pd (mpack[10*n+3], _mm_mul_pd ( d_abc[2], coefs[n]));
-	    mpack[10*n+4] = _mm_add_pd (mpack[10*n+4], _mm_mul_pd (d2_abc[0], coefs[n]));
-	    mpack[10*n+5] = _mm_add_pd (mpack[10*n+5], _mm_mul_pd (d2_abc[1], coefs[n]));
-	    mpack[10*n+6] = _mm_add_pd (mpack[10*n+6], _mm_mul_pd (d2_abc[2], coefs[n]));
-	    mpack[10*n+7] = _mm_add_pd (mpack[10*n+7], _mm_mul_pd (d2_abc[3], coefs[n]));
-	    mpack[10*n+8] = _mm_add_pd (mpack[10*n+8], _mm_mul_pd (d2_abc[4], coefs[n]));
-	    mpack[10*n+9] = _mm_add_pd (mpack[10*n+9], _mm_mul_pd (d2_abc[5], coefs[n]));
+	  for (int k=0; k<4; k++) {
+	    abc[k+4*0]   = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
+	    
+	    abc[k+4*1]   = _mm_mul_pd (_mm_mul_pd(da[i],  b[j]),  c[k]);
+	    abc[k+4*2]   = _mm_mul_pd (_mm_mul_pd( a[i], db[j]),  c[k]);
+	    abc[k+4*3]   = _mm_mul_pd (_mm_mul_pd( a[i],  b[j]), dc[k]);
+	    
+	    abc[k+4*4]   = _mm_mul_pd (_mm_mul_pd(d2a[i],   b[j]),   c[k]);
+	    abc[k+4*5]   = _mm_mul_pd (_mm_mul_pd( da[i],  db[j]),   c[k]);
+	    abc[k+4*6]   = _mm_mul_pd (_mm_mul_pd( da[i],   b[j]),  dc[k]);
+	    abc[k+4*7]   = _mm_mul_pd (_mm_mul_pd(  a[i], d2b[j]),   c[k]);
+	    abc[k+4*8]   = _mm_mul_pd (_mm_mul_pd(  a[i],  db[j]),  dc[k]);
+	    abc[k+4*9]   = _mm_mul_pd (_mm_mul_pd(  a[i],   b[j]), d2c[k]);
 	  }
-	}
+	  
+	  for (int m=0,n=nstart; (n<N && m<bs); n++,m++) 
+	    for (int s=0; s<10; s++) {
+	      __m128d p0 = _mm_mul_pd(abc[4*s+0], c0[n]);
+	      __m128d p1 = _mm_mul_pd(abc[4*s+1], c1[n]);
+	      __m128d p2 = _mm_mul_pd(abc[4*s+2], c2[n]);
+	      __m128d p3 = _mm_mul_pd(abc[4*s+3], c3[n]);
+	      __m128d sum0 = _mm_add_pd (p0, p1);
+	      __m128d sum1 = _mm_add_pd (p2, p3);
+	      __m128d sum2 = _mm_add_pd (sum0, sum1);
+
+	      mpack[10*n+s] = _mm_add_pd (mpack[10*n+s], sum2);
+	      //					  mm_add_pd(_mm_mul_pd (   abc[s], c0[n])), _mm_mul_pd(abc[s], c1[n]))
+	  //mpack[n+s*N] = _mm_add_pd (mpack[n+s*N], _mm_mul_pd (
+	  //abc[s], coefs[n]));
+	    }
+	  
+      }
   }
     
   double dxInv = spline->x_grid.delta_inv;
