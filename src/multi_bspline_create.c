@@ -109,7 +109,7 @@ create_multi_UBspline_1d_s (Ugrid x_grid, BCtype_s xBC, int num_splines)
 #ifndef HAVE_SSE
   spline->coefs = malloc (sizeof(float)*Nx*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, (sizeof(float)*Nx*N));
+  posix_memalign ((void**)&spline->coefs, 64, (sizeof(float)*Nx*N));
   init_sse_data();    
 #endif
 
@@ -167,7 +167,7 @@ create_multi_UBspline_2d_s (Ugrid x_grid, Ugrid y_grid,
 #ifndef HAVE_SSE
   spline->coefs = malloc ((size_t)sizeof(float)*Nx*Ny*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, 
+  posix_memalign ((void**)&spline->coefs, 64, 
 		  sizeof(float)*Nx*Ny*N);
   init_sse_data();
 #endif
@@ -255,7 +255,7 @@ create_multi_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #ifndef HAVE_SSE
   spline->coefs      = malloc (sizeof(float)*Nx*Ny*Nz*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, 
+  posix_memalign ((void**)&spline->coefs, 64, 
 		  ((size_t)sizeof(float)*Nx*Ny*Nz*N));
   init_sse_data();
 #endif
@@ -350,7 +350,7 @@ create_multi_UBspline_1d_c (Ugrid x_grid, BCtype_c xBC, int num_splines)
 #ifndef HAVE_SSE
   spline->coefs = malloc (2*sizeof(float)*N*num_splines);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, 2*sizeof(float)*N*num_splines);
+  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(float)*N*num_splines);
   init_sse_data();    
 #endif
 
@@ -420,7 +420,7 @@ create_multi_UBspline_2d_c (Ugrid x_grid, Ugrid y_grid,
 #ifndef HAVE_SSE
   spline->coefs = malloc (2*sizeof(float)*Nx*Ny*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, 
+  posix_memalign ((void**)&spline->coefs, 64, 
 		  2*sizeof(float)*Nx*Ny*N);
 #endif
   init_sse_data();
@@ -529,7 +529,7 @@ create_multi_UBspline_3d_c (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #ifndef HAVE_SSE
   spline->coefs      = malloc ((size_t)2*sizeof(float)*Nx*Ny*Nz*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, (size_t)2*sizeof(float)*Nx*Ny*Nz*N);
+  posix_memalign ((void**)&spline->coefs, 64, (size_t)2*sizeof(float)*Nx*Ny*Nz*N);
   init_sse_data();
 #endif
 
@@ -677,7 +677,7 @@ create_multi_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, int num_splines)
 #ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(double)*Nx*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, sizeof(double)*Nx*N);
+  posix_memalign ((void**)&spline->coefs, 64, sizeof(double)*Nx*N);
   init_sse_data();
 #endif
     
@@ -735,7 +735,7 @@ create_multi_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,
 #ifndef HAVE_SSE2
   spline->coefs = malloc (sizeof(double)*Nx*Ny*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, (sizeof(double)*Nx*Ny*N));
+  posix_memalign ((void**)&spline->coefs, 64, (sizeof(double)*Nx*Ny*N));
   init_sse_data();
 #endif
 
@@ -826,7 +826,7 @@ create_multi_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #ifndef HAVE_SSE2
   spline->coefs      = malloc ((size_t)sizeof(double)*Nx*Ny*Nz*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, ((size_t)sizeof(double)*Nx*Ny*Nz*N));
+  posix_memalign ((void**)&spline->coefs, 64, ((size_t)sizeof(double)*Nx*Ny*Nz*N));
   init_sse_data();
 #endif
 
@@ -923,7 +923,7 @@ create_multi_UBspline_1d_z (Ugrid x_grid, BCtype_z xBC, int num_splines)
 #ifndef HAVE_SSE2
   spline->coefs = malloc (2*sizeof(double)*Nx*num_splines);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, 2*sizeof(double)*Nx*num_splines);
+  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(double)*Nx*num_splines);
   init_sse_data();   
 #endif
  
@@ -967,7 +967,7 @@ create_multi_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
   spline->tcode  = DOUBLE_COMPLEX;
   spline->xBC = xBC; 
   spline->yBC = yBC;
-   spline->num_splines = num_splines;
+  spline->num_splines = num_splines;
 
   // Setup internal variables
   int Mx = x_grid.num;
@@ -991,7 +991,7 @@ create_multi_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
 #ifndef HAVE_SSE2
   spline->coefs = malloc (2*sizeof(double)*Nx*Ny*num_splines);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, 2*sizeof(double)*Nx*Ny*num_splines);
+  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(double)*Nx*Ny*num_splines);
   init_sse_data();
 #endif
 
@@ -1088,14 +1088,20 @@ create_multi_UBspline_3d_z (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   z_grid.delta_inv = 1.0/z_grid.delta;
   spline->z_grid   = z_grid;
 
-  spline->x_stride = Ny*Nz*num_splines;
-  spline->y_stride = Nz*num_splines;
-  spline->z_stride = num_splines;
+  int N = num_splines;
+#ifdef HAVE_SSE2
+  if (N & 3)
+    N += 4-(N & 3);
+#endif
+
+  spline->x_stride = Ny*Nz*N;
+  spline->y_stride = Nz*N;
+  spline->z_stride = N;
 
 #ifndef HAVE_SSE2
-  spline->coefs      = malloc ((size_t)2*sizeof(double)*Nx*Ny*Nz*num_splines);
+  spline->coefs      = malloc ((size_t)2*sizeof(double)*Nx*Ny*Nz*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 16, (size_t)2*sizeof(double)*Nx*Ny*Nz*num_splines);
+  posix_memalign ((void**)&spline->coefs, 64, (size_t)2*sizeof(double)*Nx*Ny*Nz*N);
   init_sse_data();
 #endif
 
@@ -1135,43 +1141,44 @@ set_multi_UBspline_3d_z (multi_UBspline_3d_z* spline, int num, complex_double *d
   complex_double *coefs = spline->coefs + num;
 
   int N = spline->num_splines;
+  int zs = spline->z_stride;
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) 
     for (int iz=0; iz<Mz; iz++) {
       int doffset = 2*(iy*Mz+iz);
-      int coffset = 2*(iy*Nz+iz)*N;
+      int coffset = 2*(iy*Nz+iz)*zs;
       // Real part
       find_coefs_1d_d (spline->x_grid, xBC_r, ((double*)data)+doffset, 2*My*Mz,
-		       ((double*)coefs)+coffset, 2*Ny*Nz*N);
+		       ((double*)coefs)+coffset, 2*Ny*Nz*zs);
       // Imag part
       find_coefs_1d_d (spline->x_grid, xBC_i, ((double*)data)+doffset+1, 2*My*Mz,
-		       ((double*)coefs)+coffset+1, 2*Ny*Nz*N);
+		       ((double*)coefs)+coffset+1, 2*Ny*Nz*zs);
     }
   
   // Now, solve in the Y-direction
   for (int ix=0; ix<Nx; ix++) 
     for (int iz=0; iz<Nz; iz++) {
-      int doffset = 2*(ix*Ny*Nz + iz)*N;
-      int coffset = 2*(ix*Ny*Nz + iz)*N;
+      int doffset = 2*(ix*Ny*Nz + iz)*zs;
+      int coffset = 2*(ix*Ny*Nz + iz)*zs;
       // Real part
-      find_coefs_1d_d (spline->y_grid, yBC_r, ((double*)coefs)+doffset, 2*Nz*N, 
-		       ((double*)coefs)+coffset, 2*Nz*N);
+      find_coefs_1d_d (spline->y_grid, yBC_r, ((double*)coefs)+doffset, 2*Nz*zs, 
+		       ((double*)coefs)+coffset, 2*Nz*zs);
       // Imag part
-      find_coefs_1d_d (spline->y_grid, yBC_i, ((double*)coefs)+doffset+1, 2*Nz*N, 
-		       ((double*)coefs)+coffset+1, 2*Nz*N);
+      find_coefs_1d_d (spline->y_grid, yBC_i, ((double*)coefs)+doffset+1, 2*Nz*zs, 
+		       ((double*)coefs)+coffset+1, 2*Nz*zs);
     }
 
   // Now, solve in the Z-direction
   for (int ix=0; ix<Nx; ix++) 
     for (int iy=0; iy<Ny; iy++) {
-      int doffset = 2*((ix*Ny+iy)*Nz)*N;
-      int coffset = 2*((ix*Ny+iy)*Nz)*N;
+      int doffset = 2*((ix*Ny+iy)*Nz)*zs;
+      int coffset = 2*((ix*Ny+iy)*Nz)*zs;
       // Real part
-      find_coefs_1d_d (spline->z_grid, zBC_r, ((double*)coefs)+doffset, 2*N, 
-		       ((double*)coefs)+coffset, 2*N);
+      find_coefs_1d_d (spline->z_grid, zBC_r, ((double*)coefs)+doffset, 2*zs, 
+		       ((double*)coefs)+coffset, 2*zs);
       // Imag part
-      find_coefs_1d_d (spline->z_grid, zBC_i, ((double*)coefs)+doffset+1, 2*N, 
-		       ((double*)coefs)+coffset+1, 2*N);
+      find_coefs_1d_d (spline->z_grid, zBC_i, ((double*)coefs)+doffset+1, 2*zs, 
+		       ((double*)coefs)+coffset+1, 2*zs);
     }
 }
 

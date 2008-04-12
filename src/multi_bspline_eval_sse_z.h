@@ -756,7 +756,7 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 // 	for (int n=0; n<N; n++)
 // 	  _mm_prefetch((const char*)&(next_coefs[n]), _MM_HINT_T0);
 
-	__m128d abc[4];
+      __m128d abc[4];
       for (int k=0; k<4; k++) 
 	abc[k] = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
       __m128d* restrict coefs0 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+0)*zs);
@@ -1188,7 +1188,7 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   c[3]=_mm_unpackhi_pd(c23,c23); dc[3]=_mm_unpackhi_pd(dc23,dc23); d2c[3]=_mm_unpackhi_pd(d2c23,d2c23);
  
   // Main computation loop
-  const int bs = 64;
+  const int bs = 32;
   for (int nstart=0; nstart<N; nstart += bs) {
     for (int i=0; i<4; i++)
       for (int j=0; j<4; j++) {
@@ -1209,6 +1209,11 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 	      _mm_prefetch((const char*) &nextCoefs[n], _MM_HINT_NTA);
 	  }
 #endif
+	  _mm_prefetch((const char*) &(c0[0]), _MM_HINT_T0);
+	  _mm_prefetch((const char*) &(c1[0]), _MM_HINT_T0);
+	  _mm_prefetch((const char*) &(c2[0]), _MM_HINT_T0);
+	  _mm_prefetch((const char*) &(c3[0]), _MM_HINT_T0);
+	  _mm_prefetch((const char*) &(c3[0]), _MM_HINT_T0);
 	  for (int k=0; k<4; k++) {
 	    abc[k+4*0]   = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
 	    
@@ -1223,8 +1228,10 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 	    abc[k+4*8]   = _mm_mul_pd (_mm_mul_pd(  a[i],  db[j]),  dc[k]);
 	    abc[k+4*9]   = _mm_mul_pd (_mm_mul_pd(  a[i],   b[j]), d2c[k]);
 	  }
+	  int end; 
+	  if (N < nstart+bs)   end = N; else end = nstart+bs;
 	  
-	  for (int m=0,n=nstart; (n<N && m<bs); n++,m++) 
+	  for (int n=nstart; n<end; n++) 
 	    for (int s=0; s<10; s++) {
 	      __m128d p0 = _mm_mul_pd(abc[4*s+0], c0[n]);
 	      __m128d p1 = _mm_mul_pd(abc[4*s+1], c1[n]);
@@ -1248,16 +1255,16 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   double dzInv = spline->z_grid.delta_inv; 
   
   for (int n=0; n<N; n++) {
-    _mm_storeu_pd((double*)(vals+n)     , mpack[10*n+0]);
-    _mm_storeu_pd((double*)(grads+3*n+0), mpack[10*n+1]);
-    _mm_storeu_pd((double*)(grads+3*n+1), mpack[10*n+2]);
-    _mm_storeu_pd((double*)(grads+3*n+2), mpack[10*n+3]);
-    _mm_storeu_pd((double*)(hess+9*n+0),  mpack[10*n+4]);
-    _mm_storeu_pd((double*)(hess+9*n+1),  mpack[10*n+5]);
-    _mm_storeu_pd((double*)(hess+9*n+2),  mpack[10*n+6]);
-    _mm_storeu_pd((double*)(hess+9*n+4),  mpack[10*n+7]);
-    _mm_storeu_pd((double*)(hess+9*n+5),  mpack[10*n+8]);
-    _mm_storeu_pd((double*)(hess+9*n+8),  mpack[10*n+9]);
+    _mm_store_pd((double*)(vals+n)     , mpack[10*n+0]);
+    _mm_store_pd((double*)(grads+3*n+0), mpack[10*n+1]);
+    _mm_store_pd((double*)(grads+3*n+1), mpack[10*n+2]);
+    _mm_store_pd((double*)(grads+3*n+2), mpack[10*n+3]);
+    _mm_store_pd((double*)(hess+9*n+0),  mpack[10*n+4]);
+    _mm_store_pd((double*)(hess+9*n+1),  mpack[10*n+5]);
+    _mm_store_pd((double*)(hess+9*n+2),  mpack[10*n+6]);
+    _mm_store_pd((double*)(hess+9*n+4),  mpack[10*n+7]);
+    _mm_store_pd((double*)(hess+9*n+5),  mpack[10*n+8]);
+    _mm_store_pd((double*)(hess+9*n+8),  mpack[10*n+9]);
   }
   for (int n=0; n<N; n++) {
     grads[3*n+0] *= dxInv;

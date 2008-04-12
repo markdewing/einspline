@@ -1766,7 +1766,7 @@ void
 time_3d_complex_double_all()
 {
   int Nx=37; int Ny=37; int Nz = 37;
-  int num_splines = 128;
+  int num_splines = 127;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
