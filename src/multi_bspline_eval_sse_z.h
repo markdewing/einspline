@@ -768,7 +768,7 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 	__m128d p0 =  _mm_mul_pd (abc[0], coefs0[n]);	__m128d p1 =  _mm_mul_pd (abc[1], coefs1[n]);
 	__m128d s0 =  _mm_add_pd (p0, p1);
 	__m128d p2 =  _mm_mul_pd (abc[2], coefs2[n]);	__m128d p3 =  _mm_mul_pd (abc[3], coefs3[n]);
-	__m128d s1 =  _mm_add_pd (p1, p2);
+	__m128d s1 =  _mm_add_pd (p2, p3);
 	mvals[n] = _mm_add_pd (mvals[n], _mm_add_pd(s0, s1));
       }
     }
