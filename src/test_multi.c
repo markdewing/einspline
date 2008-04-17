@@ -1629,7 +1629,7 @@ int
 test_3d_complex_double_all()
 {
   int Nx=73; int Ny=91; int Nz = 29;
-  int num_splines = 20;
+  int num_splines = 21;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -1676,6 +1676,16 @@ test_3d_complex_double_all()
     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
     double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
     
+    ///////////////////////
+    // Check value only  //
+    ///////////////////////
+    eval_multi_UBspline_3d_z (multi_spline, x, y, z, multi_vals);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_z (norm_splines[j], x, y, z, &(norm_vals[j]));
+    for (int j=0; j<num_splines; j++) 
+      // Check value
+      if (zdiff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -1;
 
     ///////////////////////
     // Check VG routine  //
@@ -1688,12 +1698,12 @@ test_3d_complex_double_all()
     for (int j=0; j<num_splines; j++) {
       // Check value
       if (zdiff(norm_vals[j], multi_vals[j], 1.0e-12))
-	return -1;
+	return -2;
       
       // Check gradients
       for (int n=0; n<3; n++) 
 	if (zdiff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-12))
-	  return -2;
+	  return -3;
     }
 
 
@@ -1708,16 +1718,16 @@ test_3d_complex_double_all()
     for (int j=0; j<num_splines; j++) {
       // Check value
       if (zdiff(norm_vals[j], multi_vals[j], 1.0e-12))
-	return -3;
+	return -4;
 
       // Check gradients
       for (int n=0; n<3; n++) 
 	if (zdiff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-10))
-	  return -4;
+	  return -5;
 
       // Check laplacian
       if (zdiff (norm_lapl[j], multi_lapl[j], 1.0e-10)) 
-	return -5;
+	return -6;
     }
 
 
@@ -1732,12 +1742,12 @@ test_3d_complex_double_all()
     for (int j=0; j<num_splines; j++) {
       // Check value
       if (zdiff(norm_vals[j], multi_vals[j], 1.0e-12))
-	return -6;
+	return -7;
 
       // Check gradients
       for (int n=0; n<3; n++) 
 	if (zdiff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-12)) 
-	  return -7;
+	  return -8;
 
       // Check hessian
       for (int n=0; n<9; n++) 
@@ -1747,7 +1757,7 @@ test_3d_complex_double_all()
 		   creal(norm_hess[9*j+n]), cimag(norm_hess[9*j+n]));
 	  fprintf (stderr, "multi_hess[j] = %1.14e + %1.15ei\n", 
 		   creal(multi_hess[9*j+n]), cimag(multi_hess[9*j+n]));
-	  return -8;
+	  return -9;
 	}
     }
   }
