@@ -764,13 +764,32 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
       __m128d* restrict coefs2 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+2)*zs);
       __m128d* restrict coefs3 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+3)*zs);
 
-      for (int n=0; n<N; n++) { 
-	__m128d p0 =  _mm_mul_pd (abc[0], coefs0[n]);	__m128d p1 =  _mm_mul_pd (abc[1], coefs1[n]);
-	__m128d s0 =  _mm_add_pd (p0, p1);
-	__m128d p2 =  _mm_mul_pd (abc[2], coefs2[n]);	__m128d p3 =  _mm_mul_pd (abc[3], coefs3[n]);
-	__m128d s1 =  _mm_add_pd (p2, p3);
-	mvals[n] = _mm_add_pd (mvals[n], _mm_add_pd(s0, s1));
+      int Nstop = N;
+      if (Nstop & 1)
+	Nstop--;
+      for (int n=0; n<Nstop; n+=2) { 
+	_mm_prefetch ((const char*)&(coefs0[n+20]), _MM_HINT_NTA);
+	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[0], coefs0[n]));
+	_mm_prefetch ((const char*)&(mvals[n+20]), _MM_HINT_NTA);
+	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[1], coefs1[n]));
+	_mm_prefetch ((const char*)&(coefs1[n+20]), _MM_HINT_NTA);
+	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[2], coefs2[n]));
+	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[3], coefs3[n]));
+
+	_mm_prefetch ((const char*)&(coefs2[n+20]), _MM_HINT_NTA);
+	mvals[n+1] = _mm_add_pd(mvals[n+1], _mm_mul_pd (abc[0], coefs0[n+1]));
+	mvals[n+1] = _mm_add_pd(mvals[n+1], _mm_mul_pd (abc[1], coefs1[n+1]));
+	_mm_prefetch ((const char*)&(coefs3[n+20]), _MM_HINT_NTA);
+	mvals[n+1] = _mm_add_pd(mvals[n+1], _mm_mul_pd (abc[2], coefs2[n+1]));
+	mvals[n+1] = _mm_add_pd(mvals[n+1], _mm_mul_pd (abc[3], coefs3[n+1]));
       }
+      if (N & 1) {
+	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[0], coefs0[N-1]));
+	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[1], coefs1[N-1]));
+	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[2], coefs2[N-1]));
+	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[3], coefs3[N-1]));
+      }
+
     }
   
   for (int n=0; n<N; n++)
