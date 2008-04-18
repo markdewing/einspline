@@ -115,9 +115,9 @@ include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
                   fbspline.h fmulti_bspline.h  fnubspline.h                   \
                   multi_bspline.h                                             \
                   multi_bspline_create.h      multi_bspline_structs.h         \
-                  multi_bspline_eval_sse_c.h  multi_bspline_eval_sse_c.h      \
-                  multi_bspline_eval_sse_d.h  multi_bspline_eval_sse_d.h      \
-                  multi_bspline_eval_sse_s.h  multi_bspline_eval_sse_s.h      \
+                  multi_bspline_eval_sse_c.h  multi_bspline_eval_std_c.h      \
+                  multi_bspline_eval_sse_d.h  multi_bspline_eval_std_d.h      \
+                  multi_bspline_eval_sse_s.h  multi_bspline_eval_std_s.h      \
                   multi_bspline_eval_sse_z.h  multi_bspline_eval_std_z.h      \
                   nubspline_base.h nubspline_create.h                         \
                   nubspline_eval_sse_s.h nubspline_eval_std_s.h               \
