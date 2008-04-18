@@ -31,6 +31,11 @@ CFLAGS="${CFLAGS} -g"
 AC_MSG_RESULT([${CFLAGS}])
 
 # Check if we want static-only binaries
+AC_ARG_ENABLE(prefetch,   AC_HELP_STRING([--enable-prefetch],[use software prefetch instructions (default=no)]))
+if test "$enable_prefetch" = "yes"; then
+  AC_DEFINE([USE_PREFETCH],[],[Use SSE prefetch instructions])
+fi
+
 AC_ARG_ENABLE(all-static, AC_HELP_STRING([--enable-all-static], [build static binaries (default=no)]))
 if test "$enable_all_static" = "yes"; then
   ALL_STATIC="-all-static"

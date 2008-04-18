@@ -746,16 +746,8 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) {
-// 	int nextIndex = 16*i+4*j+k+4;
-// 	int ip = (nextIndex & 63)>>4;
-// 	int jp = (nextIndex & 15)>>2;
-// 	int kp = (nextIndex & 3);
-// 	__m128d* restrict next_coefs = (__m128d*)(spline->coefs + (ix+ip)*xs + (iy+jp)*ys + (iz+kp)*zs);
-	
-// 	// Prefetch next set of coefs
-// 	for (int n=0; n<N; n++)
-// 	  _mm_prefetch((const char*)&(next_coefs[n]), _MM_HINT_T0);
-
+      
+#ifdef USE_PREFETCH
       __m128d abc[4];
       for (int k=0; k<4; k++) 
 	abc[k] = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
@@ -763,7 +755,7 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
       __m128d* restrict coefs1 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+1)*zs);
       __m128d* restrict coefs2 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+2)*zs);
       __m128d* restrict coefs3 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+3)*zs);
-
+      
       int Nstop = N;
       if (Nstop & 1)
 	Nstop--;
@@ -789,7 +781,18 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[2], coefs2[N-1]));
 	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[3], coefs3[N-1]));
       }
-
+#else
+      for (int k=0; k<4; k++) {
+        __m128d abc = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
+        __m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+	
+        for (int n=0; n<N; n+=2) {
+          mvals[n+0] = _mm_add_pd (mvals[n+0], _mm_mul_pd (abc, coefs[n+0]));
+          mvals[n+1] = _mm_add_pd (mvals[n+1], _mm_mul_pd (abc, coefs[n+1]));
+          //      _mm_prefetch((const char*)&(coefs[n+26]), _MM_HINT_T0);
+        }
+      }
+#endif  
     }
   
   for (int n=0; n<N; n++)
@@ -1217,7 +1220,7 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 	  __m128d* restrict c2 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+2)*zs);
 	  __m128d* restrict c3 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+3)*zs);
 
-#ifdef USE_PREFETCH
+#ifdef USE_PREFETCH_VGH
 	  int nextIndex = i<<4 + j<<2 + k + 1;
 	  int iNext = nextIndex >> 4; 
 	  int jNext = (nextIndex >> 2) & 3;
