@@ -744,6 +744,10 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
   c[2]   = _mm_unpacklo_pd(c23,c23);
   c[3]   = _mm_unpackhi_pd(c23,c23);
 
+  int Nstop = N;
+  if (Nstop & 1)
+    Nstop--;
+ 
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) {
       
@@ -756,9 +760,6 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
       __m128d* restrict coefs2 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+2)*zs);
       __m128d* restrict coefs3 = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+3)*zs);
       
-      int Nstop = N;
-      if (Nstop & 1)
-	Nstop--;
       for (int n=0; n<Nstop; n+=2) { 
 	_mm_prefetch ((const char*)&(coefs0[n+20]), _MM_HINT_NTA);
 	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[0], coefs0[n]));
@@ -786,11 +787,12 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
         __m128d abc = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
         __m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
 	
-        for (int n=0; n<N; n+=2) {
+        for (int n=0; n<Nstop; n+=2) {
           mvals[n+0] = _mm_add_pd (mvals[n+0], _mm_mul_pd (abc, coefs[n+0]));
           mvals[n+1] = _mm_add_pd (mvals[n+1], _mm_mul_pd (abc, coefs[n+1]));
-          //      _mm_prefetch((const char*)&(coefs[n+26]), _MM_HINT_T0);
-        }
+	}
+	if (N&1)
+	  mvals[N-1] = _mm_add_pd (mvals[N-1], _mm_mul_pd (abc, coefs[N-1]));
       }
 #endif  
     }
