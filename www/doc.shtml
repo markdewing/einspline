@@ -33,6 +33,11 @@ for installing einspline.</p>
        home directory (such as on a supercomputer where you do not
        have root access), run
        <pre>  ./configure --prefix=$HOME </pre>
+  <li> To take maximum advantage of SSE instructions, configure
+       with "--enable-sse"
+  <li> To utilize software prefetch (in some routines) use
+       "--enable-prefetch".  This improves speed significantly
+       on some processors and hurts on others.
   <li> Build the library with 
        <pre>  make </pre>
   <li> Finally, install the library with
