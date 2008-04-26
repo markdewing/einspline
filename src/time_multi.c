@@ -1257,7 +1257,7 @@ test_3d_complex_float_all()
 void test_complex_double()
 {
   int Nx=73; int Ny=91; int Nz = 29;
-  int num_splines = 128;
+  int num_splines = 129;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -1766,7 +1766,7 @@ void
 time_3d_complex_double_all()
 {
   int Nx=37; int Ny=37; int Nz = 37;
-  int num_splines = 128;
+  int num_splines = 56;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;

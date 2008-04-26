@@ -744,11 +744,12 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
   c[2]   = _mm_unpacklo_pd(c23,c23);
   c[3]   = _mm_unpackhi_pd(c23,c23);
 
-  int Nstop = N;
-  if (Nstop & 1)
+  const int offset = 10;
+
+  int Nstop = N - offset;
+  if (Nstop & 1) 
     Nstop--;
  
-  const int offset = 20;
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) {
       
@@ -777,11 +778,11 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 	mvals[n+1] = _mm_add_pd(mvals[n+1], _mm_mul_pd (abc[2], coefs2[n+1]));
 	mvals[n+1] = _mm_add_pd(mvals[n+1], _mm_mul_pd (abc[3], coefs3[n+1]));
       }
-      if (N & 1) {
-	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[0], coefs0[N-1]));
-	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[1], coefs1[N-1]));
-	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[2], coefs2[N-1]));
-	mvals[N-1] = _mm_add_pd(mvals[N-1], _mm_mul_pd (abc[3], coefs3[N-1]));
+      for (int n=Nstop; n<N; n++) {
+	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[0], coefs0[n]));
+	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[1], coefs1[n]));
+	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[2], coefs2[n]));
+	mvals[n] = _mm_add_pd(mvals[n], _mm_mul_pd (abc[3], coefs3[n]));
       }
 #else
       for (int k=0; k<4; k++) {
