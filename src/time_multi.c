@@ -1118,8 +1118,8 @@ test_2d_complex_float_all()
 int 
 test_3d_complex_float_all()
 {
-  int Nx=73; int Ny=91; int Nz = 29;
-  int num_splines = 21;
+  int Nx=33; int Ny=21; int Nz = 29;
+  int num_splines = 131;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
@@ -1758,7 +1758,10 @@ time_3d_complex_float_all()
   multi_speed = (double) num_vals*num_splines / multi_time;
   fprintf (stderr, "Normal VGH   speed = %13.3f evaluations per second.\n", norm_speed);
   fprintf (stderr, "Multi  VGH   speed = %13.3f evaluations per second.\n", multi_speed);
- 
+
+  destroy_Bspline (multi_spline);
+  for (int i=0; i<num_splines; i++)
+    destroy_Bspline(norm_splines[i]); 
 }
 
 
@@ -1895,6 +1898,10 @@ time_3d_complex_double_all()
   multi_speed = (double) num_vals*num_splines / multi_time;
   fprintf (stderr, "Normal VGH   speed = %13.3f evaluations per second.\n", norm_speed);
   fprintf (stderr, "Multi  VGH   speed = %13.3f evaluations per second.\n", multi_speed);
+
+  destroy_Bspline (multi_spline);
+  for (int i=0; i<num_splines; i++)
+    destroy_Bspline(norm_splines[i]);
  
 }
 
@@ -2024,6 +2031,7 @@ void test_complex_double_vgh()
 	   (double)(norm_end-norm_start+rand_start-rand_end)/CLOCKS_PER_SEC);
   fprintf (stderr, "Multi  spline time = %1.5f\n",
 	   (double)(multi_end-multi_start+rand_start-rand_end)/CLOCKS_PER_SEC);
+
 
 }
 
@@ -2272,8 +2280,8 @@ void PrintPassFail (int code)
 
 main()
 {
-  // fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
-  // time_3d_complex_float_all();
+  fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
+  time_3d_complex_float_all();
   fprintf (stderr, "Timing 3D complex double-precision evaluation speed:\n");
   time_3d_complex_double_all();
 }
