@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 AC_INIT(einspline, 0.5, kesler@ciw.edu, einspline)
-AM_INIT_AUTOMAKE(einspline, 0.8.1)
+AM_INIT_AUTOMAKE(einspline, 0.8.2)
 AC_CONFIG_SRCDIR([src/bspline.h])
 AC_CONFIG_HEADER([src/config.h])
 
@@ -31,9 +31,13 @@ CFLAGS="${CFLAGS} -g"
 AC_MSG_RESULT([${CFLAGS}])
 
 # Check if we want static-only binaries
-AC_ARG_ENABLE(prefetch,   AC_HELP_STRING([--enable-prefetch],[use software prefetch instructions (default=no)]))
+AC_ARG_ENABLE(prefetch,   AC_HELP_STRING([--enable-prefetch[=N]],[use software prefetch instructions (default=no)]))
 if test "$enable_prefetch" = "yes"; then
-  AC_DEFINE([USE_PREFETCH],[],[Use SSE prefetch instructions])
+   AC_DEFINE([USE_PREFETCH],[],[Use SSE prefetch])
+   AC_DEFINE([PREFETCH_AHEAD],[12],[Prefetch loop lead distance])
+elif test "$enable_prefetch" != "no"; then
+   AC_DEFINE([USE_PREFETCH],[],[Use SSE prefetch])
+   AC_DEFINE_UNQUOTED([PREFETCH_AHEAD],$enable_prefetch,[Prefetch loop lead distance])
 fi
 
 AC_ARG_ENABLE(all-static, AC_HELP_STRING([--enable-all-static], [build static binaries (default=no)]))
