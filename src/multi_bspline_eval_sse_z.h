@@ -746,11 +746,12 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 
 #ifdef USE_PREFETCH
   const int offset = PREFETCH_AHEAD;
-
+#else
+  const int offset = 0;
+#endif
   int Nstop = N - offset;
   if (Nstop & 1) 
     Nstop--;
-#endif 
 
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) {
