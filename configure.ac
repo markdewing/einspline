@@ -35,7 +35,7 @@ AC_ARG_ENABLE(prefetch,   AC_HELP_STRING([--enable-prefetch[=N]],[use software p
 if test "$enable_prefetch" = "yes"; then
    AC_DEFINE([USE_PREFETCH],[],[Use SSE prefetch])
    AC_DEFINE([PREFETCH_AHEAD],[12],[Prefetch loop lead distance])
-elif test "$enable_prefetch" != "no"; then
+elif test "x$enable_prefetch" != "x"; then
    AC_DEFINE([USE_PREFETCH],[],[Use SSE prefetch])
    AC_DEFINE_UNQUOTED([PREFETCH_AHEAD],$enable_prefetch,[Prefetch loop lead distance])
 fi
