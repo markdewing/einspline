@@ -1285,24 +1285,25 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   double dzInv = spline->z_grid.delta_inv; 
   
   for (int n=0; n<N; n++) {
-    _mm_store_pd((double*)(vals+n)     , mpack[10*n+0]);
-    _mm_store_pd((double*)(grads+3*n+0), mpack[10*n+1]);
-    _mm_store_pd((double*)(grads+3*n+1), mpack[10*n+2]);
-    _mm_store_pd((double*)(grads+3*n+2), mpack[10*n+3]);
-    _mm_store_pd((double*)(hess+9*n+0),  mpack[10*n+4]);
+    _mm_storeu_pd((double*)(vals+n)     , mpack[10*n+0]);
+    _mm_storeu_pd((double*)(grads+3*n+0), mpack[10*n+1]);
+    _mm_storeu_pd((double*)(grads+3*n+1), mpack[10*n+2]);
+    _mm_storeu_pd((double*)(grads+3*n+2), mpack[10*n+3]);
+ 
+    _mm_storeu_pd((double*)(hess+9*n+0),  mpack[10*n+4]);
 
-    _mm_store_pd((double*)(hess+9*n+1),  mpack[10*n+5]);
-    _mm_store_pd((double*)(hess+9*n+3),  mpack[10*n+5]);
+    _mm_storeu_pd((double*)(hess+9*n+1),  mpack[10*n+5]);
+    _mm_storeu_pd((double*)(hess+9*n+3),  mpack[10*n+5]);
 
-    _mm_store_pd((double*)(hess+9*n+2),  mpack[10*n+6]);
-    _mm_store_pd((double*)(hess+9*n+6),  mpack[10*n+6]);
+    _mm_storeu_pd((double*)(hess+9*n+2),  mpack[10*n+6]);
+    _mm_storeu_pd((double*)(hess+9*n+6),  mpack[10*n+6]);
 
-    _mm_store_pd((double*)(hess+9*n+4),  mpack[10*n+7]);
+    _mm_storeu_pd((double*)(hess+9*n+4),  mpack[10*n+7]);
 
-    _mm_store_pd((double*)(hess+9*n+5),  mpack[10*n+8]);
-    _mm_store_pd((double*)(hess+9*n+7),  mpack[10*n+8]);
+    _mm_storeu_pd((double*)(hess+9*n+5),  mpack[10*n+8]);
+    _mm_storeu_pd((double*)(hess+9*n+7),  mpack[10*n+8]);
 
-    _mm_store_pd((double*)(hess+9*n+8),  mpack[10*n+9]);
+    _mm_storeu_pd((double*)(hess+9*n+8),  mpack[10*n+9]);
   }
   for (int n=0; n<N; n++) {
     grads[3*n+0] *= dxInv;
@@ -1320,10 +1321,10 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 
     hess[9*n+5]  *= dyInv*dzInv;
     hess[9*n+7]  *= dyInv*dzInv;
-    // Copy hessian elements into lower half of 3x3 matrix
-    hess[9*n+3] = hess[9*n+1];
-    hess[9*n+6] = hess[9*n+2];
-    hess[9*n+7] = hess[9*n+5];
+//     // Copy hessian elements into lower half of 3x3 matrix
+//     hess[9*n+3] = hess[9*n+1];
+//     hess[9*n+6] = hess[9*n+2];
+//     hess[9*n+7] = hess[9*n+5];
   }
 }
 

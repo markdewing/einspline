@@ -18,8 +18,8 @@
 //  Boston, MA  02110-1301  USA                                            //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef MULTI_BSPLINE_EVAL_STD_Z_H
-#define MULTI_BSPLINE_EVAL_STD_Z_H
+#ifndef MULTI_BSPLINE_EVAL_STD_Z_IMPL_H
+#define MULTI_BSPLINE_EVAL_STD_Z_IMPL_H
 
 #include <math.h>
 #include <stdio.h>
@@ -33,7 +33,7 @@ extern const double* restrict d2Ad;
 /************************************************************/
 /* 1D double-precision, complex evaulation functions        */
 /************************************************************/
-inline void
+void
 eval_multi_UBspline_1d_z (multi_UBspline_1d_z *spline,
 			  double x,
 			  complex_double* restrict vals)
@@ -66,7 +66,7 @@ eval_multi_UBspline_1d_z (multi_UBspline_1d_z *spline,
 
 
 
-inline void
+void
 eval_multi_UBspline_1d_z_vg (multi_UBspline_1d_z *spline,
 			     double x,
 			     complex_double* restrict vals,
@@ -111,7 +111,7 @@ eval_multi_UBspline_1d_z_vg (multi_UBspline_1d_z *spline,
 }
 
 
-inline void
+void
 eval_multi_UBspline_1d_z_vgl (multi_UBspline_1d_z *spline,
 			      double x,
 			      complex_double* restrict vals,
@@ -165,7 +165,7 @@ eval_multi_UBspline_1d_z_vgl (multi_UBspline_1d_z *spline,
 }
 
 
-inline void
+void
 eval_multi_UBspline_1d_z_vgh (multi_UBspline_1d_z *spline,
 			      double x,
 			      complex_double* restrict vals,
@@ -179,7 +179,7 @@ eval_multi_UBspline_1d_z_vgh (multi_UBspline_1d_z *spline,
 /************************************************************/
 /* 2D double-precision, complex evaulation functions        */
 /************************************************************/
-inline void
+void
 eval_multi_UBspline_2d_z (multi_UBspline_2d_z *spline,
 			  double x, double y,
 			  complex_double* restrict vals)
@@ -223,7 +223,7 @@ eval_multi_UBspline_2d_z (multi_UBspline_2d_z *spline,
 }
 
 
-inline void
+void
 eval_multi_UBspline_2d_z_vg (multi_UBspline_2d_z *spline,
 			     double x, double y,
 			     complex_double* restrict vals,
@@ -291,7 +291,7 @@ eval_multi_UBspline_2d_z_vg (multi_UBspline_2d_z *spline,
   }
 }
 
-inline void
+void
 eval_multi_UBspline_2d_z_vgl (multi_UBspline_2d_z *spline,
 			      double x, double y,
 			      complex_double* restrict vals,
@@ -380,7 +380,7 @@ eval_multi_UBspline_2d_z_vgl (multi_UBspline_2d_z *spline,
 
 
 
-inline void
+void
 eval_multi_UBspline_2d_z_vgh (multi_UBspline_2d_z *spline,
 			      double x, double y,
 			      complex_double* restrict vals,
@@ -475,7 +475,7 @@ eval_multi_UBspline_2d_z_vgh (multi_UBspline_2d_z *spline,
 /************************************************************/
 /* 3D double-precision, complex evaulation functions        */
 /************************************************************/
-inline void
+void
 eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 			  double x, double y, double z,
 			  complex_double* restrict vals)
@@ -530,7 +530,7 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 }
 
 
-inline void
+void
 eval_multi_UBspline_3d_z_vg (multi_UBspline_3d_z *spline,
 			      double x, double y, double z,
 			      complex_double* restrict vals,
@@ -620,7 +620,7 @@ eval_multi_UBspline_3d_z_vg (multi_UBspline_3d_z *spline,
 
 
 
-inline void
+void
 eval_multi_UBspline_3d_z_vgl (multi_UBspline_3d_z *spline,
 			      double x, double y, double z,
 			      complex_double* restrict vals,
@@ -735,7 +735,7 @@ eval_multi_UBspline_3d_z_vgl (multi_UBspline_3d_z *spline,
 
 
 
-inline void
+void
 eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 			      double x, double y, double z,
 			      complex_double* restrict vals,

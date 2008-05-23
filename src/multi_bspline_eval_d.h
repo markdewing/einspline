@@ -28,25 +28,25 @@
 /************************************************************/
 /* 1D double-precision, real evaulation functions        */
 /************************************************************/
-inline void
+void
 eval_multi_UBspline_1d_d (multi_UBspline_1d_d *spline,
 			  double x,
 			  double* restrict vals);
 
-inline void
+void
 eval_multi_UBspline_1d_d_vg (multi_UBspline_1d_d *spline,
 			     double x,
 			     double* restrict vals,
 			     double* restrict grads);
 
-inline void
+void
 eval_multi_UBspline_1d_d_vgl (multi_UBspline_1d_d *spline,
 			      double x,
 			      double* restrict vals,
 			      double* restrict grads,
 			      double* restrict lapl);
 
-inline void
+void
 eval_multi_UBspline_1d_d_vgh (multi_UBspline_1d_d *spline,
 			      double x,
 			      double* restrict vals,
@@ -56,25 +56,25 @@ eval_multi_UBspline_1d_d_vgh (multi_UBspline_1d_d *spline,
 /************************************************************/
 /* 2D double-precision, real evaulation functions        */
 /************************************************************/
-inline void
+void
 eval_multi_UBspline_2d_d (multi_UBspline_2d_d *spline,
 			  double x, double y,
 			  double* restrict vals);
 
-inline void
+void
 eval_multi_UBspline_2d_d_vg (multi_UBspline_2d_d *spline,
 			     double x, double y,
 			     double* restrict vals,
 			     double* restrict grads);
 
-inline void
+void
 eval_multi_UBspline_2d_d_vgl (multi_UBspline_2d_d *spline,
 			      double x, double y,
 			      double* restrict vals,
 			      double* restrict grads,
 			      double* restrict lapl);
 
-inline void
+void
 eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
 			      double x, double y,
 			      double* restrict vals,
@@ -84,25 +84,25 @@ eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
 /************************************************************/
 /* 3D double-precision, real evaulation functions           */
 /************************************************************/
-inline void
+void
 eval_multi_UBspline_3d_d (multi_UBspline_3d_d *spline,
 			  double x, double y, double z,
 			  double* restrict vals);
 
-inline void
+void
 eval_multi_UBspline_3d_d_vg (multi_UBspline_3d_d *spline,
 			     double x, double y, double z,
 			     double* restrict vals,
 			     double* restrict grads);
 
-inline void
+void
 eval_multi_UBspline_3d_d_vgl (multi_UBspline_3d_d *spline,
 			      double x, double y, double z,
 			      double* restrict vals,
 			      double* restrict grads,
 			      double* restrict lapl);
 
-inline void
+void
 eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
 			      double x, double y, double z,
 			      double* restrict vals,

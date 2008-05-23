@@ -27,7 +27,7 @@ endif
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
                   test_bspline_s test_bspline_d test_multi \
-                  test_fmulti_bspline $(CHECK_BLIPS)
+                  test_fmulti_bspline test_multi_cpp $(CHECK_BLIPS)
 
 bin_PROGRAMS = time_multi
 
@@ -42,6 +42,7 @@ endif
 test_bspline_s_SOURCES = test_bspline_s.c
 test_bspline_d_SOURCES = test_bspline_d.c
 test_multi_SOURCES     = test_multi.c
+test_multi_cpp_SOURCES = test_multi_cpp.cc
 time_multi_SOURCES     = time_multi.c
 
 LDADD = 
@@ -55,6 +56,7 @@ test_blip_LDADD      = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_s_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_d_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
+test_multi_cpp_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 time_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 
 
