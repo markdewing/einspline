@@ -6,7 +6,7 @@ dnl the compiler supports an equivalent, like gcc's __restrict__ or
 dnl SGI's __restrict, define "restrict" to be that.
 dnl Otherwise, define "restrict" to be empty.
 
-AC_DEFUN(AC_CXX_RESTRICT,
+AC_DEFUN([AC_CXX_RESTRICT],
 [AC_CACHE_CHECK([for restrict], ac_cxx_restrict,
 [ac_cxx_restrict=no
  AC_LANG_SAVE
