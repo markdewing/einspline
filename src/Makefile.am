@@ -5,8 +5,20 @@ if WANT_BLIPS
    CHECK_BLIPS = test_blip
 endif
 
+if HAVE_SSE
+   SINGLE_SRC = multi_bspline_eval_sse_s.c multi_bspline_eval_sse_s_cpp.cc \
+                multi_bspline_eval_sse_c.c multi_bspline_eval_sse_c_cpp.cc
+else
+   SINGLE_SRC = multi_bspline_eval_std_s.c multi_bspline_eval_std_s_cpp.cc \
+                multi_bspline_eval_std_c.c multi_bspline_eval_std_c_cpp.cc
+endif
+
 if HAVE_SSE2
-   DOUBLE_SRC = multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc
+   DOUBLE_SRC = multi_bspline_eval_sse_d.c multi_bspline_eval_sse_d_cpp.cc \
+                multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc
+else
+   DOUBLE_SRC = multi_bspline_eval_std_d.c multi_bspline_eval_std_d_cpp.cc \
+                multi_bspline_eval_std_z.c multi_bspline_eval_std_z_cpp.cc
 endif
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
@@ -61,14 +73,10 @@ libeinspline_la_SOURCES =                             \
                        multi_bspline.h                \
                        multi_bspline_create.c         \
                        multi_bspline_create.h         \
-                       multi_bspline_eval_sse_c.h     \
-                       multi_bspline_eval_std_c.h     \
-                       multi_bspline_eval_sse_d.h     \
-                       multi_bspline_eval_std_d.h     \
-                       multi_bspline_eval_sse_s.h     \
-                       multi_bspline_eval_std_s.h     \
-                       multi_bspline_eval_sse_z.h     \
-                       multi_bspline_eval_std_z.h     \
+                       multi_bspline_eval_c.h         \
+                       multi_bspline_eval_d.h         \
+                       multi_bspline_eval_s.h         \
+                       multi_bspline_eval_z.h         \
                        multi_bspline_structs.h        \
                        nubspline_base.h               \
                        nubspline_create.c             \
@@ -92,6 +100,7 @@ libeinspline_la_SOURCES =                             \
                        fmulti_bspline.h               \
                        fnubspline.c                   \
                        fnubspline.h                   \
+                       $(SINGLE_SRC)                  \
                        $(DOUBLE_SRC)                  \
                        $(MAYBE_BLIPS)
 
@@ -118,11 +127,9 @@ include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
                   bspline_eval_std_z.h bspline.h bspline_structs.h            \
                   fbspline.h fmulti_bspline.h  fnubspline.h                   \
                   multi_bspline.h                                             \
-                  multi_bspline_create.h      multi_bspline_structs.h         \
-                  multi_bspline_eval_sse_c.h  multi_bspline_eval_std_c.h      \
-                  multi_bspline_eval_sse_d.h  multi_bspline_eval_std_d.h      \
-                  multi_bspline_eval_sse_s.h  multi_bspline_eval_std_s.h      \
-                  multi_bspline_eval_sse_z.h  multi_bspline_eval_std_z.h      \
+                  multi_bspline_create.h    multi_bspline_structs.h           \
+                  multi_bspline_eval_c.h    multi_bspline_eval_d.h            \
+                  multi_bspline_eval_s.h    multi_bspline_eval_z.h            \
                   nubspline_base.h nubspline_create.h                         \
                   nubspline_eval_sse_s.h nubspline_eval_std_s.h               \
 	          nubspline_eval_sse_c.h nubspline_eval_std_c.h               \
