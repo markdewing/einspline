@@ -1290,10 +1290,18 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
     _mm_store_pd((double*)(grads+3*n+1), mpack[10*n+2]);
     _mm_store_pd((double*)(grads+3*n+2), mpack[10*n+3]);
     _mm_store_pd((double*)(hess+9*n+0),  mpack[10*n+4]);
+
     _mm_store_pd((double*)(hess+9*n+1),  mpack[10*n+5]);
+    _mm_store_pd((double*)(hess+9*n+3),  mpack[10*n+5]);
+
     _mm_store_pd((double*)(hess+9*n+2),  mpack[10*n+6]);
+    _mm_store_pd((double*)(hess+9*n+6),  mpack[10*n+6]);
+
     _mm_store_pd((double*)(hess+9*n+4),  mpack[10*n+7]);
+
     _mm_store_pd((double*)(hess+9*n+5),  mpack[10*n+8]);
+    _mm_store_pd((double*)(hess+9*n+7),  mpack[10*n+8]);
+
     _mm_store_pd((double*)(hess+9*n+8),  mpack[10*n+9]);
   }
   for (int n=0; n<N; n++) {
@@ -1303,9 +1311,15 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
     hess[9*n+0]  *= dxInv*dxInv;
     hess[9*n+4]  *= dyInv*dyInv;
     hess[9*n+8]  *= dzInv*dzInv;
+
     hess[9*n+1]  *= dxInv*dyInv;
+    hess[9*n+3]  *= dxInv*dyInv;
+
     hess[9*n+2]  *= dxInv*dzInv;
+    hess[9*n+6]  *= dxInv*dzInv;
+
     hess[9*n+5]  *= dyInv*dzInv;
+    hess[9*n+7]  *= dyInv*dzInv;
     // Copy hessian elements into lower half of 3x3 matrix
     hess[9*n+3] = hess[9*n+1];
     hess[9*n+6] = hess[9*n+2];
