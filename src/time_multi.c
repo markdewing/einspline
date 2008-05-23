@@ -2280,8 +2280,8 @@ void PrintPassFail (int code)
 
 main()
 {
-  fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
-  time_3d_complex_float_all();
+  //  fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
+  //  time_3d_complex_float_all();
   fprintf (stderr, "Timing 3D complex double-precision evaluation speed:\n");
   time_3d_complex_double_all();
 }

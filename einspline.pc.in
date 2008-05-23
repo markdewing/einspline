@@ -7,4 +7,4 @@ Name: einspline
 Description: library for creation and evaluation of cubic B-splines
 Version: @VERSION@
 Libs: -L${libdir} -leinspline
-Cflags: -I${includedir} 
+Cflags: -I${includedir} @PTHREAD_FLAG@

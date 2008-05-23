@@ -72,7 +72,7 @@ if test "$ac_test_CXXFLAGS" != "set"; then
                 echo "******************************************************"])
          ;;
 
-    intel) CXXFLAGS="-O3 -ansi_alias"
+    intel) CXXFLAGS="-O3 -ansi_alias -restrict"
 	if test "x$acx_maxopt_portable" = xno; then
 	  icc_archflag=unknown
 	  icc_flags=""

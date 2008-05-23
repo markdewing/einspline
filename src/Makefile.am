@@ -5,6 +5,9 @@ if WANT_BLIPS
    CHECK_BLIPS = test_blip
 endif
 
+if HAVE_SSE2
+   DOUBLE_SRC = multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc
+endif
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
                   test_bspline_s test_bspline_d test_multi \
@@ -89,6 +92,7 @@ libeinspline_la_SOURCES =                             \
                        fmulti_bspline.h               \
                        fnubspline.c                   \
                        fnubspline.h                   \
+                       $(DOUBLE_SRC)                  \
                        $(MAYBE_BLIPS)
 
 

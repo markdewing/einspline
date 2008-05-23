@@ -474,7 +474,7 @@ eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
 
 
 /************************************************************/
-/* 3D double-precision, real evaulation functions        */
+/* 3D double-precision, real evaulation functions           */
 /************************************************************/
 inline void
 eval_multi_UBspline_3d_d (multi_UBspline_3d_d *spline,

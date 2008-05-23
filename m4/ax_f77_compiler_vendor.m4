@@ -1,3 +1,5 @@
+<<<<<<< .mine
+=======
 dnl @synopsis AX_COMPILER_VENDOR
 dnl @summary find the vendor (gnu, intel, etc.) of the C/C++ compiler
 dnl @category C
@@ -31,3 +33,4 @@ AC_CACHE_CHECK([for _AC_LANG compiler vendor], ax_cv_[]_AC_LANG_ABBREV[]_compile
 ])
 FFLAGS="$FSAVE"
 
+>>>>>>> .r281
