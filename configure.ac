@@ -30,6 +30,7 @@ AC_C_VARARRAYS
 
 AC_MSG_CHECKING([optimal compiler flags])
 CFLAGS="${CFLAGS} -g"
+CXXFLAGS="${CXXFLAGS} -g"
 AC_MSG_RESULT([${CFLAGS}])
 
 # Compile with -pthread

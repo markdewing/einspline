@@ -754,6 +754,8 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
   int Nstop = N - offset;
   if (Nstop & 1) 
     Nstop--;
+  if (Nstop < 0)
+    Nstop = 0;
 
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) {
