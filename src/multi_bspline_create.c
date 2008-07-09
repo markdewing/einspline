@@ -692,6 +692,15 @@ set_multi_UBspline_1d_d (multi_UBspline_1d_d* spline, int num, double *data)
   find_coefs_1d_d (spline->x_grid, spline->xBC, data, 1, coefs, xs);
 }
 
+void
+set_multi_UBspline_1d_d_BC (multi_UBspline_1d_d* spline, int num, double *data,
+			    BCtype_d xBC)
+{
+  double *coefs = spline->coefs + num;
+  int xs = spline->x_stride;
+  find_coefs_1d_d (spline->x_grid, xBC, data, 1, coefs, xs);
+}
+
 
 multi_UBspline_2d_d*
 create_multi_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,

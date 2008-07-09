@@ -90,6 +90,9 @@ create_multi_UBspline_3d_d (Ugrid x_grid,   Ugrid   y_grid,   Ugrid z_grid,
 void
 set_multi_UBspline_1d_d (multi_UBspline_1d_d *spline, 
 			 int spline_num, double *data);
+void
+set_multi_UBspline_1d_d_BC (multi_UBspline_1d_d *spline, 
+			    int spline_num, double *data, BCtype_d xBC);
 
 void
 set_multi_UBspline_2d_d (multi_UBspline_2d_d *spline, 
