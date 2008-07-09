@@ -965,6 +965,32 @@ set_multi_UBspline_1d_z (multi_UBspline_1d_z* spline, int num, complex_double *d
  
 }
 
+void
+set_multi_UBspline_1d_z_BC (multi_UBspline_1d_z *spline, int num, 
+			    complex_double *data, BCtype_z xBC)
+{
+  int Mx = spline->x_grid.num;
+  int Nx;
+
+  complex_double *coefs = spline->coefs + num;
+
+  if (xBC.lCode == PERIODIC)   Nx = Mx+3;
+  else                                 Nx = Mx+2;
+
+  BCtype_d xBC_r, xBC_i;
+  xBC_r.lCode = xBC.lCode;  xBC_r.rCode = xBC.rCode;
+  xBC_r.lVal  = xBC.lVal_r; xBC_r.rVal  = xBC.rVal_r;
+  xBC_i.lCode = xBC.lCode;  xBC_i.rCode = xBC.rCode;
+  xBC_i.lVal  = xBC.lVal_i; xBC_i.rVal  = xBC.rVal_i;
+  int xs = spline->x_stride;
+  // Real part
+  find_coefs_1d_d (spline->x_grid, xBC_r, (double*)data, 2, 
+		   ((double*)coefs),   2*xs);
+  // Imaginary part
+  find_coefs_1d_d (spline->x_grid, xBC_i, ((double*)data)+1, 2, 
+		   ((double*)coefs)+1, 2*xs);
+}
+
 
 multi_UBspline_2d_z*
 create_multi_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
