@@ -157,6 +157,10 @@ create_multi_UBspline_3d_z (Ugrid  x_grid, Ugrid   y_grid, Ugrid z_grid,
 void
 set_multi_UBspline_1d_z (multi_UBspline_1d_z *spline, int spline_num, 
 			 complex_double *data);
+void
+set_multi_UBspline_1d_z_BC (multi_UBspline_1d_z *spline, int spline_num, 
+			    complex_double *data, BCtype_z xBC);
+
 
 void
 set_multi_UBspline_2d_z (multi_UBspline_2d_z *spline, int spline_num, 
