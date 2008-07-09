@@ -87,14 +87,23 @@ eval_multi_UBspline_1d_z (multi_UBspline_1d_z *spline,
 
   int xs = spline->x_stride;
 
-  for (int n=0; n<spline->num_splines; n++) 
-    vals[n]  = 0.0;
 
-  for (int i=0; i<4; i++) {
-    complex_double* restrict coefs = spline->coefs + ((ix+i)*xs);
-    for (int n=0; n<spline->num_splines; n++) 
-      vals[n]  +=   a[i] * coefs[n];
-  }
+
+  complex_double* restrict coefs0 = spline->coefs +(ix+0)*xs;
+  complex_double* restrict coefs1 = spline->coefs +(ix+1)*xs;
+  complex_double* restrict coefs2 = spline->coefs +(ix+2)*xs;
+  complex_double* restrict coefs3 = spline->coefs +(ix+3)*xs;
+  for (int n=0; n<spline->num_splines; n++) 
+    vals[n] = a[0]*coefs0[n] + a[1]*coefs1[n] + a[2]*coefs2[n]
+      + a[3]*coefs3[n];
+
+//   for (int n=0; n<spline->num_splines; n++) 
+//     vals[n]  = 0.0;
+//   for (int i=0; i<4; i++) {
+//     complex_double* restrict coefs = spline->coefs + ((ix+i)*xs);
+//     for (int n=0; n<spline->num_splines; n++) 
+//       vals[n]  +=   a[i] * coefs[n];
+//   }
 }
 
 

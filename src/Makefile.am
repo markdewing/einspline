@@ -144,5 +144,4 @@ include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
                   nubspline_structs.h nubasis.h nubspline.h nugrid.h          \
                   config.h
 
-
-EXTRA_DIST = 
+EXTRA_DIST = multi_bspline_eval_cuda_c.cu
