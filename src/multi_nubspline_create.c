@@ -369,9 +369,9 @@ create_multi_NUBspline_1d_c (NUgrid* x_grid, BCtype_c xBC, int num_splines)
   spline->x_grid   = x_grid;
 
 #ifndef HAVE_SSE
-  spline->coefs = malloc (2*sizeof(float)*N*num_splines);
+  spline->coefs = malloc (2*sizeof(float)*Nx*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(float)*N*num_splines);
+  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(float)*Nx*N);
   init_sse_data();    
 #endif
 
@@ -908,13 +908,22 @@ create_multi_NUBspline_1d_z (NUgrid* x_grid, BCtype_z xBC, int num_splines)
 
   // Next, create the basis
   spline->x_basis = create_NUBasis (x_grid, xBC.lCode==PERIODIC);
-  
+
+  if (spline->x_basis->grid != x_grid) {
+    fprintf (stderr, "Error in basis creation.\n");
+    abort();
+  }
+  if (spline->x_basis == NULL) {
+    fprintf (stderr, "Error creating basis in create_multi_NUBspline_1d_z.\n");
+    abort();
+  }
+	     
   // Setup internal variables
   int Mx, Nx;
   if (xBC.lCode == PERIODIC)     Mx = x_grid->num_points - 1;
   else                           Mx = x_grid->num_points;
   Nx = x_grid->num_points + 2;
-  
+
   int N = num_splines;
 #ifdef HAVE_SSE
   if (N % 2) 
@@ -923,12 +932,12 @@ create_multi_NUBspline_1d_z (NUgrid* x_grid, BCtype_z xBC, int num_splines)
 
   spline->x_stride = N;
 #ifndef HAVE_SSE2
-  spline->coefs = malloc (2*sizeof(double)*Nx*num_splines);
+  spline->coefs = malloc (2*sizeof(double)*Nx*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(double)*Nx*num_splines);
+  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(double)*Nx*N);
   init_sse_data();   
 #endif
- 
+
   return spline;
 }
 
@@ -1010,9 +1019,9 @@ create_multi_NUBspline_2d_z (NUgrid* x_grid, NUgrid* y_grid,
   spline->y_stride = N;
   
 #ifndef HAVE_SSE2
-  spline->coefs = malloc (2*sizeof(double)*Nx*Ny*num_splines);
+  spline->coefs = malloc (2*sizeof(double)*Nx*Ny*N);
 #else
-  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(double)*Nx*Ny*num_splines);
+  posix_memalign ((void**)&spline->coefs, 64, 2*sizeof(double)*Nx*Ny*N);
   init_sse_data();
 #endif
 

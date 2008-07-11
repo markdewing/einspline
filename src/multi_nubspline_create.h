@@ -18,8 +18,8 @@
 //  Boston, MA  02110-1301  USA                                            //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef MULTI_BSPLINE_CREATE_H
-#define MULTI_BSPLINE_CREATE_H
+#ifndef MULTI_NUBBSPLINE_CREATE_H
+#define MULTI_NUBBSPLINE_CREATE_H
 
 #include "bspline_base.h"
 #include "multi_nubspline_structs.h"

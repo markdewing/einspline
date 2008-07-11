@@ -19,7 +19,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "multi_bspline.h"
+#include "multi_nubspline.h"
 #include "bspline.h"
+#include "nubspline.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -1474,6 +1476,115 @@ test_1d_complex_double_all()
   return 0;
 }
 
+int 
+test_1d_NUB_complex_double_all()
+{
+  int Nx=73;
+  int num_splines = 21;
+
+  NUgrid *x_grid = create_log_grid (1.0e-4, 3.0, 2.0e-5, Nx);
+
+  int i = (*x_grid->reverse_map)(x_grid, 1.2);
+  fprintf (stderr, "i=%d\n", i);
+
+  BCtype_z xBC;
+  xBC.lCode = xBC.rCode = PERIODIC;
+
+  // First, create splines the normal way
+  NUBspline_1d_z* norm_splines[num_splines];
+  multi_NUBspline_1d_z *multi_spline;
+  
+  // First, create multispline
+  multi_spline = create_multi_NUBspline_1d_z (x_grid, xBC, num_splines);
+
+  complex_double data[Nx];
+  // Now, create normal splines and set multispline data
+  for (int i=0; i<num_splines; i++) {
+    for (int j=0; j<Nx; j++)
+      data[j] = (drand48()-0.5) + (drand48()-0.5)*1.0i;
+    norm_splines[i] = create_NUBspline_1d_z (x_grid, xBC, data);
+    set_multi_NUBspline_1d_z (multi_spline, i, data);
+  }
+  
+//   fprintf (stderr, "\nnorm coef  = %1.14e + %1.14ei\n",
+// 	   creal(norm_splines[19]->coefs[27]),
+// 	   cimag(norm_splines[19]->coefs[27]));
+//   fprintf (stderr, "multi coef = %1.14e + %1.14ei\n",
+// 	   creal(multi_spline->coefs[19+27*multi_spline->x_stride]),
+// 	   cimag(multi_spline->coefs[19+27*multi_spline->x_stride]));
+
+
+  // Now, test random values
+  int num_vals = 100;
+  complex_double  multi_vals[num_splines], norm_vals [num_splines];
+  complex_double multi_grads[num_splines], norm_grads[num_splines];
+  complex_double  multi_lapl[num_splines], norm_lapl [num_splines];
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  
+    double x = rx*x_grid->start + (1.0-rx)*x_grid->end;
+
+    //////////////////////////
+    // Check value routine  //
+    //////////////////////////
+    eval_multi_NUBspline_1d_z (multi_spline, x, multi_vals);
+    for (int j=0; j<num_splines; j++)
+      eval_NUBspline_1d_z (norm_splines[j], x, &(norm_vals[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (zdiff(norm_vals[j], multi_vals[j], 1.0e-12)) {
+	fprintf (stderr, " norm_vals[j] = %1.14e + %1.14ei\n",
+		 creal (norm_vals[j]), cimag(norm_vals[j]));
+	fprintf (stderr, "multi_vals[j] = %1.14e + %1.14ei\n",
+		 creal (multi_vals[j]), cimag(multi_vals[j]));
+	
+	return -1;
+      }
+    }
+
+    ///////////////////////
+    // Check VG routine  //
+    ///////////////////////
+    eval_multi_NUBspline_1d_z_vg (multi_spline, x, 
+				  multi_vals, multi_grads);
+    for (int j=0; j<num_splines; j++)
+      eval_NUBspline_1d_z_vg (norm_splines[j], x, &(norm_vals[j]),
+			      &(norm_grads[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (zdiff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -1;
+      
+      // Check gradients
+      if (zdiff (norm_grads[j], multi_grads[j], 1.0e-12))
+	return -2;
+    }
+
+
+    ///////////////////////
+    // Check VGL routine //
+    ///////////////////////
+    eval_multi_NUBspline_1d_z_vgl (multi_spline, x, multi_vals, multi_grads, multi_lapl);
+    for (int j=0; j<num_splines; j++)
+      eval_NUBspline_1d_z_vgl (norm_splines[j], x, &(norm_vals[j]),
+			  &(norm_grads[j]), &(norm_lapl[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (zdiff(norm_vals[j], multi_vals[j], 1.0e-12))
+	return -3;
+
+      // Check gradients
+      if (zdiff (norm_grads[j], multi_grads[j], 1.0e-10))
+	return -4;
+
+      // Check laplacian
+      if (zdiff (norm_lapl[j], multi_lapl[j], 1.0e-10)) 
+	return -5;
+    }
+  }
+  return 0;
+}
+
+
 
 int 
 test_2d_complex_double_all()
@@ -2142,6 +2253,9 @@ main()
   //test_complex_double();
   //test_complex_double_vgh();
 
+  fprintf (stderr, "Testing 1D complex double-precision multiple nonuniform cubic B-spline routines:     ");
+  code = test_1d_NUB_complex_double_all();  PrintPassFail (code);
+
   fprintf (stderr, "Testing 1D real    single-precision multiple cubic B-spline routines:     ");
   code = test_1d_float_all();           PrintPassFail (code);
   fprintf (stderr, "Testing 2D real    single-precision multiple cubic B-spline routines:     ");
@@ -2169,6 +2283,8 @@ main()
   code = test_2d_complex_double_all();  PrintPassFail (code);
   fprintf (stderr, "Testing 3D complex double-precision multiple cubic B-spline routines:     ");
   code = test_3d_complex_double_all();  PrintPassFail (code);
+
+
   //test_double();
   //test_double_vgh();
 }

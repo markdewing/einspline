@@ -16,9 +16,10 @@ else
 endif
 
 if HAVE_SSE2
-   DOUBLE_SRC = multi_bspline_eval_sse_d.c multi_bspline_eval_sse_d_cpp.cc \
-                multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc \
-                multi_bspline_eval_sse_d_impl.h multi_bspline_eval_sse_z_impl.h
+   DOUBLE_SRC = multi_bspline_eval_sse_d.c multi_bspline_eval_sse_d_cpp.cc      \
+                multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc      \
+                multi_bspline_eval_sse_d_impl.h multi_bspline_eval_sse_z_impl.h \
+                multi_nubspline_eval_sse_z.c
 else
    DOUBLE_SRC = multi_bspline_eval_std_d.c multi_bspline_eval_std_d_cpp.cc \
                 multi_bspline_eval_std_z.c multi_bspline_eval_std_z_cpp.cc \

@@ -131,7 +131,7 @@ create_log_grid (double start, double end, double delta0,
   grid->end = end;
   grid->num_points = num_points;
   grid->points = malloc(num_points*sizeof(double));
-  grid->a = log1p(-delta0/start);
+  grid->a = log1p(delta0/start);
   grid->ainv = 1.0/grid->a;
   grid->startinv = 1.0/start;
   for (int i=0; i<num_points; i++)
