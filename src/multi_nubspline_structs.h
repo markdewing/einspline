@@ -22,6 +22,8 @@
 #define MULTI_NUBSPLINE_STRUCTS_STD_H
 
 #include <inttypes.h>
+#include "bspline_base.h"
+#include "nubasis.h"
 
 ///////////////////////////
 // Single precision real //
@@ -32,12 +34,11 @@ typedef struct
   type_code    tcode;
   float* restrict coefs;
   intptr_t x_stride;
-  Ugrid x_grid;
   BCtype_s xBC;
   int num_splines;
   NUgrid  *restrict x_grid;
   NUBasis *restrict x_basis;
-} multi_UBspline_1d_s;
+} multi_NUBspline_1d_s;
 
 typedef struct
 {
@@ -45,12 +46,11 @@ typedef struct
   type_code    tcode;
   float* restrict coefs;
   intptr_t x_stride, y_stride;
-  Ugrid x_grid, y_grid;
   BCtype_s xBC, yBC;
   int num_splines;
   NUgrid  *restrict x_grid,  *restrict y_grid;
   NUBasis *restrict x_basis, *restrict y_basis;
-} multi_UBspline_2d_s;
+} multi_NUBspline_2d_s;
 
 typedef struct
 {
@@ -58,12 +58,11 @@ typedef struct
   type_code    tcode;
   float* restrict coefs;
   intptr_t x_stride, y_stride, z_stride;
-  Ugrid x_grid, y_grid, z_grid;
   BCtype_s xBC, yBC, zBC;
   int num_splines;
   NUgrid  *restrict x_grid,  *restrict y_grid,  *restrict z_grid;
   NUBasis *restrict x_basis, *restrict y_basis, *restrict z_basis;
-} multi_UBspline_3d_s;
+} multi_NUBspline_3d_s;
 
 
 ///////////////////////////
@@ -75,12 +74,11 @@ typedef struct
   type_code    tcode;
   double* restrict coefs;
   intptr_t x_stride;
-  Ugrid x_grid;
   BCtype_d xBC;
   int num_splines;
   NUgrid  *restrict x_grid;
   NUBasis *restrict x_basis;
-} multi_UBspline_1d_d;
+} multi_NUBspline_1d_d;
 
 typedef struct
 {
@@ -88,12 +86,11 @@ typedef struct
   type_code    tcode;
   double* restrict coefs;
   intptr_t x_stride, y_stride;
-  Ugrid x_grid, y_grid;
   BCtype_d xBC, yBC;
   int num_splines;
   NUgrid  *restrict x_grid,  *restrict y_grid;
   NUBasis *restrict x_basis, *restrict y_basis;
-} multi_UBspline_2d_d;
+} multi_NUBspline_2d_d;
 
 typedef struct
 {
@@ -101,12 +98,11 @@ typedef struct
   type_code    tcode;
   double* restrict coefs;
   intptr_t x_stride, y_stride, z_stride;
-  Ugrid x_grid, y_grid, z_grid;
   BCtype_d xBC, yBC, zBC;
   int num_splines;
   NUgrid  *restrict x_grid,  *restrict y_grid,  *restrict z_grid;
   NUBasis *restrict x_basis, *restrict y_basis, *restrict z_basis;
-} multi_UBspline_3d_d;
+} multi_NUBspline_3d_d;
 
 
 
@@ -119,12 +115,11 @@ typedef struct
   type_code    tcode;
   complex_float* restrict coefs;
   intptr_t x_stride;
-  Ugrid x_grid;
   BCtype_c xBC;
   int num_splines;
   NUgrid  *restrict x_grid;
   NUBasis *restrict x_basis;
-} multi_UBspline_1d_c;
+} multi_NUBspline_1d_c;
 
 typedef struct
 {
@@ -132,12 +127,11 @@ typedef struct
   type_code    tcode;
   complex_float* restrict coefs;
   intptr_t x_stride, y_stride;
-  Ugrid x_grid, y_grid;
   BCtype_c xBC, yBC;
   int num_splines;
   NUgrid  *restrict x_grid,  *restrict y_grid;
   NUBasis *restrict x_basis, *restrict y_basis;
-} multi_UBspline_2d_c;
+} multi_NUBspline_2d_c;
 
 typedef struct
 {
@@ -145,12 +139,11 @@ typedef struct
   type_code    tcode;
   complex_float* restrict coefs;
   intptr_t x_stride, y_stride, z_stride;
-  Ugrid x_grid, y_grid, z_grid;
   BCtype_c xBC, yBC, zBC;
   int num_splines;
   NUgrid  *restrict x_grid,  *restrict y_grid,  *restrict z_grid;
   NUBasis *restrict x_basis, *restrict y_basis, *restrict z_basis;
-} multi_UBspline_3d_c;
+} multi_NUBspline_3d_c;
 
 
 //////////////////////////////
@@ -162,12 +155,11 @@ typedef struct
   type_code    tcode;
   complex_double* restrict coefs;
   intptr_t x_stride;
-  Ugrid x_grid;
   BCtype_z xBC;
   int num_splines;
   NUgrid  *restrict x_grid;
   NUBasis *restrict x_basis;
-} multi_UBspline_1d_z;
+} multi_NUBspline_1d_z;
 
 typedef struct
 {
@@ -175,12 +167,11 @@ typedef struct
   type_code    tcode;
   complex_double* restrict coefs;
   intptr_t x_stride, y_stride;
-  Ugrid x_grid, y_grid;
   BCtype_z xBC, yBC;
   int num_splines;
   NUgrid  *restrict x_grid,  *restrict y_grid;
   NUBasis *restrict x_basis, *restrict y_basis;
-} multi_UBspline_2d_z;
+} multi_NUBspline_2d_z;
 
 typedef struct
 {
@@ -188,12 +179,11 @@ typedef struct
   type_code    tcode;
   complex_double* restrict coefs;
   intptr_t x_stride, y_stride, z_stride;
-  Ugrid x_grid, y_grid, z_grid;
   BCtype_z xBC, yBC, zBC;
   int num_splines;
   NUgrid  *restrict x_grid,  *restrict y_grid,  *restrict z_grid;
   NUBasis *restrict x_basis, *restrict y_basis, *restrict z_basis;
-} multi_UBspline_3d_z;
+} multi_NUBspline_3d_z;
 
 
 #endif

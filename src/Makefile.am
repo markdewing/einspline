@@ -84,6 +84,7 @@ libeinspline_la_SOURCES =                             \
                        multi_bspline_eval_s.h         \
                        multi_bspline_eval_z.h         \
                        multi_bspline_structs.h        \
+                       multi_nubspline_create.c       \
                        nubspline_base.h               \
                        nubspline_create.c             \
                        nubspline_create.h             \
