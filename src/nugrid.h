@@ -81,8 +81,7 @@ create_center_grid (double start, double end, double ratio,
 		    int num_points);
 
 NUgrid*
-create_log_grid (double start, double end, double delta0, 
-		 int num_points);
+create_log_grid (double start, double end, int num_points);
 
 NUgrid*
 create_general_grid (double *points, int num_points);

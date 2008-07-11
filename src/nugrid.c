@@ -122,7 +122,7 @@ create_center_grid (double start, double end, double ratio,
 
 
 NUgrid*
-create_log_grid (double start, double end, double delta0,
+create_log_grid (double start, double end,
 		 int num_points)
 {
   log_grid *grid = malloc (sizeof (log_grid));
@@ -131,7 +131,7 @@ create_log_grid (double start, double end, double delta0,
   grid->end = end;
   grid->num_points = num_points;
   grid->points = malloc(num_points*sizeof(double));
-  grid->a = log1p(delta0/start);
+  grid->a = 1.0/(double)(num_points-1)*log(end/start);
   grid->ainv = 1.0/grid->a;
   grid->startinv = 1.0/start;
   for (int i=0; i<num_points; i++)

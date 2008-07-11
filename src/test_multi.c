@@ -1482,13 +1482,12 @@ test_1d_NUB_complex_double_all()
   int Nx=73;
   int num_splines = 21;
 
-  NUgrid *x_grid = create_log_grid (1.0e-4, 3.0, 2.0e-5, Nx);
-
-  int i = (*x_grid->reverse_map)(x_grid, 1.2);
-  fprintf (stderr, "i=%d\n", i);
+  NUgrid *x_grid = create_log_grid (1.0e-4, 3.0, Nx);
+  //  for (int i=0; i<Nx; i++) 
+  //  fprintf (stderr, "%1.8e\n", x_grid->points[i]);
 
   BCtype_z xBC;
-  xBC.lCode = xBC.rCode = PERIODIC;
+  xBC.lCode = xBC.rCode = NATURAL;
 
   // First, create splines the normal way
   NUBspline_1d_z* norm_splines[num_splines];
