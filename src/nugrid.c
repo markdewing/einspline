@@ -34,6 +34,14 @@ center_grid_reverse_map (void* gridptr, double x)
   return (int)floor(grid->half_points + index - grid->even_half);
 }
 
+int
+log_grid_reverse_map (void *gridptr, double x)
+{
+  log_grid *grid = (log_grid *)gridptr;
+  
+  return (int) floor(grid->ainv*log(x*grid->startinv));
+}
+
 
 int
 general_grid_reverse_map (void* gridptr, double x)
@@ -109,6 +117,26 @@ create_center_grid (double start, double end, double ratio,
     grid->reverse_map = center_grid_reverse_map;
     grid->code = CENTER;
   }
+  return (NUgrid*) grid;
+}
+
+
+NUgrid*
+create_log_grid (double start, double end, double delta0,
+		 int num_points)
+{
+  log_grid *grid = malloc (sizeof (log_grid));
+  grid->code = LOG;
+  grid->start = start;
+  grid->end = end;
+  grid->num_points = num_points;
+  grid->points = malloc(num_points*sizeof(double));
+  grid->a = log1p(-delta0/start);
+  grid->ainv = 1.0/grid->a;
+  grid->startinv = 1.0/start;
+  for (int i=0; i<num_points; i++)
+    grid->points[i] = start*exp(grid->a*(double)i);
+  grid->reverse_map = log_grid_reverse_map;
   return (NUgrid*) grid;
 }
 

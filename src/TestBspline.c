@@ -49,6 +49,32 @@ Test_1d_s()
 }
 
 void
+Test_1d_d()
+{
+  Ugrid grid;
+  grid.start = 1.0;
+  grid.end   = 3.0;
+  grid.num = 1000;
+  //  double data[] = { 3.0, -4.0, 2.0, 1.0, -2.0, 0.0, 3.0, 2.0, 0.5, 1.0, 3.0 };
+  double data[10000];
+  for (int i=0; i<10000; i++)
+    data[i] = -2.0 + 4.0*drand48();
+  BCtype_d bc;
+  bc.lCode = DERIV1; bc.lVal = 10.0;
+  bc.rCode = DERIV2; bc.rVal = -10.0;
+  
+  FILE *fout = fopen ("Spline_1d_d.dat", "w");
+  UBspline_1d_d *spline = 
+    (UBspline_1d_d*) create_UBspline_1d_d (grid, bc, data);
+  for (double x=1.0; x<=3.00001; x+=0.001) {
+    double val, grad, lapl;
+    eval_UBspline_1d_d_vgl (spline, x, &val, &grad, &lapl);
+    fprintf (fout, "%1.5f %20.14f %20.14f %20.14f\n", x, val, grad, lapl);
+  }
+  fclose (fout);
+}
+
+void
 Speed_1d_s()
 {
   Ugrid grid;
@@ -761,6 +787,7 @@ Speed_3d_z()
 int main()
 {
   Test_1d_s();
+  Test_1d_d();
   // Speed_1d_s();
   Test_2d_s();
   // Speed_2d_s();
