@@ -19,7 +19,7 @@ if HAVE_SSE2
    DOUBLE_SRC = multi_bspline_eval_sse_d.c multi_bspline_eval_sse_d_cpp.cc      \
                 multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc      \
                 multi_bspline_eval_sse_d_impl.h multi_bspline_eval_sse_z_impl.h \
-                multi_nubspline_eval_sse_z.c
+                multi_nubspline_eval_sse_z.c multi_nubspline_eval_sse_z_cpp.cc
 else
    DOUBLE_SRC = multi_bspline_eval_std_d.c multi_bspline_eval_std_d_cpp.cc \
                 multi_bspline_eval_std_z.c multi_bspline_eval_std_z_cpp.cc \
@@ -138,6 +138,10 @@ include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
                   multi_bspline_create.h    multi_bspline_structs.h           \
                   multi_bspline_eval_c.h    multi_bspline_eval_d.h            \
                   multi_bspline_eval_s.h    multi_bspline_eval_z.h            \
+                  multi_nubspline.h                                           \
+                  multi_nubspline_create.h    multi_nubspline_structs.h       \
+                  multi_nubspline_eval_c.h    multi_nubspline_eval_d.h        \
+                  multi_nubspline_eval_s.h    multi_nubspline_eval_z.h        \
                   nubspline_base.h nubspline_create.h                         \
                   nubspline_eval_sse_s.h nubspline_eval_std_s.h               \
 	          nubspline_eval_sse_c.h nubspline_eval_std_c.h               \
