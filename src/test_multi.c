@@ -1487,7 +1487,10 @@ test_1d_NUB_complex_double_all()
   //  fprintf (stderr, "%1.8e\n", x_grid->points[i]);
 
   BCtype_z xBC;
-  xBC.lCode = xBC.rCode = NATURAL;
+  // xBC.lCode = xBC.rCode = NATURAL;
+  xBC.lCode = DERIV1; xBC.lVal_r = 2.3; xBC.lVal_i = 1.1;
+  xBC.rCode = DERIV1; xBC.rVal_r = -2.3; xBC.rVal_i = -1.1;
+  
 
   // First, create splines the normal way
   NUBspline_1d_z* norm_splines[num_splines];
@@ -1501,8 +1504,13 @@ test_1d_NUB_complex_double_all()
   for (int i=0; i<num_splines; i++) {
     for (int j=0; j<Nx; j++)
       data[j] = (drand48()-0.5) + (drand48()-0.5)*1.0i;
+
+    xBC.lVal_r = drand48(); xBC.lVal_i = drand48();
+    xBC.rVal_r = drand48(); xBC.rVal_i = drand48();
+
     norm_splines[i] = create_NUBspline_1d_z (x_grid, xBC, data);
-    set_multi_NUBspline_1d_z (multi_spline, i, data);
+    //set_multi_NUBspline_1d_z (multi_spline, i, data);
+    set_multi_NUBspline_1d_z_BC (multi_spline, i, data, xBC);
   }
   
 //   fprintf (stderr, "\nnorm coef  = %1.14e + %1.14ei\n",

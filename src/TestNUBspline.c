@@ -228,17 +228,46 @@ TestNUBspline()
   }
   BCtype_s bc;
   //  bc.lCode = PERIODIC;  bc.rCode = PERIODIC;
-  //  bc.lCode = DERIV1; bc.lVal = 2.0*M_PI/12.0;
-  //  bc.rCode = DERIV1; bc.rVal = 2.0*M_PI/12.0;
-  bc.lCode = NATURAL;  bc.rCode = FLAT;
+  bc.lCode = DERIV1; bc.lVal = 2.0*M_PI/12.0;
+  bc.rCode = DERIV1; bc.rVal = 2.0*M_PI/12.0;
+  //bc.lCode = NATURAL;  bc.rCode = FLAT;
   NUBspline_1d_s *spline = create_NUBspline_1d_s (centgrid, bc, data);
   for (double x=-5.0; x<=7.0; x+=0.001) {
-    float val;
-    eval_NUBspline_1d_s (spline, x, &val);
+    float val, deriv;
+    eval_NUBspline_1d_s_vg (spline, x, &val, &deriv);
     double angle = (x+5.0)/12.0 * 2.0*M_PI;
-    fprintf (stderr, "%1.16e %1.16e %1.16e\n", x, val, sin(angle));
+    fprintf (stderr, "%1.16e %1.16e %1.16e %1.16e\n", x, val, 
+	     sin(angle), deriv);
   }
 }
+
+
+void
+TestNUBspline_d()
+{
+  NUgrid* centgrid = create_center_grid (-5.0, 7.0, 10.0, 20);
+  NUBasis* basis = create_NUBasis (centgrid, true);
+  double data[20];
+  for (int i=0; i<20; i++) {
+    double x = centgrid->points[i];
+    double angle = (x+5.0)/12.0 * 2.0*M_PI;
+    data[i] = sin(angle);
+  }
+  BCtype_d bc;
+  //  bc.lCode = PERIODIC;  bc.rCode = PERIODIC;
+  bc.lCode = DERIV1; bc.lVal = 2.0*M_PI/12.0;
+  bc.rCode = DERIV1; bc.rVal = 2.0*M_PI/12.0;
+  //bc.lCode = NATURAL;  bc.rCode = FLAT;
+  NUBspline_1d_d *spline = create_NUBspline_1d_d (centgrid, bc, data);
+  for (double x=-5.0; x<=7.0; x+=0.001) {
+    double val, deriv;
+    eval_NUBspline_1d_d_vg (spline, x, &val, &deriv);
+    double angle = (x+5.0)/12.0 * 2.0*M_PI;
+    fprintf (stderr, "%1.16e %1.16e %1.16e %1.16e\n", x, val, 
+	     sin(angle), deriv);
+  }
+}
+
 
 void
 TestNUB_2d_s()
@@ -643,7 +672,7 @@ int main()
   // GridSpeedTest();
   // TestNUBasis();
   // TestNUBasis();
-  // TestNUBspline();
+  TestNUBspline_d();
   // TestNUB_2d_s();
   //  TestNUB_2d_c();
   // TestNUB_3d_c();
@@ -651,7 +680,7 @@ int main()
   // TestNUB_2d_d();
   // TestNUB_3d_d();
   // TestNUB_3d_z();
-  SpeedNUB_3d_z();
+  //SpeedNUB_3d_z();
   //  bool passed = TestNUB_1d_s();
 }
 
