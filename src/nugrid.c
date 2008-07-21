@@ -40,6 +40,7 @@ log_grid_reverse_map (void *gridptr, double x)
   log_grid *grid = (log_grid *)gridptr;
   
   int index = (int) floor(grid->ainv*log(x*grid->startinv));
+
   if (index < 0)
     return 0;
   else
