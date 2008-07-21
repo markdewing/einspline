@@ -1,3 +1,5 @@
+#include "c++config.h"
+
 #define BLOCK_SIZE 64
 
 #include <stdio.h>
@@ -10,6 +12,9 @@ eval_multi_UBspline_3d_cuda_c (float *coefs, float *abc, float *vals,
   int block = blockIdx.x;
   int thr   = threadIdx.x;
   int offset = block*BLOCK_SIZE+thr;
+  __shared__ float abcs[64];
+  abcs[thr] = abc[thr];
+  
 
   float val= 0.0;
   //int index=0;
@@ -18,7 +23,8 @@ eval_multi_UBspline_3d_cuda_c (float *coefs, float *abc, float *vals,
     for (int j=0; j<4; j++)
       for (int k=0; k<4; k++) {
 	float *base_addr = coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs;
-	val += abc[(16*i+4*j+k)*BLOCK_SIZE + thr] * base_addr[offset];
+	//val += abc[(16*i+4*j+k)*BLOCK_SIZE + thr] * base_addr[offset];
+	val += abcs[16*i+4*j+k] * base_addr[offset];	
 	//index++;
       }
   vals[offset] = val;
@@ -33,7 +39,7 @@ test_cuda()
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
 
-  N = 512;
+  N = 4096;
   Nx = Ny = Nz = 32;
   xs = Nx*Ny*Nz;
   ys = Ny*Nz;
@@ -57,7 +63,9 @@ test_cuda()
     for (int j=0; j<BLOCK_SIZE; j++)
       abc2[i*BLOCK_SIZE+j] = abc[i];
   }
-  cudaMemcpy(abc_d, abc2, 64*BLOCK_SIZE*sizeof(float), 
+  //  cudaMemcpy(abc_d, abc2, 64*BLOCK_SIZE*sizeof(float), 
+  //     cudaMemcpyHostToDevice);
+  cudaMemcpy(abc_d, abc, 64*sizeof(float), 
 	     cudaMemcpyHostToDevice);
 
   posix_memalign((void**)&vals, 16, N*sizeof(float));
@@ -82,7 +90,7 @@ test_cuda()
 
   cudaMemcpy (vals, vals_d, N*sizeof(float), cudaMemcpyDeviceToHost);
 
-  float vals2[512];
+  float vals2[N];
   
   for (int n=0; n<N; n++) {
     vals2[n] = 0.0;
@@ -96,7 +104,7 @@ test_cuda()
   }
 
 
-  for (int i=0; i<N; i++)	
+  for (int i=0; i<N/256; i++)	
     fprintf (stderr, "%1.9f %1.9f\n", vals[i], vals2[i]); 
 
 
