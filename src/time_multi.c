@@ -20,6 +20,9 @@
 
 #include "multi_bspline.h"
 #include "bspline.h"
+#include "multi_nubspline.h"
+#include "nubspline.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -2264,6 +2267,86 @@ void test_double_vgh()
   
 }
 
+
+
+int 
+time_1d_NUB_complex_double_all()
+{
+  int Nx=73;
+  int num_splines = 1200;
+
+  NUgrid *x_grid = create_log_grid (1.0e-4, 3.0, Nx);
+  //  for (int i=0; i<Nx; i++) 
+  //  fprintf (stderr, "%1.8e\n", x_grid->points[i]);
+
+  BCtype_z xBC;
+  // xBC.lCode = xBC.rCode = NATURAL;
+  xBC.lCode = DERIV1; xBC.lVal_r = 2.3; xBC.lVal_i = 1.1;
+  xBC.rCode = DERIV1; xBC.rVal_r = -2.3; xBC.rVal_i = -1.1;
+  
+
+  // First, create splines the normal way
+  NUBspline_1d_z* norm_splines[num_splines];
+  multi_NUBspline_1d_z *multi_spline;
+  
+  // First, create multispline
+  multi_spline = create_multi_NUBspline_1d_z (x_grid, xBC, num_splines);
+
+  complex_double data[Nx];
+  // Now, create normal splines and set multispline data
+  for (int i=0; i<num_splines; i++) {
+    for (int j=0; j<Nx; j++)
+      data[j] = (drand48()-0.5) + (drand48()-0.5)*1.0i;
+
+    xBC.lVal_r = drand48(); xBC.lVal_i = drand48();
+    xBC.rVal_r = drand48(); xBC.rVal_i = drand48();
+
+    norm_splines[i] = create_NUBspline_1d_z (x_grid, xBC, data);
+    //set_multi_NUBspline_1d_z (multi_spline, i, data);
+    set_multi_NUBspline_1d_z_BC (multi_spline, i, data, xBC);
+  }
+  
+  // Now, test random values
+  int num_vals = 10000;
+  complex_double  multi_vals[num_splines], norm_vals [num_splines];
+  complex_double multi_grads[num_splines], norm_grads[num_splines];
+  complex_double  multi_lapl[num_splines], norm_lapl [num_splines];
+
+  clock_t multi_start, multi_end, norm_start, norm_end;
+  
+
+  //////////////////////////
+  // Time value routine   //
+  //////////////////////////
+  multi_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  
+    double x = rx*x_grid->start + (1.0-rx)*x_grid->end;
+
+    eval_multi_NUBspline_1d_z (multi_spline, x, multi_vals);
+  }
+  multi_end = clock();
+
+  norm_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  
+    double x = rx*x_grid->start + (1.0-rx)*x_grid->end;
+
+    for (int j=0; j<num_splines; j++)
+      eval_NUBspline_1d_z (norm_splines[j], x, &(norm_vals[j]));
+  }
+  norm_end = clock();
+  double dt = (double)(multi_end - multi_start) / (double)CLOCKS_PER_SEC;
+  double multi_speed = (double)num_vals * (double)num_splines/ dt; 
+  fprintf (stderr, "1D complex nonuniform multi-spline speed = %9.2f\n",
+	   multi_speed);
+
+ return 0;
+}
+
+
+
+
 void PrintPassFail (int code)
 {
   char green[100], normal[100], red[100];
@@ -2280,8 +2363,10 @@ void PrintPassFail (int code)
 
 main()
 {
-  //  fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
-  //  time_3d_complex_float_all();
+  time_1d_NUB_complex_double_all();
+
+  fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
+  time_3d_complex_float_all();
   fprintf (stderr, "Timing 3D complex double-precision evaluation speed:\n");
   time_3d_complex_double_all();
 }
