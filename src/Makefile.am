@@ -8,22 +8,26 @@ endif
 if HAVE_SSE
    SINGLE_SRC = multi_bspline_eval_sse_s.c multi_bspline_eval_sse_s_cpp.cc       \
                 multi_bspline_eval_sse_c.c multi_bspline_eval_sse_c_cpp.cc       \
-                multi_bspline_eval_sse_s_impl.h  multi_bspline_eval_sse_c_impl.h
+                multi_bspline_eval_sse_s_impl.h  multi_bspline_eval_sse_c_impl.h 
 else
-   SINGLE_SRC = multi_bspline_eval_std_s.c multi_bspline_eval_std_s_cpp.cc \
-                multi_bspline_eval_std_c.c multi_bspline_eval_std_c_cpp.cc \
-                multi_bspline_eval_std_s_impl.h  multi_bspline_eval_std_c_impl.h
+   SINGLE_SRC = multi_bspline_eval_std_s.c multi_bspline_eval_std_s_cpp.cc       \
+                multi_bspline_eval_std_c.c multi_bspline_eval_std_c_cpp.cc       \
+                multi_bspline_eval_std_s_impl.h  multi_bspline_eval_std_c_impl.h 
 endif
 
 if HAVE_SSE2
-   DOUBLE_SRC = multi_bspline_eval_sse_d.c multi_bspline_eval_sse_d_cpp.cc      \
-                multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc      \
-                multi_bspline_eval_sse_d_impl.h multi_bspline_eval_sse_z_impl.h \
-                multi_nubspline_eval_sse_z.c multi_nubspline_eval_sse_z_cpp.cc
+   DOUBLE_SRC = multi_bspline_eval_sse_d.c multi_bspline_eval_sse_d_cpp.cc       \
+                multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc       \
+                multi_bspline_eval_sse_d_impl.h multi_bspline_eval_sse_z_impl.h  \
+                multi_nubspline_eval_sse_z.c multi_nubspline_eval_sse_z_cpp.cc   \
+                multi_nubspline_eval_sse_z_impl.h
 else
-   DOUBLE_SRC = multi_bspline_eval_std_d.c multi_bspline_eval_std_d_cpp.cc \
-                multi_bspline_eval_std_z.c multi_bspline_eval_std_z_cpp.cc \
-                multi_bspline_eval_std_d_impl.h multi_bspline_eval_std_z_impl.h
+   DOUBLE_SRC = multi_bspline_eval_std_d.c multi_bspline_eval_std_d_cpp.cc       \
+                multi_bspline_eval_std_z.c multi_bspline_eval_std_z_cpp.cc       \
+                multi_bspline_eval_std_d_impl.h multi_bspline_eval_std_z_impl.h  \
+                multi_nubspline_eval_std_z.c multi_nubspline_eval_std_z_cpp.cc   \
+                multi_nubspline_eval_std_z_impl.h
+
 endif
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \

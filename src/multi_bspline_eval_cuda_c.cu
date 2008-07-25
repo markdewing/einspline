@@ -1,5 +1,3 @@
-#include "c++config.h"
-
 #define BLOCK_SIZE 64
 
 #include <stdio.h>
@@ -31,6 +29,59 @@ eval_multi_UBspline_3d_cuda_c (float *coefs, float *abc, float *vals,
 }
 
 
+__global__ void 
+eval_multi_UBspline_3d_cuda_c (float3 r,
+                               float *coefs, float *vals,
+			       int xs, int ys, int zs, int N)
+{
+  int block = blockIdx.x;
+  int thr   = threadIdx.x;
+
+  __shared__ float abcs[64];
+  abcs[thr] = abc[thr];
+
+  float dxInv = 0.0625f;
+  float v, dv;
+
+  v = floor(dxInv*r.x);
+  dv = dxInv*r.x - v;
+  int ix = (int) v;
+
+  v = floor(dxInv*r.x);
+  dv = dxInv*r.x - v;
+  int iy = (int) v;
+
+  v = floor(dxInv*r.y);
+  dv = dxInv*r.y - v;
+  int iz = (int) v;
+
+
+
+
+  int ix = (int) v;
+  int iy = (int)floor(r.y);
+  int iz = (int)floor(r.z);
+
+  int offset = block*BLOCK_SIZE+thr;
+  __shared__ float abcs[64];
+  abcs[thr] = abc[thr];
+  
+
+  float val= 0.0;
+  //int index=0;
+  val = 0.0;
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++)
+      for (int k=0; k<4; k++) {
+	float *base_addr = coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs;
+	//val += abc[(16*i+4*j+k)*BLOCK_SIZE + thr] * base_addr[offset];
+	val += abcs[16*i+4*j+k] * base_addr[offset];	
+	//index++;
+      }
+  vals[offset] = val;
+}
+
+
 void
 test_cuda()
 {
@@ -40,7 +91,7 @@ test_cuda()
   int Nx, Ny, Nz;
 
   N = 4096;
-  Nx = Ny = Nz = 32;
+  Nx = Ny = Nz = 16;
   xs = Nx*Ny*Nz;
   ys = Ny*Nz;
   zs = Nz;
