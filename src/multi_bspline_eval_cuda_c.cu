@@ -55,13 +55,6 @@ eval_multi_UBspline_3d_cuda_c (float3 r,
   dv = dxInv*r.y - v;
   int iz = (int) v;
 
-
-
-
-  int ix = (int) v;
-  int iy = (int)floor(r.y);
-  int iz = (int)floor(r.z);
-
   int offset = block*BLOCK_SIZE+thr;
   __shared__ float abcs[64];
   abcs[thr] = abc[thr];

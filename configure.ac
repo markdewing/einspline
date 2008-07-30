@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-AC_INIT(einspline, 0.8.7, kesler@ciw.edu, einspline)
-AM_INIT_AUTOMAKE(einspline, 0.8.7)
+AC_INIT(einspline, 0.8.8, kesler@ciw.edu, einspline)
+AM_INIT_AUTOMAKE(einspline, 0.8.8)
 AC_CONFIG_SRCDIR([src/bspline.h])
 AC_CONFIG_HEADER([src/config.h])
 
