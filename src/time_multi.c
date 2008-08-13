@@ -2307,7 +2307,7 @@ time_1d_NUB_complex_double_all()
   }
   
   // Now, test random values
-  int num_vals = 10000;
+  int num_vals = 100000;
   complex_double  multi_vals[num_splines], norm_vals [num_splines];
   complex_double multi_grads[num_splines], norm_grads[num_splines];
   complex_double  multi_lapl[num_splines], norm_lapl [num_splines];

@@ -1,7 +1,10 @@
 #define BLOCK_SIZE 64
 
 #include <stdio.h>
-
+#include <pthread.h>
+extern "C" {
+#include <cuda.h>
+}
 __global__ void 
 eval_multi_UBspline_3d_cuda_c (float *coefs, float *abc, float *vals,
 			       int ix, int iy, int iz,
@@ -17,15 +20,15 @@ eval_multi_UBspline_3d_cuda_c (float *coefs, float *abc, float *vals,
 
   float val= 0.0;
   //int index=0;
-  val = 0.0;
   for (int i=0; i<4; i++)
-    for (int j=0; j<4; j++)
-      for (int k=0; k<4; k++) {
+    for (int j=0; j<4; j++) {
+      for (int k=0; k<4; k++) {	
 	float *base_addr = coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs;
 	//val += abc[(16*i+4*j+k)*BLOCK_SIZE + thr] * base_addr[offset];
 	val += abcs[16*i+4*j+k] * base_addr[offset];	
 	//index++;
       }
+    }
   vals[offset] = val;
 }
 
@@ -35,7 +38,8 @@ __constant__ float A[16];
 __global__ void
 eval_multi_multi_UBspline_3d_cuda_c (float3 *pos, float3 drInv, 
 				     float *coefs_real, float *coefs_imag,
-				     float **vals_real, float **vals_imag, int3 strides)
+				     float **vals_real, float **vals_imag, 
+				     int3 strides)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
@@ -252,17 +256,30 @@ test_cuda()
 }
 
 
-void
-test_multi_cuda()
+void *
+test_multi_cuda(void *thread)
 {
-  int numWalkers = 100;
+  fprintf (stderr, "In thread %p\n", thread);
+//   CUcontext ctx;
+//   CUdevice dev;
+//   cuDeviceGet (&dev, (int)(size_t)thread);
+//   cuCtxCreate(&ctx, CU_CTX_SCHED_YIELD, dev);
+
+//   int deviceCount;
+//   cudaGetDeviceCount(&deviceCount);
+
+//   cudaSetDevice((size_t)thread);
+
+
+  int numWalkers = 1000;
   float *coefs  , *vals[numWalkers], *vals_real[numWalkers], *vals_imag[numWalkers];
-  float *coefs_d, *vals_real_d[numWalkers], *vals_imag_d[numWalkers];
-  float3 r[numWalkers], *r_d;
+  float *coefs_real_d, *coefs_imag_d, *vals_real_d[numWalkers], 
+    *vals_imag_d[numWalkers];
+  float3 *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
 
-  N = 256;
+  N = 128;
   Nx = Ny = Nz = 16;
   xs = Nx*Ny*Nz;
   ys = Ny*Nz;
@@ -276,42 +293,58 @@ test_multi_cuda()
   // Setup Bspline coefficients
   int size = Nx*Ny*Nz*N*sizeof(float);
   posix_memalign((void**)&coefs, 16, size);
-  cudaMalloc((void**)&coefs_d, size);
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
       for (int iz=0; iz<Nz; iz++)
 	for (int n=0; n<N; n++)
 	  coefs[ix*xs + iy*ys + iz*zs + n] = drand48();
-  cudaMemcpy(coefs_d, coefs, size, cudaMemcpyHostToDevice);
+
+
+  fprintf (stderr, "Filled in coefs.\n");
 
   // Setup values
   posix_memalign((void**)&vals, 16, N*sizeof(float));
 
-  // Setup walker positions
-  cudaMalloc((void**)&r_d, numWalkers*sizeof(float3));
+  // cudaMemcpy(r_d, r, numWalkers*sizeof(float3), cudaMemcpyHostToDevice);
 
-  for (int ir=0; ir<numWalkers; ir++) {
-    r[ir].x = 0.5*drand48();
-    r[ir].y = 0.5*drand48();
-    r[ir].z = 0.5*drand48();
-  }
-  cudaMemcpy(r_d, r, numWalkers*sizeof(float3), cudaMemcpyHostToDevice);
+  
+  
+  // Setup CUDA coefficients
+  fprintf (stderr, "Before first CUDA mallocs.\n");
+  cudaMalloc((void**)&coefs_real_d, size);
+  cudaMalloc((void**)&coefs_imag_d, size);
+  fprintf (stderr, "Before Memcpy.\n");
+  cudaMemcpy(coefs_real_d, coefs, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(coefs_imag_d, coefs, size, cudaMemcpyHostToDevice);
+  fprintf (stderr, "After Memcpy.\n");  
 
   // Setup device value storage
   int numVals = 2*N*numWalkers;
   float *valBlock_d;
-  cudaMalloc((void**)&valBlock_d, numVals*sizeof(float));
-  cudaMalloc((void**)&vals_real_d, numWalkers*sizeof(float*));
-  cudaMalloc((void**)&vals_imag_d, numWalkers*sizeof(float*));
+  cudaMalloc((void**)&(valBlock_d), numVals*sizeof(float));
+  cudaMalloc((void**)&(vals_real_d), numWalkers*sizeof(float*));
+  cudaMalloc((void**)&(vals_imag_d), numWalkers*sizeof(float*));
   for (int i=0; i<numWalkers; i++) {
     vals_real[i] = valBlock_d + 2*i*N;
     vals_imag[i] = valBlock_d + (2*i+1)*N;
   }
   cudaMemcpy(vals_real_d, vals_real, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
   cudaMemcpy(vals_imag_d, vals_imag, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+  
+  fprintf (stderr, "Finished cuda allocations.\n");
 
 
+  // Setup walker positions
+  cudaMalloc((void**)&(r_d), numWalkers*sizeof(float3));
+  cudaMallocHost((void**)&(r_h), numWalkers*sizeof(float3));
 
+  for (int ir=0; ir<numWalkers; ir++) {
+    r_h[ir].x = 0.5*drand48();
+    r_h[ir].y = 0.5*drand48();
+    r_h[ir].z = 0.5*drand48();
+  }
+
+  
   int3 strides;
   strides.x = xs;
   strides.y = ys;
@@ -323,13 +356,27 @@ test_multi_cuda()
   
   clock_t start, end;
   start = clock();
-  for (int i=0; i<100000; i++) {
+
+  fprintf (stderr, "Before cuda loop.\n");
+
+  for (int i=0; i<10000; i++) {
+    if ((i%1000) == 0) 
+      fprintf (stderr, "i = %d\n", i);
+    cudaMemcpy(r_d, r_h, numWalkers*sizeof(float3), cudaMemcpyHostToDevice);
     eval_multi_multi_UBspline_3d_cuda_c<<<dimGrid,dimBlock>>> 
-      (r_d, drInv, coefs, coefs, vals_real_d, vals_imag_d, strides);
+      (r_d, drInv, coefs_real_d, coefs_imag_d, 
+       vals_real_d, vals_imag_d, strides);
   }
   end = clock();
-  double time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)100000*N*numWalkers);
+  double time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
   fprintf (stderr, "Evals per second = %1.8e\n", 1.0/time);
+  
+  cudaFree (valBlock_d);
+  cudaFree (vals_real_d);
+  cudaFree (vals_imag_d);
+  cudaFree (coefs_real_d);
+  cudaFree (coefs_imag_d);
+  cudaFree (r_d);
 
   // cudaMemcpy (vals, vals_d, N*sizeof(float), cudaMemcpyDeviceToHost);
 
@@ -361,5 +408,32 @@ test_multi_cuda()
 
 main()
 {
-  test_multi_cuda();
+  int deviceCount;
+  cudaGetDeviceCount(&deviceCount);
+  fprintf (stderr, "Detected %d CUDA devices.\n", deviceCount);
+
+  // test_cuda();
+
+  for (int device = 0; device < deviceCount; ++device) {
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceProperties(&deviceProp, device);
+    fprintf (stderr, "Device %d:\n", device);
+    fprintf (stderr, "  Global memory:     %10d\n",
+	     deviceProp.totalGlobalMem);
+    fprintf (stderr, "  MultiProcessors:   %10d\n",
+	     deviceProp.multiProcessorCount);
+    fprintf (stderr, "  Registers:         %10d\n", 
+	     deviceProp.regsPerBlock);
+    fprintf (stderr, "  Constant memory:   %10d\n", 
+	     deviceProp.totalConstMem);
+  }
+
+  // pthread_t threads[deviceCount];
+
+  // for (int device = 0; device < deviceCount-1; device++) 
+  //   pthread_create (&threads[device], NULL, test_multi_cuda, (void*)device);
+  test_multi_cuda((void*)0);
+
+  pthread_exit(NULL);
+  //test_multi_cuda();
 }
