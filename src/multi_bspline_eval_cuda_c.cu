@@ -2,9 +2,10 @@
 
 #include <stdio.h>
 #include <pthread.h>
-extern "C" {
 #include <cuda.h>
-}
+#include <cutil.h>
+#include <multithreading.h>
+
 __global__ void 
 eval_multi_UBspline_3d_cuda_c (float *coefs, float *abc, float *vals,
 			       int ix, int iy, int iz,
@@ -35,8 +36,8 @@ eval_multi_UBspline_3d_cuda_c (float *coefs, float *abc, float *vals,
 
 __constant__ float A[16];
 
-__global__ void
-eval_multi_multi_UBspline_3d_cuda_c (float3 *pos, float3 drInv, 
+__global__ static void
+eval_multi_multi_UBspline_3d_cuda_c (float *pos, float3 drInv, 
 				     float *coefs_real, float *coefs_imag,
 				     float **vals_real, float **vals_imag, 
 				     int3 strides)
@@ -45,8 +46,18 @@ eval_multi_multi_UBspline_3d_cuda_c (float3 *pos, float3 drInv,
   int thr   = threadIdx.x;
   int ir    = blockIdx.y;
   int offset = block*BLOCK_SIZE+thr;
+
+  __shared__ float pos_s[BLOCK_SIZE];
+  int ir1 = (ir >> 4)*64;
+  int ir2 = (ir & 15)*4;
+  pos_s[thr] = pos[ir1+thr];
+  float3 r;
+  r.x = pos_s[ir2+0];
+  r.y = pos_s[ir2+1];
+  r.z = pos_s[ir2+2];
   
-  float3 r = pos[ir];
+  //  float3 r = pos[ir];
+  //float3 r;  r.x=0.2;  r.y=0.1;  r.z=0.3;
   int3 index;
   float3 t;
   float s, sf;
@@ -256,10 +267,9 @@ test_cuda()
 }
 
 
-void *
+static void *
 test_multi_cuda(void *thread)
 {
-  fprintf (stderr, "In thread %p\n", thread);
 //   CUcontext ctx;
 //   CUdevice dev;
 //   cuDeviceGet (&dev, (int)(size_t)thread);
@@ -268,14 +278,14 @@ test_multi_cuda(void *thread)
 //   int deviceCount;
 //   cudaGetDeviceCount(&deviceCount);
 
-//   cudaSetDevice((size_t)thread);
+  CUDA_SAFE_CALL(cudaSetDevice((int)(size_t)thread));
+  fprintf (stderr, "In thread %p\n", thread);
 
-
-  int numWalkers = 1000;
+  int numWalkers = 3000;
   float *coefs  , *vals[numWalkers], *vals_real[numWalkers], *vals_imag[numWalkers];
   float *coefs_real_d, *coefs_imag_d, *vals_real_d[numWalkers], 
     *vals_imag_d[numWalkers];
-  float3 *r_d, *r_h;
+  float *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
 
@@ -292,7 +302,7 @@ test_multi_cuda(void *thread)
 
   // Setup Bspline coefficients
   int size = Nx*Ny*Nz*N*sizeof(float);
-  posix_memalign((void**)&coefs, 16, size);
+  CUT_SAFE_MALLOC(posix_memalign((void**)&coefs, 16, size));
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
       for (int iz=0; iz<Nz; iz++)
@@ -303,45 +313,47 @@ test_multi_cuda(void *thread)
   fprintf (stderr, "Filled in coefs.\n");
 
   // Setup values
-  posix_memalign((void**)&vals, 16, N*sizeof(float));
+  //posix_memalign((void**)&vals, 16, N*sizeof(float));
 
   // cudaMemcpy(r_d, r, numWalkers*sizeof(float3), cudaMemcpyHostToDevice);
 
   
+  fprintf (stderr, "size = %d\n", size);
   
   // Setup CUDA coefficients
   fprintf (stderr, "Before first CUDA mallocs.\n");
-  cudaMalloc((void**)&coefs_real_d, size);
-  cudaMalloc((void**)&coefs_imag_d, size);
+  CUDA_SAFE_CALL(cudaMalloc((void**)&coefs_real_d, size));
+  CUDA_SAFE_CALL(cudaMalloc((void**)&coefs_imag_d, size));
   fprintf (stderr, "Before Memcpy.\n");
-  cudaMemcpy(coefs_real_d, coefs, size, cudaMemcpyHostToDevice);
-  cudaMemcpy(coefs_imag_d, coefs, size, cudaMemcpyHostToDevice);
+  CUDA_SAFE_CALL(cudaMemcpy(coefs_real_d, coefs, size, cudaMemcpyHostToDevice));
+  CUDA_SAFE_CALL(cudaMemcpy(coefs_imag_d, coefs, size, cudaMemcpyHostToDevice));
   fprintf (stderr, "After Memcpy.\n");  
 
   // Setup device value storage
   int numVals = 2*N*numWalkers;
-  float *valBlock_d;
-  cudaMalloc((void**)&(valBlock_d), numVals*sizeof(float));
-  cudaMalloc((void**)&(vals_real_d), numWalkers*sizeof(float*));
-  cudaMalloc((void**)&(vals_imag_d), numWalkers*sizeof(float*));
+  float *valBlock_d, *valBlock_h;
+  CUDA_SAFE_CALL(cudaMalloc((void**)&(valBlock_d), numVals*sizeof(float)));
+  CUDA_SAFE_CALL(cudaMallocHost((void**)&(valBlock_h), numVals*sizeof(float)));
+  CUDA_SAFE_CALL(cudaMalloc((void**)&(vals_real_d), numWalkers*sizeof(float*)));
+  CUDA_SAFE_CALL(cudaMalloc((void**)&(vals_imag_d), numWalkers*sizeof(float*)));
   for (int i=0; i<numWalkers; i++) {
     vals_real[i] = valBlock_d + 2*i*N;
     vals_imag[i] = valBlock_d + (2*i+1)*N;
   }
-  cudaMemcpy(vals_real_d, vals_real, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
-  cudaMemcpy(vals_imag_d, vals_imag, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+  CUDA_SAFE_CALL(cudaMemcpy(vals_real_d, vals_real, numWalkers*sizeof(float*), cudaMemcpyHostToDevice));
+  CUDA_SAFE_CALL(cudaMemcpy(vals_imag_d, vals_imag, numWalkers*sizeof(float*), cudaMemcpyHostToDevice));
   
   fprintf (stderr, "Finished cuda allocations.\n");
 
 
   // Setup walker positions
-  cudaMalloc((void**)&(r_d), numWalkers*sizeof(float3));
-  cudaMallocHost((void**)&(r_h), numWalkers*sizeof(float3));
+  CUDA_SAFE_CALL(cudaMalloc((void**)&(r_d),     4*numWalkers*sizeof(float)));
+  CUDA_SAFE_CALL(cudaMallocHost((void**)&(r_h), 4*numWalkers*sizeof(float)));
 
   for (int ir=0; ir<numWalkers; ir++) {
-    r_h[ir].x = 0.5*drand48();
-    r_h[ir].y = 0.5*drand48();
-    r_h[ir].z = 0.5*drand48();
+    r_h[4*ir+0] = 0.5*drand48();
+    r_h[4*ir+1] = 0.5*drand48();
+    r_h[4*ir+2] = 0.5*drand48();
   }
 
   
@@ -362,10 +374,11 @@ test_multi_cuda(void *thread)
   for (int i=0; i<10000; i++) {
     if ((i%1000) == 0) 
       fprintf (stderr, "i = %d\n", i);
-    cudaMemcpy(r_d, r_h, numWalkers*sizeof(float3), cudaMemcpyHostToDevice);
+    CUDA_SAFE_CALL(cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice));
     eval_multi_multi_UBspline_3d_cuda_c<<<dimGrid,dimBlock>>> 
       (r_d, drInv, coefs_real_d, coefs_imag_d, 
        vals_real_d, vals_imag_d, strides);
+    //cudaMemcpy(valBlock_h, valBlock_d, numVals*sizeof(float), cudaMemcpyDeviceToHost);
   }
   end = clock();
   double time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
@@ -428,10 +441,11 @@ main()
 	     deviceProp.totalConstMem);
   }
 
-  // pthread_t threads[deviceCount];
+  pthread_t threads[deviceCount];
 
-  // for (int device = 0; device < deviceCount-1; device++) 
-  //   pthread_create (&threads[device], NULL, test_multi_cuda, (void*)device);
+  // for (int device = 0; device < deviceCount; device++) 
+  //   pthread_create (&(threads[device]), NULL, test_multi_cuda, (void*)device);
+  // cutStartThread((CUT_THREADROUTINE)test_multi_cuda,(void*)device);
   test_multi_cuda((void*)0);
 
   pthread_exit(NULL);
