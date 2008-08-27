@@ -81,7 +81,7 @@ eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv,
   int block = blockIdx.x;
   int thr   = threadIdx.x;
   int ir    = blockIdx.y;
-  int off = block*BLOCK_SIZE+thr;
+  int off   = block*BLOCK_SIZE+thr;
 
   __shared__ float *myval;
   __shared__ float abc[64], coefs[2*BLOCK_SIZE];
@@ -129,21 +129,24 @@ eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv,
   tp[2] = make_float4(1.0, t.z, t.z*t.z, t.z*t.z*t.z);
 
   __shared__ float a[4], b[4], c[4];
-  if (thr == 0) {
-    a[0] = A[ 0]*tp[0].x + A[ 1]*tp[0].y + A[ 2]*tp[0].z + A[ 3]*tp[0].w;
-    a[1] = A[ 4]*tp[0].x + A[ 5]*tp[0].y + A[ 6]*tp[0].z + A[ 7]*tp[0].w;
-    a[2] = A[ 8]*tp[0].x + A[ 9]*tp[0].y + A[10]*tp[0].z + A[11]*tp[0].w;
-    a[3] = A[12]*tp[0].x + A[13]*tp[0].y + A[14]*tp[0].z + A[15]*tp[0].w;
+  if (thr < 4) {
+    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].z;
+    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].z;
+    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].z;
+//     a[0] = A[ 0]*tp[0].x + A[ 1]*tp[0].y + A[ 2]*tp[0].z + A[ 3]*tp[0].w;
+//     a[1] = A[ 4]*tp[0].x + A[ 5]*tp[0].y + A[ 6]*tp[0].z + A[ 7]*tp[0].w;
+//     a[2] = A[ 8]*tp[0].x + A[ 9]*tp[0].y + A[10]*tp[0].z + A[11]*tp[0].w;
+//     a[3] = A[12]*tp[0].x + A[13]*tp[0].y + A[14]*tp[0].z + A[15]*tp[0].w;
     
-    b[0] = A[ 0]*tp[1].x + A[ 1]*tp[1].y + A[ 2]*tp[1].z + A[ 3]*tp[1].w;
-    b[1] = A[ 4]*tp[1].x + A[ 5]*tp[1].y + A[ 6]*tp[1].z + A[ 7]*tp[1].w;
-    b[2] = A[ 8]*tp[1].x + A[ 9]*tp[1].y + A[10]*tp[1].z + A[11]*tp[1].w;
-    b[3] = A[12]*tp[1].x + A[13]*tp[1].y + A[14]*tp[1].z + A[15]*tp[1].w;
+//     b[0] = A[ 0]*tp[1].x + A[ 1]*tp[1].y + A[ 2]*tp[1].z + A[ 3]*tp[1].w;
+//     b[1] = A[ 4]*tp[1].x + A[ 5]*tp[1].y + A[ 6]*tp[1].z + A[ 7]*tp[1].w;
+//     b[2] = A[ 8]*tp[1].x + A[ 9]*tp[1].y + A[10]*tp[1].z + A[11]*tp[1].w;
+//     b[3] = A[12]*tp[1].x + A[13]*tp[1].y + A[14]*tp[1].z + A[15]*tp[1].w;
     
-    c[0] = A[ 0]*tp[2].x + A[ 1]*tp[2].y + A[ 2]*tp[2].z + A[ 3]*tp[2].w;
-    c[1] = A[ 4]*tp[2].x + A[ 5]*tp[2].y + A[ 6]*tp[2].z + A[ 7]*tp[2].w;
-    c[2] = A[ 8]*tp[2].x + A[ 9]*tp[2].y + A[10]*tp[2].z + A[11]*tp[2].w;
-    c[3] = A[12]*tp[2].x + A[13]*tp[2].y + A[14]*tp[2].z + A[15]*tp[2].w;
+//     c[0] = A[ 0]*tp[2].x + A[ 1]*tp[2].y + A[ 2]*tp[2].z + A[ 3]*tp[2].w;
+//     c[1] = A[ 4]*tp[2].x + A[ 5]*tp[2].y + A[ 6]*tp[2].z + A[ 7]*tp[2].w;
+//     c[2] = A[ 8]*tp[2].x + A[ 9]*tp[2].y + A[10]*tp[2].z + A[11]*tp[2].w;
+//     c[3] = A[12]*tp[2].x + A[13]*tp[2].y + A[14]*tp[2].z + A[15]*tp[2].w;
   }
   __syncthreads();
 
@@ -181,14 +184,124 @@ eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv,
   //     }
   //   }
   // }
+  __shared__ float buff[2*BLOCK_SIZE];
+  buff[2*thr+0] = val_real;
+  buff[2*thr+1] = val_imag;
+  __syncthreads();
+  myval[off] = buff[thr];
+  myval[off+BLOCK_SIZE] = buff[thr+BLOCK_SIZE];
 
-
-  myval[off+0] = val_real;
-  myval[off+BLOCK_SIZE] = val_imag;
+//   myval[2*off+0] = val_real;
+//   myval[2*off+1] = val_imag;
   //myval[off+BLOCK_SIZE] = val_imag;
   //vals_real[ir][offset] = val_real;
   //vals_imag[ir][offset] = val_imag;
 }
+
+
+
+__global__ static void
+eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv, 
+					 float *coefs_real, float *coefs_imag,
+					 float *vals[], float *grads[], float *hess[],
+					 uint3 strides)
+{
+  int block = blockIdx.x;
+  int thr   = threadIdx.x;
+  int ir    = blockIdx.y;
+  int off   = block*BLOCK_SIZE+thr;
+
+  __shared__ float *myval, *mygrad, *myhess;
+  __shared__ float3 r;
+  if (thr == 0) {
+    r.x = pos[4*ir+0];
+    r.y = pos[4*ir+1];
+    r.z = pos[4*ir+2];
+    myval  = vals[ir];
+    mygrad = grads[ir];
+    myhess = hess[ir];
+  }
+  __syncthreads();
+  
+  int3 index;
+  float3 t;
+  float s, sf;
+  float4 tp[3];
+
+  s = r.x * drInv.x;
+  sf = floor(s);
+  index.x = (int)sf;
+  t.x = s - sf;
+
+  s = r.y * drInv.y;
+  sf = floor(s);
+  index.y = (int)sf;
+  t.y = s - sf;
+
+  s = r.z * drInv.z;
+  sf = floor(s);
+  index.z = (int)sf;
+  t.z = s - sf;
+  
+  tp[0] = make_float4(1.0, t.x, t.x*t.x, t.x*t.x*t.x);
+  tp[1] = make_float4(1.0, t.y, t.y*t.y, t.y*t.y*t.y);
+  tp[2] = make_float4(1.0, t.z, t.z*t.z, t.z*t.z*t.z);
+
+  // First 4 of a are value, second 4 are derivative, last four are
+  // second derivative.
+  __shared__ float a[12], b[12], c[12];
+  if (thr < 12) {
+    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].z;
+    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].z;
+    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].z;
+  }
+  __syncthreads();
+
+  float v_r = 0.0;
+  float v_i = 0.0;
+  float g0_r=0.0, g0_i=0.0, g1_r=0.0, g1_i=0.0, g2_r=0.0, g2_i=0.0, 
+    h00_r=0.0, h00_i=0.0, h01_r=0.0, h01_i=0.0, h02_r=0.0, h02_i=0.0, 
+    h11_r=0.0, h11_i=0.0, h12_r=0.0, h12_i=0.0, h22_r=0.0, h22_i=0.0;
+  for (int i=0; i<4; i++) {
+    for (int j=0; j<4; j++) {
+      float *base_real = coefs_real + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
+      float *base_imag = coefs_imag + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
+      for (int k=0; k<4; k++) {
+	float cr = base_real[off+k*strides.z];
+	float ci =  base_imag[off+k*strides.z];
+
+	v_r   +=     a[i+0] * b[j+0] * c[k+0] * cr;	v_i   += a[i+0] * b[j+0] * c[k+0] * ci;
+
+	g0_r  +=     a[i+4] * b[j+0] * c[k+0] * cr;	g0_i  += a[i+4] * b[j+0] * c[k+0] * ci;
+	g1_r  +=     a[i+0] * b[j+4] * c[k+0] * cr;	g1_i  += a[i+0] * b[j+4] * c[k+0] * ci;
+	g2_r  +=     a[i+0] * b[j+0] * c[k+4] * cr;	g2_i  += a[i+0] * b[j+0] * c[k+4] * ci;
+
+	h00_r +=     a[i+8] * b[j+0] * c[k+0] * cr;     h00_i += a[i+8] * b[j+0] + c[k+0] * ci;
+	h01_r +=     a[i+4] * b[j+4] * c[k+0] * cr;     h01_i += a[i+4] * b[j+4] + c[k+0] * ci;
+	h02_r +=     a[i+4] * b[j+0] * c[k+4] * cr;     h02_i += a[i+4] * b[j+0] + c[k+4] * ci;
+	h11_r +=     a[i+0] * b[j+8] * c[k+0] * cr;     h11_i += a[i+0] * b[j+8] + c[k+0] * ci;
+	h12_r +=     a[i+0] * b[j+4] * c[k+4] * cr;     h12_i += a[i+0] * b[j+4] + c[k+4] * ci;
+	h22_r +=     a[i+0] * b[j+0] * c[k+8] * cr;     h22_i += a[i+0] * b[j+0] + c[k+8] * ci;
+      }
+    }
+  }
+
+  __shared__ float buff[6*BLOCK_SIZE];
+
+  buff[2*thr+0] = v_r;  buff[2*thr+1] = v_i;
+  __syncthreads();
+  myval[off] = buff[thr];    
+  myval[off+BLOCK_SIZE] = buff[thr+BLOCK_SIZE];
+
+  buff[6*thr+0] = g0_r;  buff[6*thr+1] = g0_i;
+  buff[6*thr+2] = g1_r;  buff[6*thr+3] = g1_i;
+  buff[6*thr+4] = g2_r;  buff[6*thr+5] = g2_i;
+  __syncthreads();
+  mygrad[off] = buff[thr];    
+  mygrad[off+BLOCK_SIZE] = buff[thr+BLOCK_SIZE];
+
+}
+
 				    
 
 
@@ -206,7 +319,7 @@ test_multi_cuda(void *thread)
   cudaSetDevice((int)(size_t)thread);
   fprintf (stderr, "In thread %p\n", thread);
 
-  int numWalkers = 200;
+  int numWalkers = 2000;
   float *coefs  ,  __device__ *vals[numWalkers];
   float *coefs_real_d, *coefs_imag_d, __device__ **vals_d;
   float *r_d, *r_h;
@@ -360,6 +473,8 @@ main()
 	     deviceProp.regsPerBlock);
     fprintf (stderr, "  Constant memory:   %10d\n", 
 	     deviceProp.totalConstMem);
+    fprintf (stderr, "  Shared memory:     %10d\n", 
+	     deviceProp.sharedMemPerBlock);
   }
 
   //  pthread_t threads[deviceCount];
