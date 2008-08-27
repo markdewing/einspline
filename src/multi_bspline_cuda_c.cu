@@ -76,25 +76,33 @@ create_CUDA_multi_UBspline_3d_c (multi_UBspline_3d_c* spline)
 __global__ static void
 eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv, 
 				     float *coefs_real, float *coefs_imag,
-				     float *vals_real[], float *vals_imag[],
-				     int3 strides)
+				     float *vals[], int3 strides)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
   int ir    = blockIdx.y;
-  int offset = block*BLOCK_SIZE+thr;
+  int off = block*BLOCK_SIZE+thr;
 
-  __shared__ float abc[64];
+  __shared__ float *myval;
+  __shared__ float abc[64], coefs[2*BLOCK_SIZE];
 
-  __shared__ float pos_s[BLOCK_SIZE];
-  int ir1 = (ir >> 4)*64;
-  int ir2 = (ir & 15)*4;
-  pos_s[thr] = pos[ir1+thr];
+  // __shared__ float pos_s[BLOCK_SIZE];
+  // int ir1 = (ir >> 4)*64;
+  // int ir2 = (ir & 15)*4;
+  // pos_s[thr] = pos[ir1+thr];
+  // __syncthreads();
+  // float3 r;
+  // r.x = pos_s[ir2+0];
+  // r.y = pos_s[ir2+1];
+  // r.z = pos_s[ir2+2];
+  __shared__ float3 r;
+  if (thr == 0) {
+    r.x = pos[4*ir+0];
+    r.y = pos[4*ir+1];
+    r.z = pos[4*ir+2];
+    myval = vals[ir];
+  }
   __syncthreads();
-  float3 r;
-  r.x = pos_s[ir2+0];
-  r.y = pos_s[ir2+1];
-  r.z = pos_s[ir2+2];
   
   int3 index;
   float3 t;
@@ -146,24 +154,40 @@ eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv,
   abc[thr] = a[i]*b[j]*c[k];
   __syncthreads();
 
+
   float val_real = 0.0;
   float val_imag = 0.0;
-  //int index=0;
   val_real = val_imag = 0.0;
   for (int i=0; i<4; i++) {
     for (int j=0; j<4; j++) {
       float *base_real = coefs_real + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
       float *base_imag = coefs_imag + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
       for (int k=0; k<4; k++) {
-	val_real += abc[16*i+4*j+k] * base_real[offset+k*strides.z];
-	val_imag += abc[16*i+4*j+k] * base_imag[offset+k*strides.z];
+  	val_real += abc[16*i+4*j+k] * base_real[off+k*strides.z];
+  	val_imag += abc[16*i+4*j+k] * base_imag[off+k*strides.z];
       }
     }
   }
-  *(vals_real+ir)[offset] = val_real;
-  *(vals_imag+ir)[offset] = val_imag;
-  // vals_real[ir][offset] = val_real;
-  // vals_imag[ir][offset] = val_imag;
+  // for (int i=0; i<4; i++) {
+  //   for (int j=0; j<4; j++) {
+  //     float *base_real = coefs_real + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
+  //     float *base_imag = coefs_imag + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
+  //     for (int k=0; k<4; k++) {
+  // 	coefs[thr]            = base_real[(2*block+0)*BLOCK_SIZE+thr];
+  // 	coefs[thr+BLOCK_SIZE] = base_real[(2*block+1)*BLOCK_SIZE+thr];
+  // 	__syncthreads();
+  // 	val_real += abc[16*i+4*j+k] * coefs[2*thr+0];
+  // 	val_imag += abc[16*i+4*j+k] * coefs[2*thr+1];
+  //     }
+  //   }
+  // }
+
+
+  myval[off+0] = val_real;
+  myval[off+BLOCK_SIZE] = val_imag;
+  //myval[off+BLOCK_SIZE] = val_imag;
+  //vals_real[ir][offset] = val_real;
+  //vals_imag[ir][offset] = val_imag;
 }
 				    
 
@@ -183,14 +207,14 @@ test_multi_cuda(void *thread)
   fprintf (stderr, "In thread %p\n", thread);
 
   int numWalkers = 200;
-  float *coefs  ,  __device__ *vals_real[numWalkers],   __device__ *vals_imag[numWalkers];
-  float *coefs_real_d, *coefs_imag_d, __device__ *vals_real_d[numWalkers], __device__ *vals_imag_d[numWalkers];
+  float *coefs  ,  __device__ *vals[numWalkers];
+  float *coefs_real_d, *coefs_imag_d, __device__ **vals_d;
   float *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
 
   N = 128;
-  Nx = Ny = Nz = 32;
+  Nx = Ny = Nz = 16;
   xs = Ny*Nz*N;
   ys = Nz*N;
   zs = N;
@@ -222,8 +246,8 @@ test_multi_cuda(void *thread)
   
   // Setup CUDA coefficients
   fprintf (stderr, "Before first CUDA mallocs.\n");
-  cudaMalloc((void**)&coefs_real_d, size);
-  cudaMalloc((void**)&coefs_imag_d, size);
+  cudaMalloc((void**)&coefs_real_d, 2*size);
+  cudaMalloc((void**)&coefs_imag_d, 2*size);
   fprintf (stderr, "Before Memcpy.\n");
   cudaMemcpy(coefs_real_d, coefs, size, cudaMemcpyHostToDevice);
   cudaMemcpy(coefs_imag_d, coefs, size, cudaMemcpyHostToDevice);
@@ -232,17 +256,13 @@ test_multi_cuda(void *thread)
   // Setup device value storage
   int numVals = 2*N*numWalkers;
   float *valBlock_d, *valBlock_h;
-  cudaMalloc((void**)&(valBlock_d), numVals*sizeof(float));
+  cudaMalloc((void**)&(valBlock_d),     numVals*sizeof(float));
   cudaMallocHost((void**)&(valBlock_h), numVals*sizeof(float));
-  cudaMalloc((void**)&(vals_real_d), numWalkers*sizeof(float*));
-  cudaMalloc((void**)&(vals_imag_d), numWalkers*sizeof(float*));
+  cudaMalloc((void**)&(vals_d), 2*numWalkers*sizeof(float*));
   fprintf (stderr, "valBlock_d = %p\n", valBlock_d);
-  for (int i=0; i<numWalkers; i++) {
-    vals_real[i] = valBlock_d + 2*i*N;
-    vals_imag[i] = valBlock_d + (2*i+1)*N;
-  }
-  cudaMemcpy(vals_real_d, vals_real, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
-  cudaMemcpy(vals_imag_d, vals_imag, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+  for (int i=0; i<numWalkers; i++)
+    vals[i] = valBlock_d + 2*i*N;
+  cudaMemcpy(vals_d, vals, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
   
   fprintf (stderr, "Finished cuda allocations.\n");
 
@@ -257,12 +277,10 @@ test_multi_cuda(void *thread)
     r_h[4*ir+2] = 0.5*drand48();
   }
 
-  
   int3 strides;
   strides.x = xs;
   strides.y = ys;
   strides.z = zs;
-
 
   dim3 dimBlock(BLOCK_SIZE);
   dim3 dimGrid(N/BLOCK_SIZE,numWalkers);
@@ -276,7 +294,7 @@ test_multi_cuda(void *thread)
     cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
     eval_multi_multi_UBspline_3d_c_cuda<<<dimGrid,dimBlock>>> 
        (r_d, drInv, coefs_real_d, coefs_imag_d, 
-        vals_real_d, vals_imag_d, strides);
+        vals_d, strides);
     // eval_multi_multi_UBspline_3d_cuda_c<<<dimGrid,dimBlock>>> 
     //   (r_d, drInv, coefs_real_d, coefs_imag_d, 
     //    valBlock_d, valBlock_d+numVals/2, strides);
@@ -287,8 +305,7 @@ test_multi_cuda(void *thread)
   fprintf (stderr, "Evals per second = %1.8e\n", 1.0/time);
   
   cudaFree (valBlock_d);
-  cudaFree (vals_real_d);
-  cudaFree (vals_imag_d);
+  cudaFree (vals_d);
   cudaFree (coefs_real_d);
   cudaFree (coefs_imag_d);
   cudaFree (r_d);
