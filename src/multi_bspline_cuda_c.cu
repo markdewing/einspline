@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "multi_bspline.h"
 
-__constant__ float A[16], dA[16], d2A[16];
+__constant__ float A[48];
 
 typedef struct
 {
@@ -76,7 +76,7 @@ create_CUDA_multi_UBspline_3d_c (multi_UBspline_3d_c* spline)
 __global__ static void
 eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv, 
 				     float *coefs_real, float *coefs_imag,
-				     float *vals[], int3 strides)
+				     float *vals[], uint3 strides)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
@@ -268,23 +268,42 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv,
       float *base_imag = coefs_imag + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
       for (int k=0; k<4; k++) {
 	float cr = base_real[off+k*strides.z];
-	float ci =  base_imag[off+k*strides.z];
+	float ci = base_imag[off+k*strides.z];
+	float abc;
+	abc = a[i+0] * b[j+0] * c[k+0];  v_r   += abc * cr;  v_i   += abc * ci;
+	abc = a[i+4] * b[j+0] * c[k+0];  g0_r  += abc * cr;  g0_i  += abc * ci;
+	abc = a[i+0] * b[j+4] * c[k+0];  g1_r  += abc * cr;  g1_i  += abc * ci;
+	abc = a[i+0] * b[j+0] * c[k+4];  g2_r  += abc * cr;  g2_i  += abc * ci;
+	abc = a[i+8] * b[j+0] * c[k+0];  h00_r += abc * cr;  h00_i += abc * ci;
+	abc = a[i+4] * b[j+4] * c[k+0];  h01_r += abc * cr;  h01_i += abc * ci;
+	abc = a[i+4] * b[j+0] * c[k+4];  h02_r += abc * cr;  h02_i += abc * ci;
+	abc = a[i+0] * b[j+8] * c[k+0];  h11_r += abc * cr;  h11_i += abc * ci;
+	abc = a[i+0] * b[j+4] * c[k+4];  h12_r += abc * cr;  h12_i += abc * ci;
+	abc = a[i+0] * b[j+0] * c[k+8];  h22_r += abc * cr;  h22_i += abc * ci; 
 
-	v_r   +=     a[i+0] * b[j+0] * c[k+0] * cr;	v_i   += a[i+0] * b[j+0] * c[k+0] * ci;
+	// g0_r  +=     a[i+4] * b[j+0] * c[k+0] * cr;	g0_i  += a[i+4] * b[j+0] * c[k+0] * ci;
+	// g1_r  +=     a[i+0] * b[j+4] * c[k+0] * cr;	g1_i  += a[i+0] * b[j+4] * c[k+0] * ci;
+	// g2_r  +=     a[i+0] * b[j+0] * c[k+4] * cr;	g2_i  += a[i+0] * b[j+0] * c[k+4] * ci;
 
-	g0_r  +=     a[i+4] * b[j+0] * c[k+0] * cr;	g0_i  += a[i+4] * b[j+0] * c[k+0] * ci;
-	g1_r  +=     a[i+0] * b[j+4] * c[k+0] * cr;	g1_i  += a[i+0] * b[j+4] * c[k+0] * ci;
-	g2_r  +=     a[i+0] * b[j+0] * c[k+4] * cr;	g2_i  += a[i+0] * b[j+0] * c[k+4] * ci;
-
-	h00_r +=     a[i+8] * b[j+0] * c[k+0] * cr;     h00_i += a[i+8] * b[j+0] + c[k+0] * ci;
-	h01_r +=     a[i+4] * b[j+4] * c[k+0] * cr;     h01_i += a[i+4] * b[j+4] + c[k+0] * ci;
-	h02_r +=     a[i+4] * b[j+0] * c[k+4] * cr;     h02_i += a[i+4] * b[j+0] + c[k+4] * ci;
-	h11_r +=     a[i+0] * b[j+8] * c[k+0] * cr;     h11_i += a[i+0] * b[j+8] + c[k+0] * ci;
-	h12_r +=     a[i+0] * b[j+4] * c[k+4] * cr;     h12_i += a[i+0] * b[j+4] + c[k+4] * ci;
-	h22_r +=     a[i+0] * b[j+0] * c[k+8] * cr;     h22_i += a[i+0] * b[j+0] + c[k+8] * ci;
+	// h00_r +=     a[i+8] * b[j+0] * c[k+0] * cr;     h00_i += a[i+8] * b[j+0] + c[k+0] * ci;
+	// h01_r +=     a[i+4] * b[j+4] * c[k+0] * cr;     h01_i += a[i+4] * b[j+4] + c[k+0] * ci;
+	// h02_r +=     a[i+4] * b[j+0] * c[k+4] * cr;     h02_i += a[i+4] * b[j+0] + c[k+4] * ci;
+	// h11_r +=     a[i+0] * b[j+8] * c[k+0] * cr;     h11_i += a[i+0] * b[j+8] + c[k+0] * ci;
+	// h12_r +=     a[i+0] * b[j+4] * c[k+4] * cr;     h12_i += a[i+0] * b[j+4] + c[k+4] * ci;
+	// h22_r +=     a[i+0] * b[j+0] * c[k+8] * cr;     h22_i += a[i+0] * b[j+0] + c[k+8] * ci;
       }
     }
   }
+  g0_r *= drInv.x; g0_i *= drInv.x;
+  g1_r *= drInv.y; g1_i *= drInv.y;
+  g2_r *= drInv.z; g2_i *= drInv.z;
+
+  h00_r *= drInv.x * drInv.x;  h00_i *= drInv.x * drInv.x;
+  h01_r *= drInv.x * drInv.y;  h01_i *= drInv.x * drInv.y;
+  h02_r *= drInv.x * drInv.z;  h02_i *= drInv.x * drInv.z;
+  h11_r *= drInv.y * drInv.y;  h11_i *= drInv.y * drInv.y;
+  h12_r *= drInv.y * drInv.z;  h12_i *= drInv.y * drInv.z;
+  h22_r *= drInv.z * drInv.z;  h22_i *= drInv.z * drInv.z;
 
   __shared__ float buff[6*BLOCK_SIZE];
 
@@ -297,8 +316,34 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv,
   buff[6*thr+2] = g1_r;  buff[6*thr+3] = g1_i;
   buff[6*thr+4] = g2_r;  buff[6*thr+5] = g2_i;
   __syncthreads();
-  mygrad[off] = buff[thr];    
-  mygrad[off+BLOCK_SIZE] = buff[thr+BLOCK_SIZE];
+  for (int i=0; i<6; i++) 
+    mygrad[(6*block+i)*BLOCK_SIZE+thr] = buff[i*BLOCK_SIZE+thr]; 
+  __syncthreads();
+
+  // Write first half of Hessians
+  if (thr < 32) {
+    buff[12*thr+0]  = h00_r;    buff[12*thr+1]  = h00_i;
+    buff[12*thr+2]  = h01_r;    buff[12*thr+3]  = h01_i;
+    buff[12*thr+4]  = h02_r;    buff[12*thr+5]  = h02_i;
+    buff[12*thr+6]  = h11_r;    buff[12*thr+7]  = h11_i;
+    buff[12*thr+8]  = h12_r;    buff[12*thr+9]  = h12_i;
+    buff[12*thr+10] = h22_r;    buff[12*thr+11] = h22_i;
+    __syncthreads();
+    for (int i=0; i<6; i++) 
+      myhess[(12*block+i)*BLOCK_SIZE+thr] = buff[i*BLOCK_SIZE+thr];
+  }
+//   __syncthreads();
+//   if (thr >= 32) {
+//     int t = thr-32;
+//     buff[12*t+0]  = h00_r;    buff[12*t+1]  = h00_i;
+//     buff[12*t+2]  = h01_r;    buff[12*t+3]  = h01_i;
+//     buff[12*t+4]  = h02_r;    buff[12*t+5]  = h02_i;
+//     buff[12*t+6]  = h11_r;    buff[12*t+7]  = h11_i;
+//     buff[12*t+8]  = h12_r;    buff[12*t+9]  = h12_i;
+//     buff[12*t+10] = h22_r;    buff[12*t+11] = h22_i;
+//     for (int i=0; i<6; i++) 
+//       myhess[12*((i+6+block)*BLOCK_SIZE)+t] = buff[i*BLOCK_SIZE+t];
+//   }
 
 }
 
@@ -319,9 +364,9 @@ test_multi_cuda(void *thread)
   cudaSetDevice((int)(size_t)thread);
   fprintf (stderr, "In thread %p\n", thread);
 
-  int numWalkers = 2000;
-  float *coefs  ,  __device__ *vals[numWalkers];
-  float *coefs_real_d, *coefs_imag_d, __device__ **vals_d;
+  int numWalkers = 500;
+  float *coefs  ,  __device__ *vals[numWalkers], *grads[numWalkers], *hess[numWalkers];
+  float *coefs_real_d, *coefs_imag_d, __device__ **vals_d, **grads_d, **hess_d;
   float *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
@@ -367,15 +412,22 @@ test_multi_cuda(void *thread)
   fprintf (stderr, "After Memcpy.\n");  
 
   // Setup device value storage
-  int numVals = 2*N*numWalkers;
+  int numVals = 2*N*numWalkers*10;
   float *valBlock_d, *valBlock_h;
   cudaMalloc((void**)&(valBlock_d),     numVals*sizeof(float));
   cudaMallocHost((void**)&(valBlock_h), numVals*sizeof(float));
   cudaMalloc((void**)&(vals_d), 2*numWalkers*sizeof(float*));
+  cudaMalloc((void**)&(grads_d), 2*numWalkers*sizeof(float*));
+  cudaMalloc((void**)&(hess_d), 2*numWalkers*sizeof(float*));
   fprintf (stderr, "valBlock_d = %p\n", valBlock_d);
-  for (int i=0; i<numWalkers; i++)
-    vals[i] = valBlock_d + 2*i*N;
-  cudaMemcpy(vals_d, vals, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+  for (int i=0; i<numWalkers; i++) {
+    vals[i]  = valBlock_d + 2*i*N;
+    grads[i] = valBlock_d + 2*N*numWalkers + 6*i*N;
+    hess[i]  = valBlock_d + 8*N*numWalkers + 12*i*N;
+  }
+  cudaMemcpy(vals_d,  vals,  numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+  cudaMemcpy(grads_d, grads, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+  cudaMemcpy(hess_d,  hess,  numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
   
   fprintf (stderr, "Finished cuda allocations.\n");
 
@@ -390,7 +442,7 @@ test_multi_cuda(void *thread)
     r_h[4*ir+2] = 0.5*drand48();
   }
 
-  int3 strides;
+  uint3 strides;
   strides.x = xs;
   strides.y = ys;
   strides.z = zs;
@@ -399,8 +451,8 @@ test_multi_cuda(void *thread)
   dim3 dimGrid(N/BLOCK_SIZE,numWalkers);
   
   clock_t start, end;
-  start = clock();
 
+  start = clock();
   for (int i=0; i<10000; i++) {
     if ((i%1000) == 0) 
       fprintf (stderr, "i = %d\n", i);
@@ -415,6 +467,20 @@ test_multi_cuda(void *thread)
   }
   end = clock();
   double time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
+  fprintf (stderr, "VGH evals per second = %1.8e\n", 1.0/time);
+
+
+  start = clock();
+  for (int i=0; i<10000; i++) {
+    if ((i%1000) == 0) 
+      fprintf (stderr, "i = %d\n", i);
+    cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
+    eval_multi_multi_UBspline_3d_c_vgh_cuda<<<dimGrid,dimBlock>>> 
+       (r_d, drInv, coefs_real_d, coefs_imag_d, 
+        vals_d, grads_d, hess_d, strides);
+  }
+  end = clock();
+  time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
   fprintf (stderr, "Evals per second = %1.8e\n", 1.0/time);
   
   cudaFree (valBlock_d);
