@@ -270,6 +270,7 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv,
 	float cr = base_real[off+k*strides.z];
 	float ci = base_imag[off+k*strides.z];
 	float abc;
+	
 	abc = a[i+0] * b[j+0] * c[k+0];  v_r   += abc * cr;  v_i   += abc * ci;
 	abc = a[i+4] * b[j+0] * c[k+0];  g0_r  += abc * cr;  g0_i  += abc * ci;
 	abc = a[i+0] * b[j+4] * c[k+0];  g1_r  += abc * cr;  g1_i  += abc * ci;
@@ -332,18 +333,18 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv,
     for (int i=0; i<6; i++) 
       myhess[(12*block+i)*BLOCK_SIZE+thr] = buff[i*BLOCK_SIZE+thr];
   }
-//   __syncthreads();
-//   if (thr >= 32) {
-//     int t = thr-32;
-//     buff[12*t+0]  = h00_r;    buff[12*t+1]  = h00_i;
-//     buff[12*t+2]  = h01_r;    buff[12*t+3]  = h01_i;
-//     buff[12*t+4]  = h02_r;    buff[12*t+5]  = h02_i;
-//     buff[12*t+6]  = h11_r;    buff[12*t+7]  = h11_i;
-//     buff[12*t+8]  = h12_r;    buff[12*t+9]  = h12_i;
-//     buff[12*t+10] = h22_r;    buff[12*t+11] = h22_i;
-//     for (int i=0; i<6; i++) 
-//       myhess[12*((i+6+block)*BLOCK_SIZE)+t] = buff[i*BLOCK_SIZE+t];
-//   }
+  __syncthreads();
+  if (thr >= 32) {
+    int t = thr-32;
+    buff[12*t+0]  = h00_r;    buff[12*t+1]  = h00_i;
+    buff[12*t+2]  = h01_r;    buff[12*t+3]  = h01_i;
+    buff[12*t+4]  = h02_r;    buff[12*t+5]  = h02_i;
+    buff[12*t+6]  = h11_r;    buff[12*t+7]  = h11_i;
+    buff[12*t+8]  = h12_r;    buff[12*t+9]  = h12_i;
+    buff[12*t+10] = h22_r;    buff[12*t+11] = h22_i;
+    for (int i=0; i<6; i++) 
+      myhess[(12*block+i+6)*BLOCK_SIZE+t] = buff[i*BLOCK_SIZE+t];
+  }
 
 }
 
