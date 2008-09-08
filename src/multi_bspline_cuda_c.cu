@@ -391,10 +391,10 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv,
     buff[12*thr+10] = h22_r;    buff[12*thr+11] = h22_i;
   }
   __syncthreads();
-  if (thr < 32) {
+  if (thr < 32) 
     for (int i=0; i<6; i++) 
       myhess[(12*block+i)*BLOCK_SIZE+thr] = buff[i*BLOCK_SIZE+thr];
-  }
+
   __syncthreads();
   int th2 = thr-32;
   if (thr >= 32) {
