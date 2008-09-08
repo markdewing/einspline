@@ -112,19 +112,19 @@ eval_multi_multi_UBspline_3d_cuda_c (float *pos, float3 drInv,
   float val_imag = 0.0;
   //int index=0;
   val_real = val_imag = 0.0;
-  float *base_real = coefs_real + index.x*strides.x + index.y*strides.y + index.z*strides.z;
-  float *base_imag = coefs_imag + index.x*strides.x + index.y*strides.y + index.z*strides.z;
 //   int di = strides.x - 4*strides.y;
 //   int dj = strides.y - 4*strides.z;
   for (int i=0; i<4; i++) {
     for (int j=0; j<4; j++) {
+      float *base_real = coefs_real + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
+      float *base_imag = coefs_imag + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
       for (int k=0; k<4; k++) {
 	// 	float *base_real = coefs_real + (index.x+i)*strides.x + (index.y+j)*strides.y + (index.z+k)*strides.z;
 	// 	float *base_imag = coefs_imag + (index.x+i)*strides.x + (index.y+j)*strides.y + (index.z+k)*strides.z;
-	val_real += abc[16*i+4*j+k] * base_real[offset];
-	val_imag += abc[16*i+4*j+k] * base_imag[offset];
- 	base_real += strides.z;
- 	base_imag += strides.z;
+	val_real += abc[16*i+4*j+k] * base_real[offset+k*strides.z];
+	val_imag += abc[16*i+4*j+k] * base_imag[offset+k*strides.z];
+ 	// base_real += strides.z;
+ 	// base_imag += strides.z;
       }
 //       base_real += dj;
 //       base_imag += dj;
@@ -283,7 +283,8 @@ test_multi_cuda(void *thread)
   CUDA_SAFE_CALL(cudaSetDevice((int)(size_t)thread));
   fprintf (stderr, "In thread %p\n", thread);
 
-  int numWalkers = 200;
+
+  int numWalkers = 2000;
   float *coefs  ,  __device__ *vals_real[numWalkers],   __device__ *vals_imag[numWalkers];
   float *coefs_real_d, *coefs_imag_d, __device__ *vals_real_d[numWalkers], __device__ *vals_imag_d[numWalkers];
   float *r_d, *r_h;
@@ -291,7 +292,7 @@ test_multi_cuda(void *thread)
   int Nx, Ny, Nz;
 
   N = 128;
-  Nx = Ny = Nz = 32;
+  Nx = Ny = Nz = 64;
   xs = Ny*Nz*N;
   ys = Nz*N;
   zs = N;
@@ -353,9 +354,9 @@ test_multi_cuda(void *thread)
   CUDA_SAFE_CALL(cudaMallocHost((void**)&(r_h), 4*numWalkers*sizeof(float)));
 
   for (int ir=0; ir<numWalkers; ir++) {
-    r_h[4*ir+0] = 0.5*drand48();
-    r_h[4*ir+1] = 0.5*drand48();
-    r_h[4*ir+2] = 0.5*drand48();
+    r_h[4*ir+0] = 0.75*drand48();
+    r_h[4*ir+1] = 0.75*drand48();
+    r_h[4*ir+2] = 0.75*drand48();
   }
 
   
