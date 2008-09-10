@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: einspline
 Description: library for creation and evaluation of cubic B-splines
 Version: @VERSION@
-Libs: -L${libdir} -leinspline
+Libs: -L${libdir} -leinspline @CUDA_LIBS@
 Cflags: -I${includedir} @PTHREAD_FLAG@

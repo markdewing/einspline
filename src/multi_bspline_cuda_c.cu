@@ -2,21 +2,37 @@
 
 #include <stdio.h>
 #include "multi_bspline.h"
+#include "multi_bspline_create_cuda.h"
 
 __constant__ float A[48];
 
-typedef struct
-{
-  float *coefs_real, *coefs_imag;
-  uint3 stride;
-  float3 gridInv;
-  int num_splines;
-} multi_UBspline_3d_c_cuda;
+// typedef struct
+// {
+//   float *coefs_real, *coefs_imag;
+//   uint3 stride;
+//   float3 gridInv;
+//   int num_splines;
+// } multi_UBspline_3d_c_cuda;
 
-
-multi_UBspline_3d_c_cuda*
-create_CUDA_multi_UBspline_3d_c (multi_UBspline_3d_c* spline)
+#ifndef NO_CUDA_MAIN
+extern "C" multi_UBspline_3d_c_cuda*
+create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
 {
+  float A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
+		     3.0/6.0, -6.0/6.0,  0.0/6.0, 4.0/6.0,
+		    -3.0/6.0,  3.0/6.0,  3.0/6.0, 1.0/6.0,
+		     1.0/6.0,  0.0/6.0,  0.0/6.0, 0.0/6.0,
+		         0.0,     -0.5,      1.0,    -0.5,
+		         0.0,      1.5,     -2.0,     0.0,
+		         0.0,     -1.5,      1.0,     0.5,
+		         0.0,      0.5,      0.0,     0.0,
+		         0.0,      0.0,     -1.0,     1.0,
+		         0.0,      0.0,      3.0,    -2.0,
+		         0.0,      0.0,     -3.0,     1.0,
+		         0.0,      0.0,      1.0,     0.0 };
+
+  cudaMemcpyToSymbol(A, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
+
   multi_UBspline_3d_c_cuda *cuda_spline =
     (multi_UBspline_3d_c_cuda*) malloc (sizeof (multi_UBspline_3d_c_cuda*));
   
@@ -70,7 +86,7 @@ create_CUDA_multi_UBspline_3d_c (multi_UBspline_3d_c* spline)
 
   return cuda_spline;
 }
-
+#endif
 
 
 __global__ static void
@@ -124,29 +140,15 @@ eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv,
   index.z = (int)sf;
   t.z = s - sf;
   
-  tp[0] = make_float4(1.0, t.x, t.x*t.x, t.x*t.x*t.x);
-  tp[1] = make_float4(1.0, t.y, t.y*t.y, t.y*t.y*t.y);
-  tp[2] = make_float4(1.0, t.z, t.z*t.z, t.z*t.z*t.z);
+  tp[0] = make_float4(t.x*t.x*t.x, t.x*t.x, t.x, 1.0);
+  tp[1] = make_float4(t.y*t.y*t.y, t.y*t.y, t.y, 1.0);
+  tp[2] = make_float4(t.z*t.z*t.z, t.z*t.z, t.z, 1.0);
 
   __shared__ float a[4], b[4], c[4];
   if (thr < 4) {
-    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].z;
-    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].z;
-    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].z;
-//     a[0] = A[ 0]*tp[0].x + A[ 1]*tp[0].y + A[ 2]*tp[0].z + A[ 3]*tp[0].w;
-//     a[1] = A[ 4]*tp[0].x + A[ 5]*tp[0].y + A[ 6]*tp[0].z + A[ 7]*tp[0].w;
-//     a[2] = A[ 8]*tp[0].x + A[ 9]*tp[0].y + A[10]*tp[0].z + A[11]*tp[0].w;
-//     a[3] = A[12]*tp[0].x + A[13]*tp[0].y + A[14]*tp[0].z + A[15]*tp[0].w;
-    
-//     b[0] = A[ 0]*tp[1].x + A[ 1]*tp[1].y + A[ 2]*tp[1].z + A[ 3]*tp[1].w;
-//     b[1] = A[ 4]*tp[1].x + A[ 5]*tp[1].y + A[ 6]*tp[1].z + A[ 7]*tp[1].w;
-//     b[2] = A[ 8]*tp[1].x + A[ 9]*tp[1].y + A[10]*tp[1].z + A[11]*tp[1].w;
-//     b[3] = A[12]*tp[1].x + A[13]*tp[1].y + A[14]*tp[1].z + A[15]*tp[1].w;
-    
-//     c[0] = A[ 0]*tp[2].x + A[ 1]*tp[2].y + A[ 2]*tp[2].z + A[ 3]*tp[2].w;
-//     c[1] = A[ 4]*tp[2].x + A[ 5]*tp[2].y + A[ 6]*tp[2].z + A[ 7]*tp[2].w;
-//     c[2] = A[ 8]*tp[2].x + A[ 9]*tp[2].y + A[10]*tp[2].z + A[11]*tp[2].w;
-//     c[3] = A[12]*tp[2].x + A[13]*tp[2].y + A[14]*tp[2].z + A[15]*tp[2].w;
+    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].w;
+    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].w;
+    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].w;
   }
   __syncthreads();
 
@@ -243,17 +245,17 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv,
   index.z = (int)sf;
   t.z = s - sf;
   
-  tp[0] = make_float4(1.0, t.x, t.x*t.x, t.x*t.x*t.x);
-  tp[1] = make_float4(1.0, t.y, t.y*t.y, t.y*t.y*t.y);
-  tp[2] = make_float4(1.0, t.z, t.z*t.z, t.z*t.z*t.z);
+  tp[0] = make_float4(t.x*t.x*t.x, t.x*t.x, t.x, 1.0);
+  tp[1] = make_float4(t.y*t.y*t.y, t.y*t.y, t.y, 1.0);
+  tp[2] = make_float4(t.z*t.z*t.z, t.z*t.z, t.z, 1.0);
 
   // First 4 of a are value, second 4 are derivative, last four are
   // second derivative.
   __shared__ float a[12], b[12], c[12];
   if (thr < 12) {
-    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].z;
-    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].z;
-    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].z;
+    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].w;
+    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].w;
+    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].w;
   }
   __syncthreads();
 
@@ -599,7 +601,7 @@ test_multi_cuda(void *thread)
 }
 
 
-
+#ifndef NO_CUDA_MAIN
 
 main()
 {
@@ -635,3 +637,5 @@ main()
   //  pthread_exit(NULL);
   //test_multi_cuda();
 }
+
+#endif

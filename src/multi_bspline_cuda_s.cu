@@ -2,18 +2,19 @@
 
 #include <stdio.h>
 #include "multi_bspline.h"
+#include "multi_bspline_create_cuda.h"
 
 __constant__ float A[48];
 
-typedef struct
-{
-  float *coefs;
-  uint3 stride;
-  float3 gridInv;
-  int num_splines;
-} multi_UBspline_3d_s_cuda;
+// typedef struct
+// {
+//   float *coefs;
+//   uint3 stride;
+//   float3 gridInv;
+//   int num_splines;
+// } multi_UBspline_3d_s_cuda;
 
-
+#ifndef NO_CUDA_MAIN
 multi_UBspline_3d_s_cuda*
 create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
 {
@@ -76,7 +77,7 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
 
   return cuda_spline;
 }
-
+#endif
 
 
 __global__ static void
@@ -545,7 +546,7 @@ test_multi_cuda(void *thread)
 }
 
 
-
+#ifndef NO_CUDA_MAIN
 
 main()
 {
@@ -574,3 +575,5 @@ main()
   //  test_multi_cuda((void*)0);
   test_multi_cuda2();
 }
+
+#endif

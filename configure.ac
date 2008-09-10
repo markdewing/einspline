@@ -33,6 +33,19 @@ CFLAGS="${CFLAGS} -g"
 CXXFLAGS="${CXXFLAGS} -g"
 AC_MSG_RESULT([${CFLAGS}])
 
+# Compile CUDA versions
+AC_ARG_ENABLE(cuda, AC_HELP_STRING([--enable-cuda], [compile CUDA routines]))
+AM_CONDITIONAL([HAVE_CUDA], [test "$enable_cuda" = "yes"])
+if test "x$enable_cuda" = "xyes"; then
+   NVCC="nvcc"
+   NVCCFLAGS="-DNO_CUDA_MAIN"
+   CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
+   LIBS="$LIBS -L/usr/local/cuda/lib -lcuda -lcudart"
+fi
+AC_SUBST(NVCC)
+AC_SUBST(NVCCFLAGS)
+AC_SUBST(CUDA_LIBS)
+
 # Compile with -pthread
 AC_ARG_ENABLE(pthread, AC_HELP_STRING([--enable-pthread], [compile with -pthread]))
 if test "x$enable_pthread" = "xyes"; then

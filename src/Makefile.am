@@ -5,6 +5,10 @@ if WANT_BLIPS
    CHECK_BLIPS = test_blip
 endif
 
+if HAVE_CUDA
+   MAYBE_CUDA = multi_bspline_cuda_c.cu multi_bspline_cuda_s.cu multi_bspline_create_cuda.cu
+endif
+
 if HAVE_SSE
    SINGLE_SRC = multi_bspline_eval_sse_s.c multi_bspline_eval_sse_s_cpp.cc       \
                 multi_bspline_eval_sse_c.c multi_bspline_eval_sse_c_cpp.cc       \
@@ -114,7 +118,8 @@ libeinspline_la_SOURCES =                             \
                        fnubspline.h                   \
                        $(SINGLE_SRC)                  \
                        $(DOUBLE_SRC)                  \
-                       $(MAYBE_BLIPS)
+                       $(MAYBE_BLIPS)                 \
+                       $(MAYBE_CUDA)
 
 
 libeinspline_la_LIBADD = $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
@@ -131,6 +136,8 @@ includedir=$(prefix)/include/einspline
 #     libsprng_la_SOURCES += pmlcg/pmlcg.h pmlcg/pmlcg.c pmlcg/info.h pmlcg/basic.h 
 #endif
 
+.cu.lo:
+	$(top_builddir)/cudalt.py $@ $(NVCC) -c $(NVCCFLAGS) $<
 
 include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
                   bspline_eval_sse_d.h bspline_eval_sse_s.h                   \
