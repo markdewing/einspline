@@ -182,7 +182,7 @@ eval_multi_UBspline_1d_z_vgl (multi_UBspline_1d_z *spline,
   d2a[2] = (d2Ad[ 8]*tpx[0] + d2Ad[ 9]*tpx[1] + d2Ad[10]*tpx[2] + d2Ad[11]*tpx[3]);
   d2a[3] = (d2Ad[12]*tpx[0] + d2Ad[13]*tpx[1] + d2Ad[14]*tpx[2] + d2Ad[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n]  = 0.0;

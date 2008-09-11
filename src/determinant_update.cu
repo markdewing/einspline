@@ -1,4 +1,4 @@
-#define BLOCK_SIZE 32
+#define BLOCK_SIZE 64
 
 #include <stdio.h>
 #include <unistd.h>
@@ -13,27 +13,36 @@ update_inverse_cuda1 (float *AinvT, float *u, float *Ainv_u,
 {
   // Store the product Ainv * u in shared memory
   __shared__ float Ainv_u_shared[BLOCK_SIZE], Ainv_rowk_shared[BLOCK_SIZE];
+  __shared__ float u_shared[BLOCK_SIZE];
   Ainv_u_shared[threadIdx.x] = 0.0;
   int col = blockIdx.x*BLOCK_SIZE + threadIdx.x;
+  int numblocks = N / BLOCK_SIZE;
 
   if (blockIdx.x*BLOCK_SIZE <= k && k < (blockIdx.x+1)*BLOCK_SIZE) {
-    int numblocks = N / BLOCK_SIZE;
     for (int block=0; block<numblocks; block++) {
+      u_shared[threadIdx.x] = u[block*BLOCK_SIZE+threadIdx.x];
+      __syncthreads();
       for (int i=0; i<BLOCK_SIZE; i++) {
 	int row = block*BLOCK_SIZE + i;
 	
 	float a = AinvT[row*rowstride+col];
 	if (col == k)
 	  Ainv_rowk_shared[i] = a;
-	Ainv_u_shared[threadIdx.x] += a*u[row];
+	Ainv_u_shared[threadIdx.x] += a*u_shared[i];
       }
       __syncthreads();
       Ainv_rowk[block*BLOCK_SIZE+threadIdx.x] = Ainv_rowk_shared[threadIdx.x];
     }
   }
   else {
-    for (int row=0; row<N; row++) 
-      Ainv_u_shared[threadIdx.x] += AinvT[row*rowstride+col]*u[row];
+    for (int block=0; block<numblocks; block++) {
+      u_shared[threadIdx.x] = u[block*BLOCK_SIZE+threadIdx.x];
+      __syncthreads();
+      for (int i=0; i<BLOCK_SIZE; i++) {
+	int row = block*BLOCK_SIZE + i;
+	Ainv_u_shared[threadIdx.x] += AinvT[row*rowstride+col]*u_shared[i];
+      }
+    }
   }
 
   __syncthreads();
@@ -267,11 +276,11 @@ main()
     }
 
   clock_t host_start = clock();
-  for (int i=0; i<1000000; i++) 
+  for (int i=0; i<100000; i++) 
     update_inverse (AinvT_h, u_h, N, col);
   clock_t host_end = clock();
   double host_time = (double)(host_end - host_start)/(double)(CLOCKS_PER_SEC);
-  double host_rate = 1.0e6/host_time;
+  double host_rate = 1.0e5/host_time;
   fprintf (stderr, "Host rate = %1.8f updates per seconds.\n", host_rate);
 
 

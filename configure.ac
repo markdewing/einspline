@@ -42,6 +42,28 @@ if test "x$enable_cuda" = "xyes"; then
    CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
    LIBS="$LIBS -L/usr/local/cuda/lib -lcuda -lcudart"
 fi
+########################
+# Check for CUDA
+########################
+AC_ARG_WITH([cuda],
+    [  --with-cuda=PATH        prefix where cuda is installed [default=auto]])
+if test "x$with_cuda" != x; then
+  CUDA_CFLAGS="-I$with_cuda/include"
+  CUDA_LIBS="-L$with_cuda/lib -lcuda -lcudart"
+  NVCC="$with_cuda/bin/nvcc"
+else
+  CUDA_CFLAGS="-I/usr/local/cuda/include"
+  CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
+  NVCC="nvcc"
+fi
+NVCCFLAGS="-O3 -use_fast_math"
+AC_SUBST(CUDA_CFLAGS)
+AC_SUBST(CUDA_LIBS)
+AC_SUBST(NVCC)
+AC_SUBST(NVCCFLAGS)
+
+
+
 AC_SUBST(NVCC)
 AC_SUBST(NVCCFLAGS)
 AC_SUBST(CUDA_LIBS)
