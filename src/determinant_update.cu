@@ -1,6 +1,8 @@
-#define BLOCK_SIZE 64
+#define BLOCK_SIZE 32
 
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 
 // The first kernel just computes Ainv * u and also stores the kth
@@ -14,16 +16,31 @@ update_inverse_cuda1 (float *AinvT, float *u, float *Ainv_u,
   Ainv_u_shared[threadIdx.x] = 0.0;
   int col = blockIdx.x*BLOCK_SIZE + threadIdx.x;
 
-  for (int row=0; row < N; row++) {
-    float a = AinvT[row*rowstride+col];
-    if (col == k)
-      Ainv_rowk_shared[row] = a;
-    Ainv_u_shared[threadIdx.x] += a*u[row];
+  if (blockIdx.x*BLOCK_SIZE <= k && k < (blockIdx.x+1)*BLOCK_SIZE) {
+    int numblocks = N / BLOCK_SIZE;
+    for (int block=0; block<numblocks; block++) {
+      for (int i=0; i<BLOCK_SIZE; i++) {
+	int row = block*BLOCK_SIZE + i;
+	
+	float a = AinvT[row*rowstride+col];
+	if (col == k)
+	  Ainv_rowk_shared[i] = a;
+	Ainv_u_shared[threadIdx.x] += a*u[row];
+      }
+      __syncthreads();
+      Ainv_rowk[block*BLOCK_SIZE+threadIdx.x] = Ainv_rowk_shared[threadIdx.x];
+    }
   }
+  else {
+    for (int row=0; row<N; row++) 
+      Ainv_u_shared[threadIdx.x] += AinvT[row*rowstride+col]*u[row];
+  }
+
+  __syncthreads();
 
   // Write the data back to global memory
   Ainv_u[col]    = Ainv_u_shared[threadIdx.x];
-  Ainv_rowk[col] = Ainv_rowk_shared[threadIdx.x];
+  //Ainv_rowk[col] = Ainv_rowk_shared[threadIdx.x];
 }
 
 
@@ -41,8 +58,15 @@ update_inverse_cuda2 (float *AinvT, float *u, float *Ainv_u,
     prefact = 1.0f/(1.0f+Ainv_u[k]);
   __syncthreads();
 		   
-  for (int row=0; row<N; row++) 
-    AinvT[row*rowstride+col] -= prefact * Ainv_u_shared[threadIdx.x]*Ainv_rowk_shared[row];
+  int numblocks = N / BLOCK_SIZE;
+  for (int block=0; block<numblocks; block++) {
+    Ainv_rowk_shared[threadIdx.x] = Ainv_rowk[block*BLOCK_SIZE+threadIdx.x];
+    __syncthreads();
+    for (int i=0; i<BLOCK_SIZE; i++) {
+      int row = block*BLOCK_SIZE + i;
+      AinvT[row*rowstride+col] -= prefact * Ainv_u_shared[threadIdx.x]*Ainv_rowk_shared[i];
+    }
+  }
 }
 
 
@@ -185,7 +209,7 @@ void GJInverse (double *A, int n)
 
 main()
 {
-  int N = 64;
+  int N = 128;
   double *A, *Ainv, *ident;
   float *AinvT_h, *u_h;
   float *AinvT_d, *Ainv_u_d, *Ainv_rowk_d, *u_d;
@@ -225,7 +249,7 @@ main()
   cudaMemcpy (u_d, u_h, N*sizeof(float), cudaMemcpyHostToDevice);
 
   
-  int col = 0;
+  int col = 1;
 
   update_inverse (AinvT_h, u_h, N, col);
 
@@ -247,12 +271,21 @@ main()
 
 
   dim3 dimBlock(BLOCK_SIZE);
-  dim3 dimGrid(1);
+  dim3 dimGrid(N/BLOCK_SIZE, 1000);
 
-  update_inverse_cuda1<<<dimGrid,dimBlock>>>
-    (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
-  update_inverse_cuda2<<<dimGrid,dimBlock>>>
-    (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+  clock_t start = clock();
+  for (int i=0; i<1000; i++) {
+    update_inverse_cuda1<<<dimGrid,dimBlock>>>
+      (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+    update_inverse_cuda2<<<dimGrid,dimBlock>>>
+      (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+  }
+  clock_t end = clock();
+
+  double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
+  double rate = 1.0e6/time;
+
+  fprintf (stderr, "Rate = %1.8f updates per seconds.\n", rate);
 
   cudaMemcpy (AinvT_h, AinvT_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
 
