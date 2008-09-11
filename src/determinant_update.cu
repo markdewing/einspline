@@ -266,18 +266,51 @@ main()
 	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
     }
 
-
-  
+  clock_t host_start = clock();
+  for (int i=0; i<1000000; i++) 
+    update_inverse (AinvT_h, u_h, N, col);
+  clock_t host_end = clock();
+  double host_time = (double)(host_end - host_start)/(double)(CLOCKS_PER_SEC);
+  double host_rate = 1.0e6/host_time;
+  fprintf (stderr, "Host rate = %1.8f updates per seconds.\n", host_rate);
 
 
   dim3 dimBlock(BLOCK_SIZE);
-  dim3 dimGrid(N/BLOCK_SIZE, 1000);
+  dim3 dimGrid(N/BLOCK_SIZE);
+
+  update_inverse_cuda1<<<dimGrid,dimBlock>>>
+    (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+  update_inverse_cuda2<<<dimGrid,dimBlock>>>
+    (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+
+  cudaMemcpy (AinvT_h, AinvT_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
+
+  fprintf (stderr, "Device test:  ");
+  bool passed = true;
+  for (int i=0; i<N; i++)
+    for (int j=0; j<N; j++) {
+      double ident = 0.0;
+      for (int k=0; k<N; k++)
+	ident += AinvT_h[k*N+i]*A[k*N+j];
+      if ((i==j && fabs(ident - 1.0) > 1.0e-5) ||
+	  (i!=j && fabs(ident) > 1.0e-5)) {
+	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
+	passed = false;
+      }
+    }
+  if (passed)
+    fprintf (stderr, "Passed.\n");
+  else
+    fprintf (stderr, "Failed.\n");
+    
+
+  dim3 dimGrid2(N/BLOCK_SIZE, 1000);
 
   clock_t start = clock();
   for (int i=0; i<1000; i++) {
-    update_inverse_cuda1<<<dimGrid,dimBlock>>>
+    update_inverse_cuda1<<<dimGrid2,dimBlock>>>
       (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
-    update_inverse_cuda2<<<dimGrid,dimBlock>>>
+    update_inverse_cuda2<<<dimGrid2,dimBlock>>>
       (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
   }
   clock_t end = clock();
@@ -285,20 +318,7 @@ main()
   double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
   double rate = 1.0e6/time;
 
-  fprintf (stderr, "Rate = %1.8f updates per seconds.\n", rate);
+  fprintf (stderr, "Device rate = %1.8f updates per seconds.\n", rate);
 
-  cudaMemcpy (AinvT_h, AinvT_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
-
-  fprintf (stderr, "Device test:\n");
-  for (int i=0; i<N; i++)
-    for (int j=0; j<N; j++) {
-      double ident = 0.0;
-      for (int k=0; k<N; k++)
-	ident += AinvT_h[k*N+i]*A[k*N+j];
-      if ((i==j && fabs(ident - 1.0) > 1.0e-5) ||
-	  (i!=j && fabs(ident) > 1.0e-5))
-	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
-    }
-    
 
 }
