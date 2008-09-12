@@ -69,11 +69,11 @@ update_inverse_cuda2 (float *AinvT, float *u, float *Ainv_u,
 		   
   int numblocks = N / BLOCK_SIZE;
   for (int block=0; block<numblocks; block++) {
-    Ainv_rowk_shared[threadIdx.x] = Ainv_rowk[block*BLOCK_SIZE+threadIdx.x];
+    Ainv_rowk_shared[threadIdx.x] = prefact*Ainv_rowk[block*BLOCK_SIZE+threadIdx.x];
     __syncthreads();
     for (int i=0; i<BLOCK_SIZE; i++) {
       int row = block*BLOCK_SIZE + i;
-      AinvT[row*rowstride+col] -= prefact * Ainv_u_shared[threadIdx.x]*Ainv_rowk_shared[i];
+      AinvT[row*rowstride+col] -= Ainv_u_shared[threadIdx.x]*Ainv_rowk_shared[i];
     }
   }
 }
