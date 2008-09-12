@@ -46,10 +46,9 @@ update_inverse_cuda1 (float *AinvT, float *u, float *Ainv_u,
   }
 
   __syncthreads();
-
+  
   // Write the data back to global memory
   Ainv_u[col]    = Ainv_u_shared[threadIdx.x];
-  //Ainv_rowk[col] = Ainv_rowk_shared[threadIdx.x];
 }
 
 
@@ -69,14 +68,15 @@ update_inverse_cuda2 (float *AinvT, float *u, float *Ainv_u,
   __syncthreads();
 		   
   int numblocks = N / BLOCK_SIZE;
-  for (int block=0; block<numblocks; block++) {
-    Ainv_rowk_shared[threadIdx.x] = prefact*Ainv_rowk[block*BLOCK_SIZE+threadIdx.x];
+  // for (int block=0; block<numblocks; block++) {
+  
+    Ainv_rowk_shared[threadIdx.x] = prefact*Ainv_rowk[blockIdx.y*BLOCK_SIZE+threadIdx.x];
     __syncthreads();
     for (int i=0; i<BLOCK_SIZE; i++) {
-      int row = block*BLOCK_SIZE + i;
+      int row = blockIdx.y*BLOCK_SIZE + i;
       AinvT[row*rowstride+col] += Ainv_u_shared[threadIdx.x]*Ainv_rowk_shared[i];
     }
-  }
+    //}
 }
 
 
@@ -220,13 +220,12 @@ void GJInverse (double *A, int n)
 main()
 {
   int N = 128;
-  double *A, *Ainv, *ident;
-  float *AinvT_h, *u_h;
+  double *A, *Ainv;
+  float *AinvT_h, *u_h, zero_h[N];
   float *AinvT_d, *Ainv_u_d, *Ainv_rowk_d, *u_d;
 
   A       = (double*)malloc (N*N*sizeof(double));
   Ainv    = (double*)malloc (N*N*sizeof(double));
-  ident   = (double*)malloc (N*N*sizeof(double));
   AinvT_h = (float*)malloc (N*N*sizeof(float));
   u_h     = (float*)malloc (N*sizeof(float));
   cudaMalloc((void**)&AinvT_d, N*N*sizeof(float));
@@ -234,11 +233,16 @@ main()
   cudaMalloc((void**)&Ainv_u_d, N*sizeof(float));
   cudaMalloc((void**)&Ainv_rowk_d, N*sizeof(float));
   
+
   for (int i=0; i<N; i++) {
     u_h[i] = drand48();
+    zero_h[i] = 0.0f;
     for (int j=0; j<N; j++) 
       A[i*N+j] = Ainv[i*N+j] = drand48();
   }
+  
+  cudaMemcpy(Ainv_u_d, zero_h, N*sizeof(float), cudaMemcpyHostToDevice);
+
   GJInverse(Ainv, N);
 
   for (int i=0; i<N; i++)
@@ -286,11 +290,12 @@ main()
 
 
   dim3 dimBlock(BLOCK_SIZE);
-  dim3 dimGrid(N/BLOCK_SIZE);
+  dim3 dimGrid1(N/BLOCK_SIZE);
+  dim3 dimGrid2(N/BLOCK_SIZE, N/BLOCK_SIZE);
 
-  update_inverse_cuda1<<<dimGrid,dimBlock>>>
+  update_inverse_cuda1<<<dimGrid1,dimBlock>>>
     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
-  update_inverse_cuda2<<<dimGrid,dimBlock>>>
+  update_inverse_cuda2<<<dimGrid2,dimBlock>>>
     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
 
   cudaMemcpy (AinvT_h, AinvT_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
@@ -314,13 +319,14 @@ main()
     fprintf (stderr, "Failed.\n");
     
 
-  dim3 dimGrid2(N/BLOCK_SIZE, 1000);
+  dim3 dimGrid3(N/BLOCK_SIZE, 1000);
+  dim3 dimGrid4(N/BLOCK_SIZE, N/BLOCK_SIZE, 1000);
 
   clock_t start = clock();
   for (int i=0; i<1000; i++) {
-    update_inverse_cuda1<<<dimGrid2,dimBlock>>>
+    update_inverse_cuda1<<<dimGrid3,dimBlock>>>
       (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
-    update_inverse_cuda2<<<dimGrid2,dimBlock>>>
+    update_inverse_cuda2<<<dimGrid4,dimBlock>>>
       (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
   }
   clock_t end = clock();
