@@ -68,15 +68,14 @@ update_inverse_cuda2 (float *AinvT, float *u, float *Ainv_u,
   __syncthreads();
 		   
   int numblocks = N / BLOCK_SIZE;
-  // for (int block=0; block<numblocks; block++) {
-  
-    Ainv_rowk_shared[threadIdx.x] = prefact*Ainv_rowk[blockIdx.y*BLOCK_SIZE+threadIdx.x];
+  for (int block=0; block<numblocks; block++) {
+    Ainv_rowk_shared[threadIdx.x] = prefact*Ainv_rowk[block*BLOCK_SIZE+threadIdx.x];
     __syncthreads();
     for (int i=0; i<BLOCK_SIZE; i++) {
-      int row = blockIdx.y*BLOCK_SIZE + i;
+      int row = block*BLOCK_SIZE + i;
       AinvT[row*rowstride+col] += Ainv_u_shared[threadIdx.x]*Ainv_rowk_shared[i];
     }
-    //}
+  }
 }
 
 
@@ -291,7 +290,7 @@ main()
 
   dim3 dimBlock(BLOCK_SIZE);
   dim3 dimGrid1(N/BLOCK_SIZE);
-  dim3 dimGrid2(N/BLOCK_SIZE, N/BLOCK_SIZE);
+  dim3 dimGrid2(N/BLOCK_SIZE);
 
   update_inverse_cuda1<<<dimGrid1,dimBlock>>>
     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
@@ -320,7 +319,7 @@ main()
     
 
   dim3 dimGrid3(N/BLOCK_SIZE, 1000);
-  dim3 dimGrid4(N/BLOCK_SIZE, N/BLOCK_SIZE, 1000);
+  dim3 dimGrid4(N/BLOCK_SIZE, 1000);
 
   clock_t start = clock();
   for (int i=0; i<1000; i++) {

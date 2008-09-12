@@ -1184,10 +1184,10 @@ set_multi_UBspline_3d_z (multi_UBspline_3d_z* spline, int num, complex_double *d
       intptr_t coffset = 2*(iy*Nz+iz)*zs;
       // Real part
       find_coefs_1d_d (spline->x_grid, xBC_r, ((double*)data)+doffset, 2*My*Mz,
-		       ((double*)coefs)+coffset, 2*Ny*Nz*zs);
+		       ((double*)coefs)+coffset, (intptr_t)2*Ny*Nz*zs);
       // Imag part
       find_coefs_1d_d (spline->x_grid, xBC_i, ((double*)data)+doffset+1, 2*My*Mz,
-		       ((double*)coefs)+coffset+1, 2*Ny*Nz*zs);
+		       ((double*)coefs)+coffset+1, (intptr_t)2*Ny*Nz*zs);
     }
   
   // Now, solve in the Y-direction
@@ -1196,11 +1196,11 @@ set_multi_UBspline_3d_z (multi_UBspline_3d_z* spline, int num, complex_double *d
       intptr_t doffset = 2*(ix*Ny*Nz + iz)*zs;
       intptr_t coffset = 2*(ix*Ny*Nz + iz)*zs;
       // Real part
-      find_coefs_1d_d (spline->y_grid, yBC_r, ((double*)coefs)+doffset, 2*Nz*zs, 
-		       ((double*)coefs)+coffset, 2*Nz*zs);
+      find_coefs_1d_d (spline->y_grid, yBC_r, ((double*)coefs)+doffset, (intptr_t)2*Nz*zs, 
+		       ((double*)coefs)+coffset, (intptr_t)2*Nz*zs);
       // Imag part
-      find_coefs_1d_d (spline->y_grid, yBC_i, ((double*)coefs)+doffset+1, 2*Nz*zs, 
-		       ((double*)coefs)+coffset+1, 2*Nz*zs);
+      find_coefs_1d_d (spline->y_grid, yBC_i, ((double*)coefs)+doffset+1, (intptr_t)2*Nz*zs, 
+		       ((double*)coefs)+coffset+1, (intptr_t)2*Nz*zs);
     }
 
   // Now, solve in the Z-direction
@@ -1209,11 +1209,11 @@ set_multi_UBspline_3d_z (multi_UBspline_3d_z* spline, int num, complex_double *d
       intptr_t doffset = 2*((ix*Ny+iy)*Nz)*zs;
       intptr_t coffset = 2*((ix*Ny+iy)*Nz)*zs;
       // Real part
-      find_coefs_1d_d (spline->z_grid, zBC_r, ((double*)coefs)+doffset, 2*zs, 
-		       ((double*)coefs)+coffset, 2*zs);
+      find_coefs_1d_d (spline->z_grid, zBC_r, ((double*)coefs)+doffset, (intptr_t)2*zs, 
+		       ((double*)coefs)+coffset, (intptr_t)2*zs);
       // Imag part
-      find_coefs_1d_d (spline->z_grid, zBC_i, ((double*)coefs)+doffset+1, 2*zs, 
-		       ((double*)coefs)+coffset+1, 2*zs);
+      find_coefs_1d_d (spline->z_grid, zBC_i, ((double*)coefs)+doffset+1, (intptr_t)2*zs, 
+		       ((double*)coefs)+coffset+1, (intptr_t)2*zs);
     }
 }
 

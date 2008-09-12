@@ -56,7 +56,7 @@ else
   CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
   NVCC="nvcc"
 fi
-NVCCFLAGS="-O3 -use_fast_math"
+NVCCFLAGS="-DNO_CUDA_MAIN -O3 -use_fast_math"
 AC_SUBST(CUDA_CFLAGS)
 AC_SUBST(CUDA_LIBS)
 AC_SUBST(NVCC)

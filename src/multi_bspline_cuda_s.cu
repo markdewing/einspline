@@ -392,7 +392,7 @@ test_multi_cuda2()
   }
   end = clock();
   double time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
-  fprintf (stderr, "VGH evals per second = %1.8e\n", 1.0/time);
+  fprintf (stderr, "Evals per second = %1.8e\n", 1.0/time);
 
   start = clock();
   for (int i=0; i<10000; i++) {
@@ -404,7 +404,7 @@ test_multi_cuda2()
   }
   end = clock();
   time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
-  fprintf (stderr, "Evals per second = %1.8e\n", 1.0/time);
+  fprintf (stderr, "VGH Evals per second = %1.8e\n", 1.0/time);
   
   cudaFree (valBlock_d);
   cudaFree (vals_d);
