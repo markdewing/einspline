@@ -80,7 +80,7 @@ eval_multi_UBspline_1d_s (multi_UBspline_1d_s *spline,
   a[2]  = (Af[ 8]*tpx[0] + Af[ 9]*tpx[1] + Af[10]*tpx[2] + Af[11]*tpx[3]);
   a[3]  = (Af[12]*tpx[0] + Af[13]*tpx[1] + Af[14]*tpx[2] + Af[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) 
     vals[n]  = 0.0;
@@ -118,7 +118,7 @@ eval_multi_UBspline_1d_s_vg (multi_UBspline_1d_s *spline,
   da[2] = (dAf[ 8]*tpx[0] + dAf[ 9]*tpx[1] + dAf[10]*tpx[2] + dAf[11]*tpx[3]);
   da[3] = (dAf[12]*tpx[0] + dAf[13]*tpx[1] + dAf[14]*tpx[2] + dAf[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n]  = 0.0;
@@ -168,7 +168,7 @@ eval_multi_UBspline_1d_s_vgl (multi_UBspline_1d_s *spline,
   d2a[2] = (d2Af[ 8]*tpx[0] + d2Af[ 9]*tpx[1] + d2Af[10]*tpx[2] + d2Af[11]*tpx[3]);
   d2a[3] = (d2Af[12]*tpx[0] + d2Af[13]*tpx[1] + d2Af[14]*tpx[2] + d2Af[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n]  = 0.0;
@@ -229,8 +229,8 @@ eval_multi_UBspline_2d_s(multi_UBspline_2d_s *spline,
   int ix = ((int *)&ixiy)[3];
   int iy = ((int *)&ixiy)[2];
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -320,8 +320,8 @@ eval_multi_UBspline_2d_s_vg (multi_UBspline_2d_s *spline,
   int ix = ((int *)&ixiy)[3];
   int iy = ((int *)&ixiy)[2];
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -433,8 +433,8 @@ eval_multi_UBspline_2d_s_vgl (multi_UBspline_2d_s *spline,
   int ix = ((int *)&ixiy)[3];
   int iy = ((int *)&ixiy)[2];
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -559,8 +559,8 @@ eval_multi_UBspline_2d_s_vgh (multi_UBspline_2d_s *spline,
   int ix = ((int *)&ixiy)[3];
   int iy = ((int *)&ixiy)[2];
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -688,9 +688,9 @@ eval_multi_UBspline_3d_s (multi_UBspline_3d_s *spline,
   int iy = ((int *)&ixiyiz)[2];
   int iz = ((int *)&ixiyiz)[1];
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -791,9 +791,9 @@ eval_multi_UBspline_3d_s_vg (multi_UBspline_3d_s *spline,
   int iy = ((int *)&ixiyiz)[2];
   int iz = ((int *)&ixiyiz)[1];
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -924,9 +924,9 @@ eval_multi_UBspline_3d_s_vgl (multi_UBspline_3d_s *spline,
   int iy = ((int *)&ixiyiz)[2];
   int iz = ((int *)&ixiyiz)[1];
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]
@@ -1079,9 +1079,9 @@ eval_multi_UBspline_3d_s_vgh (multi_UBspline_3d_s *spline,
   int iy = ((int *)&ixiyiz)[2];
   int iz = ((int *)&ixiyiz)[1];
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
 
   // Now compute the vectors:
   // tpx = [t_x^3 t_x^2 t_x 1]

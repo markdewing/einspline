@@ -57,14 +57,15 @@ __global__ static void
 update_inverse_cuda2 (float *AinvT, float *u, float *Ainv_u,
 		      float *Ainv_rowk, int N, int rowstride, int k)
 {
-  __shared__ float Ainv_u_shared[BLOCK_SIZE], Ainv_rowk_shared[BLOCK_SIZE];
+  __shared__ float Ainv_u_shared[BLOCK_SIZE];
+  __shared__ float  Ainv_rowk_shared[BLOCK_SIZE];
   int col = blockIdx.x*BLOCK_SIZE + threadIdx.x;
   // Read the data back from global memory
   Ainv_u_shared[threadIdx.x] = Ainv_u[col];
   Ainv_rowk_shared[threadIdx.x] = Ainv_rowk[col];
   __shared__ float prefact;
   if (threadIdx.x == 0)
-    prefact = 1.0f/(1.0f+Ainv_u[k]);
+    prefact = -1.0f/(1.0f+Ainv_u[k]);
   __syncthreads();
 		   
   int numblocks = N / BLOCK_SIZE;
@@ -73,7 +74,7 @@ update_inverse_cuda2 (float *AinvT, float *u, float *Ainv_u,
     __syncthreads();
     for (int i=0; i<BLOCK_SIZE; i++) {
       int row = block*BLOCK_SIZE + i;
-      AinvT[row*rowstride+col] -= Ainv_u_shared[threadIdx.x]*Ainv_rowk_shared[i];
+      AinvT[row*rowstride+col] += Ainv_u_shared[threadIdx.x]*Ainv_rowk_shared[i];
     }
   }
 }
@@ -275,13 +276,13 @@ main()
 	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
     }
 
-  clock_t host_start = clock();
-  for (int i=0; i<100000; i++) 
-    update_inverse (AinvT_h, u_h, N, col);
-  clock_t host_end = clock();
-  double host_time = (double)(host_end - host_start)/(double)(CLOCKS_PER_SEC);
-  double host_rate = 1.0e5/host_time;
-  fprintf (stderr, "Host rate = %1.8f updates per seconds.\n", host_rate);
+//   clock_t host_start = clock();
+//   for (int i=0; i<100000; i++) 
+//     update_inverse (AinvT_h, u_h, N, col);
+//   clock_t host_end = clock();
+//   double host_time = (double)(host_end - host_start)/(double)(CLOCKS_PER_SEC);
+//   double host_rate = 1.0e5/host_time;
+//   fprintf (stderr, "Host rate = %1.8f updates per seconds.\n", host_rate);
 
 
   dim3 dimBlock(BLOCK_SIZE);

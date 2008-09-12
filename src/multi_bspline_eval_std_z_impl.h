@@ -52,7 +52,7 @@ eval_multi_UBspline_1d_z (multi_UBspline_1d_z *spline,
   a[2]  = (Ad[ 8]*tpx[0] + Ad[ 9]*tpx[1] + Ad[10]*tpx[2] + Ad[11]*tpx[3]);
   a[3]  = (Ad[12]*tpx[0] + Ad[13]*tpx[1] + Ad[14]*tpx[2] + Ad[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) 
     vals[n]  = 0.0;
@@ -90,7 +90,7 @@ eval_multi_UBspline_1d_z_vg (multi_UBspline_1d_z *spline,
   da[2] = (dAd[ 8]*tpx[0] + dAd[ 9]*tpx[1] + dAd[10]*tpx[2] + dAd[11]*tpx[3]);
   da[3] = (dAd[12]*tpx[0] + dAd[13]*tpx[1] + dAd[14]*tpx[2] + dAd[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n]  = 0.0;
@@ -140,7 +140,7 @@ eval_multi_UBspline_1d_z_vgl (multi_UBspline_1d_z *spline,
   d2a[2] = (d2Ad[ 8]*tpx[0] + d2Ad[ 9]*tpx[1] + d2Ad[10]*tpx[2] + d2Ad[11]*tpx[3]);
   d2a[3] = (d2Ad[12]*tpx[0] + d2Ad[13]*tpx[1] + d2Ad[14]*tpx[2] + d2Ad[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n]  = 0.0;
@@ -207,8 +207,8 @@ eval_multi_UBspline_2d_z (multi_UBspline_2d_z *spline,
   b[2] = (Ad[ 8]*tpy[0] + Ad[ 9]*tpy[1] + Ad[10]*tpy[2] + Ad[11]*tpy[3]);
   b[3] = (Ad[12]*tpy[0] + Ad[13]*tpy[1] + Ad[14]*tpy[2] + Ad[15]*tpy[3]);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
 
   for (int n=0; n<spline->num_splines; n++)
     vals[n] = 0.0;
@@ -260,8 +260,8 @@ eval_multi_UBspline_2d_z_vg (multi_UBspline_2d_z *spline,
   db[2] = (dAd[ 8]*tpy[0] + dAd[ 9]*tpy[1] + dAd[10]*tpy[2] + dAd[11]*tpy[3]);
   db[3] = (dAd[12]*tpy[0] + dAd[13]*tpy[1] + dAd[14]*tpy[2] + dAd[15]*tpy[3]);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n] = 0.0;
@@ -337,8 +337,8 @@ eval_multi_UBspline_2d_z_vgl (multi_UBspline_2d_z *spline,
   d2b[2] = (d2Ad[ 8]*tpy[0] + d2Ad[ 9]*tpy[1] + d2Ad[10]*tpy[2] + d2Ad[11]*tpy[3]);
   d2b[3] = (d2Ad[12]*tpy[0] + d2Ad[13]*tpy[1] + d2Ad[14]*tpy[2] + d2Ad[15]*tpy[3]);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
 
   complex_double lapl2[2*spline->num_splines];
   for (int n=0; n<spline->num_splines; n++) {
@@ -426,8 +426,8 @@ eval_multi_UBspline_2d_z_vgh (multi_UBspline_2d_z *spline,
   d2b[2] = (d2Ad[ 8]*tpy[0] + d2Ad[ 9]*tpy[1] + d2Ad[10]*tpy[2] + d2Ad[11]*tpy[3]);
   d2b[3] = (d2Ad[12]*tpy[0] + d2Ad[13]*tpy[1] + d2Ad[14]*tpy[2] + d2Ad[15]*tpy[3]);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n] = 0.0;
@@ -512,9 +512,9 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
   c[2] = (Ad[ 8]*tpz[0] + Ad[ 9]*tpz[1] + Ad[10]*tpz[2] + Ad[11]*tpz[3]);
   c[3] = (Ad[12]*tpz[0] + Ad[13]*tpz[1] + Ad[14]*tpz[2] + Ad[15]*tpz[3]);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
 
   for (int n=0; n<spline->num_splines; n++)
     vals[n] = 0.0;
@@ -581,9 +581,9 @@ eval_multi_UBspline_3d_z_vg (multi_UBspline_3d_z *spline,
   dc[2] = (dAd[ 8]*tpz[0] + dAd[ 9]*tpz[1] + dAd[10]*tpz[2] + dAd[11]*tpz[3]);
   dc[3] = (dAd[12]*tpz[0] + dAd[13]*tpz[1] + dAd[14]*tpz[2] + dAd[15]*tpz[3]);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n] = 0.0;
@@ -684,9 +684,9 @@ eval_multi_UBspline_3d_z_vgl (multi_UBspline_3d_z *spline,
   d2c[2] = (d2Ad[ 8]*tpz[0] + d2Ad[ 9]*tpz[1] + d2Ad[10]*tpz[2] + d2Ad[11]*tpz[3]);
   d2c[3] = (d2Ad[12]*tpz[0] + d2Ad[13]*tpz[1] + d2Ad[14]*tpz[2] + d2Ad[15]*tpz[3]);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
 
   complex_double lapl3[3*spline->num_splines];
   for (int n=0; n<spline->num_splines; n++) {
@@ -799,9 +799,9 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   d2c[2] = (d2Ad[ 8]*tpz[0] + d2Ad[ 9]*tpz[1] + d2Ad[10]*tpz[2] + d2Ad[11]*tpz[3]);
   d2c[3] = (d2Ad[12]*tpz[0] + d2Ad[13]*tpz[1] + d2Ad[14]*tpz[2] + d2Ad[15]*tpz[3]);
 
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n] = 0.0;

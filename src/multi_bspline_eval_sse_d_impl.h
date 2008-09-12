@@ -85,7 +85,7 @@ eval_multi_UBspline_1d_d (multi_UBspline_1d_d *spline,
   a[2]  = (Ad[ 8]*tpx[0] + Ad[ 9]*tpx[1] + Ad[10]*tpx[2] + Ad[11]*tpx[3]);
   a[3]  = (Ad[12]*tpx[0] + Ad[13]*tpx[1] + Ad[14]*tpx[2] + Ad[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) 
     vals[n]  = 0.0;
@@ -123,7 +123,7 @@ eval_multi_UBspline_1d_d_vg (multi_UBspline_1d_d *spline,
   da[2] = (dAd[ 8]*tpx[0] + dAd[ 9]*tpx[1] + dAd[10]*tpx[2] + dAd[11]*tpx[3]);
   da[3] = (dAd[12]*tpx[0] + dAd[13]*tpx[1] + dAd[14]*tpx[2] + dAd[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n]  = 0.0;
@@ -173,7 +173,7 @@ eval_multi_UBspline_1d_d_vgl (multi_UBspline_1d_d *spline,
   d2a[2] = (d2Ad[ 8]*tpx[0] + d2Ad[ 9]*tpx[1] + d2Ad[10]*tpx[2] + d2Ad[11]*tpx[3]);
   d2a[3] = (d2Ad[12]*tpx[0] + d2Ad[13]*tpx[1] + d2Ad[14]*tpx[2] + d2Ad[15]*tpx[3]);
 
-  int xs = spline->x_stride;
+  intptr_t xs = spline->x_stride;
 
   for (int n=0; n<spline->num_splines; n++) {
     vals[n]  = 0.0;
@@ -232,8 +232,8 @@ eval_multi_UBspline_2d_d(multi_UBspline_2d_d *spline,
   tx = modf (ux, &ipartx);  int ix = (int) ipartx;
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
   int N  = spline->num_splines;
 
   // Now compute the vectors:
@@ -319,8 +319,8 @@ eval_multi_UBspline_2d_d_vg (multi_UBspline_2d_d *spline,
   tx = modf (ux, &ipartx);  int ix = (int) ipartx;
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
   int N  = spline->num_splines;
 
   // Now compute the vectors:
@@ -443,8 +443,8 @@ eval_multi_UBspline_2d_d_vgl (multi_UBspline_2d_d *spline,
   tx = modf (ux, &ipartx);  int ix = (int) ipartx;
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
   int N  = spline->num_splines;
 
   // Now compute the vectors:
@@ -593,8 +593,8 @@ eval_multi_UBspline_2d_d_vgh (multi_UBspline_2d_d *spline,
   tx = modf (ux, &ipartx);  int ix = (int) ipartx;
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
   int N  = spline->num_splines;
 
   // Now compute the vectors:
@@ -745,9 +745,9 @@ eval_multi_UBspline_3d_d (multi_UBspline_3d_d *spline,
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   tz = modf (uz, &ipartz);  int iz = (int) ipartz;
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
   int N  = spline->num_splines;
 
   // Now compute the vectors:
@@ -846,9 +846,9 @@ eval_multi_UBspline_3d_d_vg (multi_UBspline_3d_d *spline,
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   tz = modf (uz, &ipartz);  int iz = (int) ipartz;
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
   int N  = spline->num_splines;
 
   // Now compute the vectors:
@@ -1002,9 +1002,9 @@ eval_multi_UBspline_3d_d_vgl (multi_UBspline_3d_d *spline,
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   tz = modf (uz, &ipartz);  int iz = (int) ipartz;
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
   int N  = spline->num_splines;
 
   // Now compute the vectors:
@@ -1190,9 +1190,9 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
   ty = modf (uy, &iparty);  int iy = (int) iparty;
   tz = modf (uz, &ipartz);  int iz = (int) ipartz;
   
-  int xs = spline->x_stride;
-  int ys = spline->y_stride;
-  int zs = spline->z_stride;
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
   int N  = spline->num_splines;
 
   // Now compute the vectors:
