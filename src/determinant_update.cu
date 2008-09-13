@@ -8,9 +8,19 @@
 // The first kernel just computes Ainv * u and also stores the kth
 // row of Ainv in global memory
 __global__ static void
-update_inverse_cuda1 (float *AinvT, float *u, float *Ainv_u,
-		      float *Ainv_rowk, int N, int rowstride, int k)
+update_inverse_cuda1 (float *AinvT_g[], float *u_g[], float *Ainv_u_g[],
+		      float *Ainv_rowk_g[], int N, int rowstride, int k)
 {
+  __shared__ float *AinvT, *u, *Ainv_u, *Ainv_rowk;
+  if (threadIdx.x==0) {
+    AinvT     = AinvT_g[blockIdx.y];
+    u         = u_g[blockIdx.y];
+    Ainv_u    = Ainv_u_g[blockIdx.y];
+    Ainv_rowk = Ainv_rowk_g[blockIdx.y];
+  }
+
+  __syncthreads();
+
   // Store the product Ainv * u in shared memory
   __shared__ float Ainv_u_shared[BLOCK_SIZE], Ainv_rowk_shared[BLOCK_SIZE];
   __shared__ float u_shared[BLOCK_SIZE];
@@ -51,11 +61,18 @@ update_inverse_cuda1 (float *AinvT, float *u, float *Ainv_u,
   Ainv_u[col]    = Ainv_u_shared[threadIdx.x];
 }
 
-
 __global__ static void
-update_inverse_cuda2 (float *AinvT, float *u, float *Ainv_u,
-		      float *Ainv_rowk, int N, int rowstride, int k)
+update_inverse_cuda2 (float *AinvT_g[], float *u_g[], float *Ainv_u_g[],
+		      float *Ainv_rowk_g[], int N, int rowstride, int k)
 {
+  __shared__ float *AinvT, *Ainv_u, *Ainv_rowk;
+  if (threadIdx.x==0) {
+    AinvT     = AinvT_g[blockIdx.y];
+    Ainv_u    = Ainv_u_g[blockIdx.y];
+    Ainv_rowk = Ainv_rowk_g[blockIdx.y];
+  }
+  __syncthreads();
+
   __shared__ float Ainv_u_shared[BLOCK_SIZE];
   __shared__ float  Ainv_rowk_shared[BLOCK_SIZE];
   int col = blockIdx.x*BLOCK_SIZE + threadIdx.x;
@@ -258,14 +275,16 @@ void GJInverse (double *A, int n)
 
 
 #define MAT_SIZE 128
-
+#define NUM_MATS 1
 
 main()
 {
   int N = MAT_SIZE;
   double *A, *Ainv;
+  int numMats = NUM_MATS;
   float *AinvT_h, *u_h, zero_h[N], *Ainv_h;
   float *Ainv_d, *AinvT_d, *Ainv_u_d, *Ainv_rowk_d, *u_d;
+
 
   A       = (double*)malloc (N*N*sizeof(double));
   Ainv    = (double*)malloc (N*N*sizeof(double));
@@ -278,150 +297,235 @@ main()
   cudaMalloc((void**)&Ainv_u_d, N*sizeof(float));
   cudaMalloc((void**)&Ainv_rowk_d, N*sizeof(float));
   
+  float **AinvTList, **Ainv_uList,   
+    **Ainv_rowkList, **uList;
+
+  AinvTList     = (float**)malloc(NUM_MATS*sizeof(float*));
+  Ainv_uList    = (float**)malloc(NUM_MATS*sizeof(float*));
+  Ainv_rowkList = (float**)malloc(NUM_MATS*sizeof(float*));
+  uList         = (float**)malloc(NUM_MATS*sizeof(float*));
+
+  float **AinvTList_d, **Ainv_uList_d, **Ainv_rowkList_d, **uList_d;
+  cudaMalloc((void**)&AinvTList_d,     numMats*sizeof(float*));
+  cudaMalloc((void**)&Ainv_uList_d,    numMats*sizeof(float*));
+  cudaMalloc((void**)&Ainv_rowkList_d, numMats*sizeof(float*));
+  cudaMalloc((void**)&uList_d,         numMats*sizeof(float*));
+
+  fprintf (stderr, "N = %d\n", N);
+
+  
+  for (int mat=0; mat<numMats; mat++) {
+    cudaMalloc((void**)&(AinvTList[mat])  ,   N*N*sizeof(float));
+    cudaMalloc((void**)&(Ainv_uList[mat]) ,   N*sizeof(float));
+    cudaMalloc((void**)&(Ainv_rowkList[mat]), N*sizeof(float));
+    cudaMalloc((void**)&(uList[mat])        , N*sizeof(float));
+  }
+
+  fprintf (stderr, "N = %d\n", N);
+
+
+  cudaMemcpy (AinvTList_d, AinvTList, numMats*sizeof(float*), 
+	      cudaMemcpyHostToDevice);
+  cudaMemcpy (Ainv_uList_d, Ainv_uList, numMats*sizeof(float*), 
+	      cudaMemcpyHostToDevice);
+  cudaMemcpy (Ainv_rowkList_d, Ainv_rowkList, numMats*sizeof(float*), 
+	      cudaMemcpyHostToDevice);
+  cudaMemcpy (uList_d, uList, numMats*sizeof(float*), 
+	      cudaMemcpyHostToDevice);
+  
   srand48((long int) 12341313);
 
-  for (int i=0; i<N; i++) {
-    u_h[i] = drand48();
-    zero_h[i] = 0.0f;
-    for (int j=0; j<N; j++) 
-      A[i*N+j] = Ainv[i*N+j] = drand48();
+  fprintf (stderr, "N = %d\n", N);
+
+  for (int mat=0; mat<numMats; mat++) {
+    for (int i=0; i<N; i++) {
+      u_h[i] = drand48();
+      zero_h[i] = 0.0f;
+      for (int j=0; j<N; j++) 
+	A[i*N+j] = Ainv[i*N+j] = drand48();
+    }
+    GJInverse(Ainv, N);
+    for (int i=0; i<N; i++)
+      for (int j=0; j<N; j++) 
+	AinvT_h[j*N+i] = (float)Ainv[i*N+j];
+
+    cudaMemcpy (AinvTList[mat], AinvT_h, N*N*sizeof(float), 
+		cudaMemcpyHostToDevice);
+    cudaMemcpy (uList[mat], u_h, N*sizeof(float), cudaMemcpyHostToDevice);
   }
-  
-  cudaMemcpy(Ainv_u_d, zero_h, N*sizeof(float), cudaMemcpyHostToDevice);
 
-  GJInverse(Ainv, N);
-
-  for (int i=0; i<N; i++)
-    for (int j=0; j<N; j++) {
-      double ident = 0.0;
-      for (int k=0; k<N; k++)
-	ident += Ainv[i*N+k]*A[k*N+j];
-      if ((i==j && fabs(ident - 1.0) > 1.0e-8) ||
-	  (i!=j && fabs(ident) > 1.0e-8))
-	fprintf (stderr, "Error in matrix inverse.\n");
-    }
-
-  for (int i=0; i<N; i++)
-    for (int j=0; j<N; j++) {
-      AinvT_h[j*N+i] = (float)Ainv[i*N+j];
-      Ainv_h[i*N+j]  = (float)Ainv[i*N+j];
-    }
-
-  cudaMemcpy (Ainv_d, Ainv_h, N*N*sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy (AinvT_d, AinvT_h, N*N*sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy (u_d, u_h, N*sizeof(float), cudaMemcpyHostToDevice);
+  dim3 dimBlock2(BLOCK_SIZE);
+  dim3 dimGrid2(N/BLOCK_SIZE, NUM_MATS);
 
   int col = 1;
 
-  update_inverse (AinvT_h, u_h, N, col);
+  for (int i=0; i<1; i++) {
+    update_inverse_cuda1<<<dimGrid2,dimBlock2>>>
+      (AinvTList_d, uList_d, Ainv_uList_d, Ainv_rowkList_d, N, N, col);
+    update_inverse_cuda2<<<dimGrid2,dimBlock2>>>
+      (AinvTList_d, uList_d, Ainv_uList_d, Ainv_rowkList_d, N, N, col);
+  }
+  cudaMemcpy (AinvT_h, AinvTList[0], N*N*sizeof(float),cudaMemcpyDeviceToHost);
 
   for (int i=0; i<N; i++)
     A[i*N+col] += u_h[i];
-
   for (int i=0; i<N; i++)
     for (int j=0; j<N; j++) {
       double ident = 0.0;
       for (int k=0; k<N; k++)
-	ident += AinvT_h[k*N+i]*A[k*N+j];
+  	ident += AinvT_h[k*N+i]*A[k*N+j];
       if ((i==j && fabs(ident - 1.0) > 1.0e-4) ||
-	  (i!=j && fabs(ident) > 1.0e-4))
+  	  (i!=j && fabs(ident) > 1.0e-4))
 	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
     }
-
-//   clock_t host_start = clock();
-//   for (int i=0; i<100000; i++) 
-//     update_inverse (AinvT_h, u_h, N, col);
-//   clock_t host_end = clock();
-//   double host_time = (double)(host_end - host_start)/(double)(CLOCKS_PER_SEC);
-//   double host_rate = 1.0e5/host_time;
-//   fprintf (stderr, "Host rate = %1.8f updates per seconds.\n", host_rate);
+  fprintf (stderr, "Finished.\n");
 
 
-  dim3 dimBlock2(BLOCK_SIZE);
-  dim3 dimGrid2(N/BLOCK_SIZE);
-
-  update_inverse_cuda1<<<dimGrid2,dimBlock2>>>
-    (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
-  update_inverse_cuda2<<<dimGrid2,dimBlock2>>>
-    (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
-    cudaMemcpy (AinvT_h, AinvT_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
-
- fprintf (stderr, "2 kernel Device test:  ");
-  bool passed = true;
-  for (int i=0; i<N; i++)
-    for (int j=0; j<N; j++) {
-      double ident = 0.0;
-      for (int k=0; k<N; k++)
-	ident += AinvT_h[k*N+i]*A[k*N+j];
-      if ((i==j && fabs(ident - 1.0) > 1.0e-4) ||
-	  (i!=j && fabs(ident) > 1.0e-4)) {
-	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
-	passed = false;
-      }
-    }
-  if (passed)
-    fprintf (stderr, "Passed.\n");
-  else
-    fprintf (stderr, "Failed.\n");
+//   cudaMemcpy (AinvT_h, AinvT_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
 
 
-  dim3 dimBlock1(MAT_SIZE);
-  dim3 dimGrid1(1);
-  update_inverse_cuda<<<dimGrid1, dimBlock1>>> (Ainv_d, u_d, N, N, col);
+//   for (int i=0; i<N; i++) {
+//     u_h[i] = drand48();
+//     zero_h[i] = 0.0f;
+//     for (int j=0; j<N; j++) 
+//       A[i*N+j] = Ainv[i*N+j] = drand48();
+//   }
+  
+//   cudaMemcpy(Ainv_u_d, zero_h, N*sizeof(float), cudaMemcpyHostToDevice);
 
-  cudaMemcpy (Ainv_h, Ainv_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
+//   GJInverse(Ainv, N);
+
+//   for (int i=0; i<N; i++)
+//     for (int j=0; j<N; j++) {
+//       double ident = 0.0;
+//       for (int k=0; k<N; k++)
+// 	ident += Ainv[i*N+k]*A[k*N+j];
+//       if ((i==j && fabs(ident - 1.0) > 1.0e-8) ||
+// 	  (i!=j && fabs(ident) > 1.0e-8))
+// 	fprintf (stderr, "Error in matrix inverse.\n");
+//     }
+
+//   for (int i=0; i<N; i++)
+//     for (int j=0; j<N; j++) {
+//       AinvT_h[j*N+i] = (float)Ainv[i*N+j];
+//       Ainv_h[i*N+j]  = (float)Ainv[i*N+j];
+//     }
+
+//   cudaMemcpy (Ainv_d, Ainv_h, N*N*sizeof(float), cudaMemcpyHostToDevice);
+//   cudaMemcpy (AinvT_d, AinvT_h, N*N*sizeof(float), cudaMemcpyHostToDevice);
+//   cudaMemcpy (u_d, u_h, N*sizeof(float), cudaMemcpyHostToDevice);
+
+//   int col = 1;
+
+//   update_inverse (AinvT_h, u_h, N, col);
+
+//   for (int i=0; i<N; i++)
+//     A[i*N+col] += u_h[i];
+
+//   for (int i=0; i<N; i++)
+//     for (int j=0; j<N; j++) {
+//       double ident = 0.0;
+//       for (int k=0; k<N; k++)
+// 	ident += AinvT_h[k*N+i]*A[k*N+j];
+//       if ((i==j && fabs(ident - 1.0) > 1.0e-4) ||
+// 	  (i!=j && fabs(ident) > 1.0e-4))
+// 	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
+//     }
+
+// //   clock_t host_start = clock();
+// //   for (int i=0; i<100000; i++) 
+// //     update_inverse (AinvT_h, u_h, N, col);
+// //   clock_t host_end = clock();
+// //   double host_time = (double)(host_end - host_start)/(double)(CLOCKS_PER_SEC);
+// //   double host_rate = 1.0e5/host_time;
+// //   fprintf (stderr, "Host rate = %1.8f updates per seconds.\n", host_rate);
 
 
-  fprintf (stderr, "1-kernel Device test:  ");
-  passed = true;
-  for (int i=0; i<N; i++)
-    for (int j=0; j<N; j++) {
-      double ident = 0.0;
-      for (int k=0; k<N; k++)
-	//ident += AinvT_h[k*N+i]*A[k*N+j];
-	ident += Ainv_h[i*N+k]*A[k*N+j];
-      if ((i==j && fabs(ident - 1.0) > 1.0e-4) ||
-	  (i!=j && fabs(ident) > 1.0e-4)) {
-	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
-	passed = false;
-      }
-    }
-  if (passed)
-    fprintf (stderr, "Passed.\n");
-  else
-    fprintf (stderr, "Failed.\n");
+//   dim3 dimBlock2(BLOCK_SIZE);
+//   dim3 dimGrid2(N/BLOCK_SIZE);
+
+//   update_inverse_cuda1<<<dimGrid2,dimBlock2>>>
+//     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+//   update_inverse_cuda2<<<dimGrid2,dimBlock2>>>
+//     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+//     cudaMemcpy (AinvT_h, AinvT_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
+
+//  fprintf (stderr, "2 kernel Device test:  ");
+//   bool passed = true;
+//   for (int i=0; i<N; i++)
+//     for (int j=0; j<N; j++) {
+//       double ident = 0.0;
+//       for (int k=0; k<N; k++)
+// 	ident += AinvT_h[k*N+i]*A[k*N+j];
+//       if ((i==j && fabs(ident - 1.0) > 1.0e-4) ||
+// 	  (i!=j && fabs(ident) > 1.0e-4)) {
+// 	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
+// 	passed = false;
+//       }
+//     }
+//   if (passed)
+//     fprintf (stderr, "Passed.\n");
+//   else
+//     fprintf (stderr, "Failed.\n");
+
+
+//   dim3 dimBlock1(MAT_SIZE);
+//   dim3 dimGrid1(1);
+//   update_inverse_cuda<<<dimGrid1, dimBlock1>>> (Ainv_d, u_d, N, N, col);
+
+//   cudaMemcpy (Ainv_h, Ainv_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
+
+
+//   fprintf (stderr, "1-kernel Device test:  ");
+//   passed = true;
+//   for (int i=0; i<N; i++)
+//     for (int j=0; j<N; j++) {
+//       double ident = 0.0;
+//       for (int k=0; k<N; k++)
+// 	//ident += AinvT_h[k*N+i]*A[k*N+j];
+// 	ident += Ainv_h[i*N+k]*A[k*N+j];
+//       if ((i==j && fabs(ident - 1.0) > 1.0e-4) ||
+// 	  (i!=j && fabs(ident) > 1.0e-4)) {
+// 	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
+// 	passed = false;
+//       }
+//     }
+//   if (passed)
+//     fprintf (stderr, "Passed.\n");
+//   else
+//     fprintf (stderr, "Failed.\n");
     
-  dim3 dimGrid1000(1000);
+//   dim3 dimGrid1000(1000);
 
-  clock_t start = clock();
-  for (int i=0; i<1000; i++)
-    update_inverse_cuda<<<dimGrid1000,dimBlock1>>>
-      (AinvT_d, u_d, N, N, col);
-  clock_t end = clock();
+//   clock_t start = clock();
+//   for (int i=0; i<1000; i++)
+//     update_inverse_cuda<<<dimGrid1000,dimBlock1>>>
+//       (AinvT_d, u_d, N, N, col);
+//   clock_t end = clock();
 
-  double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
-  double rate = 1.0e6/time;
+//   double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
+//   double rate = 1.0e6/time;
 
-  fprintf (stderr, "Device rate = %1.8f updates per seconds.\n", rate);
+//   fprintf (stderr, "Device rate = %1.8f updates per seconds.\n", rate);
 
 
 
-  // dim3 dimGrid3(N/BLOCK_SIZE, 1000);
-  // dim3 dimGrid4(N/BLOCK_SIZE, 1000);
+//   // dim3 dimGrid3(N/BLOCK_SIZE, 1000);
+//   // dim3 dimGrid4(N/BLOCK_SIZE, 1000);
 
-  // clock_t start = clock();
-  // for (int i=0; i<1000; i++) {
-  //   update_inverse_cuda1<<<dimGrid3,dimBlock>>>
-  //     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
-  //   update_inverse_cuda2<<<dimGrid4,dimBlock>>>
-  //     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
-  // }
-  // clock_t end = clock();
+//   // clock_t start = clock();
+//   // for (int i=0; i<1000; i++) {
+//   //   update_inverse_cuda1<<<dimGrid3,dimBlock>>>
+//   //     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+//   //   update_inverse_cuda2<<<dimGrid4,dimBlock>>>
+//   //     (AinvT_d, u_d, Ainv_u_d, Ainv_rowk_d, N, N, col);
+//   // }
+//   // clock_t end = clock();
 
-  // double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
-  // double rate = 1.0e6/time;
+//   // double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
+//   // double rate = 1.0e6/time;
 
-  // fprintf (stderr, "Device rate = %1.8f updates per seconds.\n", rate);
+//   // fprintf (stderr, "Device rate = %1.8f updates per seconds.\n", rate);
 
 
 }
