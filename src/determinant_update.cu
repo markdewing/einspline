@@ -305,7 +305,7 @@ main()
   uList         = (float**)malloc(NUM_MATS*sizeof(float*));
 
   float **AinvList_d, **Ainv_uList_d, **Ainv_colkList_d, **uList_d;
-  cudaMalloc((void**)&AinvList_d,     numMats*sizeof(float*));
+  cudaMalloc((void**)&AinvList_d,      numMats*sizeof(float*));
   cudaMalloc((void**)&Ainv_uList_d,    numMats*sizeof(float*));
   cudaMalloc((void**)&Ainv_colkList_d, numMats*sizeof(float*));
   cudaMalloc((void**)&uList_d,         numMats*sizeof(float*));
