@@ -1,7 +1,9 @@
 #ifndef MULTI_BSPLINE_STRUCTS_CUDA_H
 #define MULTI_BSPLINE_STRUCTS_CUDA_H
 
-#define BLOCK_SIZE 64
+#define SPLINE_BLOCK_SIZE 64
+
+__constant__ float A[48];
 
 typedef struct
 {
