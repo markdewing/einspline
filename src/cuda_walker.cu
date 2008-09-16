@@ -58,10 +58,10 @@ cuda_population::cuda_population() : MaxPop(1000)
 
 
 __global__ static void
-update_inverse_cuda1 (float *Ainv_g[], float *u_g[], float *Ainv_u_g[],
+update_inverse_cuda1 (float *A_g[], float *Ainv_g[], float *u_g[], float *Ainv_delta_g[],
 		      float *Ainv_colk_g[], int N, int rowstride, int k);
 __global__ static void
-update_inverse_cuda2 (float *Ainv_g[], float *u_g[], float *Ainv_u_g[],
+update_inverse_cuda2 (float *Ainv_g[], float *u_g[], float *Ainv_delta_g[],
 		      float *Ainv_colk_g[], int N, int rowstride, int k);
 
 
@@ -104,6 +104,7 @@ cuda_population::update_determinants(int elec)
     cuda_walker &w = walkers[wi];
     cuda_determinant &det = w.dets[detnum];
     if (w.accept) {
+      A_vec[index]          = det.A;
       Ainv_vec[index]       = det.Ainv;
       Ainv_delta_vec[index] = det.Ainv_delta;
       Ainv_colk_vec[index]  = det.Ainv_colk;
@@ -113,6 +114,8 @@ cuda_population::update_determinants(int elec)
   }
   int num_accept = index;
 
+  cudaMemcpy (A_list_d, &(A_vec[0]), 
+	      num_accept*sizeof(float*), cudaMemcpyHostToDevice);
   cudaMemcpy (Ainv_list_d, &(Ainv_vec[0]), 
 	      num_accept*sizeof(float*), cudaMemcpyHostToDevice);
   cudaMemcpy (Ainv_delta_list_d, &(Ainv_delta_vec[0]),
@@ -126,11 +129,11 @@ cuda_population::update_determinants(int elec)
   dim3 dimGrid (N/DET_BLOCK_SIZE, num_accept);
   
   update_inverse_cuda1<<<dimGrid,dimBlock>>>
-      (Ainv_list_d, delta_list_d, Ainv_delta_list_d, 
-       Ainv_colk_list_d, N, N, row);
+    (A_list_d, Ainv_list_d, delta_list_d, Ainv_delta_list_d, 
+     Ainv_colk_list_d, N, N, row);
   update_inverse_cuda2<<<dimGrid,dimBlock>>>
-      (Ainv_list_d, delta_list_d, Ainv_delta_list_d, 
-       Ainv_colk_list_d, N, N, row);
+    (Ainv_list_d, delta_list_d, Ainv_delta_list_d, 
+     Ainv_colk_list_d, N, N, row);
 };
 
 #define RATIO_BLOCK_SIZE 128
@@ -389,7 +392,7 @@ test_ratio()
   clock_t end = clock();
 
   float ratio;
-  cudaMemcpy (&ratio, ratio_d, sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy (&ratio, &(ratio_d[331]), sizeof(float), cudaMemcpyDeviceToHost);
   fprintf (stderr, "Device ratio = %1.8f\n", ratio);
 
   
