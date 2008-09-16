@@ -222,6 +222,114 @@ calc_ratios2 (float *Ainv_list[], float *new_row_list[],
     ratio[blockIdx.x] = sum;
 }
 
+extern "C" void 
+dgetrf_(int *m, int *n, double A[], int *lda, int ipiv[], int *info);
+
+double 
+Determinant (double *A, int N)
+{
+  double LU[N*N];
+  int ipiv[N];
+  int info;
+  for (int i=0; i<N*N; i++)
+    LU[i] = A[i];
+  // Do LU factorization
+  dgetrf_ (&N, &N, LU, &N, ipiv, &info);
+  double det = 1.0;
+  int numPerm = 0;
+  for (int i=0; i<N; i++) {
+    det *= LU[i*N+i];
+    numPerm += (ipiv[i] != (i+1));
+  }
+  if (numPerm & 1)
+    det *= -1.0;
+  
+  return det;
+}
+
+
+template<typename T> void 
+GJInverse (T *A, int n)
+{
+  const int maxSize = 2000;
+
+  if (n == 2) { // Special case for 2x2
+    T a=A[0]; T b=A[1];
+    T c=A[2]; T d=A[3];
+    T detInv = 1.0/(a*d-b*c);
+    A[0] = d*detInv;
+    A[1] = -b*detInv;
+    A[2] = -c*detInv;
+    A[3] =  a*detInv;
+    return;
+  }
+
+  int colIndex[maxSize], rowIndex[maxSize], ipiv[maxSize];
+  T big, pivInv;
+  int icol, irow;
+  
+  for (int j=0; j<n; j++)
+    ipiv[j] = -1;
+
+  for (int i=0; i<n; i++) {
+    big = 0.0;
+    for (int j=0; j<n; j++) 
+      if (ipiv[j] != 0)
+	for (int k=0; k<n; k++) {
+	  if (ipiv[k] == -1) {
+	    if (fabs(A[n*j+k]) >= big) {
+	      big = fabs(A[n*j+k]);
+	      irow = j; 
+	      icol = k;
+	    }
+	  }
+	  else if (ipiv[k] > 0) {
+	    fprintf (stderr, "GJInverse: Singular matrix!\n");
+	    exit(1);
+	  }
+	}
+    ++(ipiv[icol]); 
+    
+    if (irow != icol) 
+      for (int l=0; l<n; l++) {
+	T tmp = A[n*irow+l];
+	A[n*irow+l] = A[n*icol+l];
+	A[n*icol+l] = tmp;
+	// swap (A[n*irow+l], A[n*icol+l]);
+      }
+			     
+    
+    rowIndex[i] = irow;
+    colIndex[i] = icol;
+    if (A[n*icol+icol] == 0.0) { 
+      fprintf (stderr, "GJInverse: Singular matrix!\n");
+      exit(1);
+    }
+    pivInv = 1.0/A[n*icol+icol];
+    A[n*icol+icol] = 1.0;
+    for (int l=0; l<n; l++)
+      A[n*icol+l] *= pivInv;
+    for (int ll=0; ll<n; ll++)
+      if (ll != icol) {
+	T dum = A[n*ll+icol];
+	A[n*ll+icol] = 0.0;
+	for (int l=0; l<n; l++)
+	  A[n*ll+l] -= A[n*icol+l]*dum;
+      }
+  }
+  // Now unscramble the permutations
+  for (int l=n-1; l>=0; l--) {
+    if (rowIndex[l] != colIndex[l])
+      for (int k=0; k<n ; k++) {
+	T tmp = A[n*k+rowIndex[l]];
+	A[n*k+rowIndex[l]] = A[n*k+colIndex[l]];
+	A[n*k+colIndex[l]] = tmp;
+	// swap (A(k,rowIndex[l]),A(k, colIndex[l]));
+      }
+  }
+}
+
+
 
 
 void
@@ -230,6 +338,7 @@ test_ratio()
   //const int N = RATIO_BLOCK_SIZE;
   const int N = 128;
   const int numWalkers = 1024;
+  const int elec = 15;
   float **AinvList, **uList;
   float **AinvList_d, **uList_d, *ratio_d;
 
@@ -253,10 +362,36 @@ test_ratio()
   dim3 dimBlock(RATIO_BLOCK_SIZE);
   dim3 dimGrid(numWalkers);
 
+  double *A   = (double*)malloc(N*N*sizeof(double));
+  float *Ainv = (float*) malloc(N*N*sizeof(float));
+  float *u    = (float*) malloc(N*sizeof(float));
+  for (int i=0; i<N; i++) {
+    u[i] = drand48();
+    for (int j=0; j<N; j++) 
+      A[i*N+j] = Ainv[i*N+j] = (float)drand48();
+  }
+
+  GJInverse(Ainv, N);
+  double det1 = Determinant (A, N);
+  for (int i=0; i<N; i++)
+    A[elec*N+i] = u[i];
+  double det2 = Determinant (A, N);
+  fprintf (stderr, "Host ratio = %1.8f\n", det2/det1);
+
+  for (int wi=0; wi<numWalkers; wi++) {
+    cudaMemcpy (AinvList[wi], Ainv, N*N*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy (uList[wi],       u, 1*N*sizeof(float), cudaMemcpyHostToDevice);
+  }
+
   clock_t start = clock();
   for (int i=0; i<10*N; i++) 
-    calc_ratios<<<dimGrid,dimBlock>>> (AinvList_d, uList_d, ratio_d, N, N, 15);
+    calc_ratios<<<dimGrid,dimBlock>>> (AinvList_d, uList_d, ratio_d, N, N, elec);
   clock_t end = clock();
+
+  float ratio;
+  cudaMemcpy (&ratio, ratio_d, sizeof(float), cudaMemcpyDeviceToHost);
+  fprintf (stderr, "Device ratio = %1.8f\n", ratio);
+
   
   double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
   double rate = 10.0/time;
