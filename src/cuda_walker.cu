@@ -154,10 +154,10 @@ calc_ratios (float *Ainv_list[], float *new_row_list[],
     
     new_row_shared[tid] = new_row[tid];
     
-     __shared__ float Ainv_colk_shared[RATIO_BLOCK_SIZE];
+    __shared__ float Ainv_colk_shared[RATIO_BLOCK_SIZE];
     // This is *highly* uncoallesced, but we just have to eat it to allow
     // other kernels to operate quickly.
-     Ainv_colk_shared[tid] = Ainv[col*row_stride + elec];
+    Ainv_colk_shared[tid] = Ainv[col*row_stride + elec];
     __syncthreads();
 
     __shared__ float Ainv_new_row[RATIO_BLOCK_SIZE];
@@ -173,6 +173,37 @@ calc_ratios (float *Ainv_list[], float *new_row_list[],
     if (tid == 0)      ratio[blockIdx.x] = Ainv_new_row[0];
   }
 }
+
+
+__global__ void
+calc_ratios2 (float *Ainv_list[], float *new_row_list[], 
+	      float *ratio, int N, int row_stride, int elec)
+{
+  int tid = threadIdx.x;
+  __shared__ float *Ainv, *new_row;
+  if (tid == 0) {
+    Ainv = Ainv_list[blockIdx.x];
+    new_row = new_row_list[blockIdx.x];
+  }
+  __syncthreads();
+
+  int numBlocks = N/RATIO_BLOCK_SIZE;
+  float sum=0.0;
+  for (int block=0; block<numBlocks; block++) {
+    int row = block*RATIO_BLOCK_SIZE + tid;
+    __shared__ float new_row_shared[RATIO_BLOCK_SIZE];
+    new_row_shared[tid] = new_row[block*RATIO_BLOCK_SIZE+tid];
+    __syncthreads();
+    for (int i=0; i<RATIO_BLOCK_SIZE; i++) 
+      if (tid==0)
+	sum += Ainv[row*row_stride + elec] * new_row_shared[i];
+    
+  }
+  if (tid==0)
+    ratio[blockIdx.x] = sum;
+}
+
+
 
 void
 test_ratio()

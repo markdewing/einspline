@@ -35,10 +35,10 @@ update_inverse_cuda1 (float *Ainv_g[], float *u_g[], float *Ainv_u_g[],
       for (int i=0; i<BLOCK_SIZE; i++) {
 	int row = block*BLOCK_SIZE + i;
 	
-	float a = Ainv[row*rowstride+col];
+	float ainv = Ainv[row*rowstride+col];
 	if (col == k)
-	  Ainv_colk_shared[i] = a;
-	Ainv_u_shared[threadIdx.x] += a*u_shared[i];
+	  Ainv_colk_shared[i] = ainv;
+	Ainv_u_shared[threadIdx.x] += ainv*u_shared[i];
       }
       __syncthreads();
       Ainv_colk[block*BLOCK_SIZE+threadIdx.x] = Ainv_colk_shared[threadIdx.x];
@@ -282,7 +282,7 @@ main()
   int N = MAT_SIZE;
   double *A, *Ainv;
   int numMats = NUM_MATS;
-  float *Ainv_h, *u_h, zero_h[N];
+  float *Ainv_h, *u_h;
   float *Ainv_d, *Ainv_u_d, *Ainv_colk_d, *u_d;
 
 
@@ -340,7 +340,6 @@ main()
     if (mat == 0 ) {
       for (int i=0; i<N; i++) {
 	u_h[i] = drand48();
-	zero_h[i] = 0.0f;
 	for (int j=0; j<N; j++) 
 	  A[i*N+j] = Ainv[i*N+j] = drand48();
       }
@@ -396,13 +395,10 @@ main()
 
 //   for (int i=0; i<N; i++) {
 //     u_h[i] = drand48();
-//     zero_h[i] = 0.0f;
 //     for (int j=0; j<N; j++) 
 //       A[i*N+j] = Ainv[i*N+j] = drand48();
 //   }
   
-//   cudaMemcpy(Ainv_u_d, zero_h, N*sizeof(float), cudaMemcpyHostToDevice);
-
 //   GJInverse(Ainv, N);
 
 //   for (int i=0; i<N; i++)
