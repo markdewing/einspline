@@ -136,6 +136,25 @@ cuda_population::update_determinants(int elec)
 #define RATIO_BLOCK_SIZE 128
 
 __global__ void
+calc_ratios1 (float *Ainv_list[], float *new_row_list[],
+	      float *Ainv_tran, float *new_row_tran,
+	      int N, int k, int row_stride, int num_mats)
+{
+  int col = threadIdx.x + blockIdx.x*RATIO_BLOCK_SIZE;
+  if (col < num_mats) {
+    float* Ainv = Ainv_list[col];
+    float *new_row = new_row_list[col];
+    for (int row=0; row<N; row++) {
+      // __shared__ new_row_tran_shared[RATIO_BLOCK_SIZE];
+      // __shared__ Ainv_tran_shared[RATIO_BLOCK_SIZE];
+      new_row_tran[row_stride*row + col] = new_row[row];
+      Ainv_tran[row_stride*row+col] = Ainv[row*N + k];
+    }
+  }
+}
+
+
+__global__ void
 calc_ratios (float *Ainv_list[], float *new_row_list[], 
 	     float *ratio, int N, int row_stride, int elec)
 {
@@ -167,7 +186,7 @@ calc_ratios (float *Ainv_list[], float *new_row_list[],
     // Now, we have to dot
     for (unsigned int s=RATIO_BLOCK_SIZE/2; s>0; s>>=1) {
       if (tid < s)
-    	Ainv_new_row[tid] += Ainv_new_row[tid + s];
+	Ainv_new_row[tid] += Ainv_new_row[tid + s];
       __syncthreads();
     }
     if (tid == 0)      ratio[blockIdx.x] = Ainv_new_row[0];
@@ -208,8 +227,9 @@ calc_ratios2 (float *Ainv_list[], float *new_row_list[],
 void
 test_ratio()
 {
-  const int N = RATIO_BLOCK_SIZE;
-  const int numWalkers = 1000;
+  //const int N = RATIO_BLOCK_SIZE;
+  const int N = 128;
+  const int numWalkers = 1024;
   float **AinvList, **uList;
   float **AinvList_d, **uList_d, *ratio_d;
 
@@ -234,8 +254,52 @@ test_ratio()
   dim3 dimGrid(numWalkers);
 
   clock_t start = clock();
-  for (int i=0; i<10*numWalkers; i++) 
+  for (int i=0; i<10*N; i++) 
     calc_ratios<<<dimGrid,dimBlock>>> (AinvList_d, uList_d, ratio_d, N, N, 15);
+  clock_t end = clock();
+  
+  double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
+  double rate = 10.0/time;
+  fprintf (stderr, "Rate = %1.3f generations per second.\n", rate);
+
+}
+
+
+void
+test_ratio1()
+{
+  const int N = 128;
+  const int numWalkers = 1024;
+  float **AinvList, **uList;
+  float **AinvList_d, **uList_d, *ratio_d;
+  float *Ainv_tran, *ratio_tran;
+
+  AinvList = (float**) malloc(numWalkers*sizeof(float*));
+  uList    = (float**) malloc(numWalkers*sizeof(float*));
+  cudaMalloc ((void**) &Ainv_tran, N*numWalkers);
+  cudaMalloc ((void**) &ratio_tran, N*numWalkers);
+
+  for (int i=0; i<numWalkers; i++) {
+    cudaMalloc((void**)&(AinvList[i]), N*N*sizeof(float));
+    cudaMalloc((void**)&(uList[i]),      N*sizeof(float));
+  }
+
+  fprintf (stderr, "N = %d\n", N);
+    
+  cudaMalloc((void**)&(AinvList_d), numWalkers*sizeof(float*));
+  cudaMalloc((void**)&(uList_d),    numWalkers*sizeof(float*));
+  cudaMalloc((void**)&ratio_d,      numWalkers*sizeof(float));
+
+  cudaMemcpy (AinvList_d, AinvList, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+  cudaMemcpy (   uList_d,    uList, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+
+  dim3 dimBlock(RATIO_BLOCK_SIZE);
+  dim3 dimGrid(numWalkers/RATIO_BLOCK_SIZE);
+
+  clock_t start = clock();
+  for (int i=0; i<10*N; i++) 
+    calc_ratios1<<<dimGrid,dimBlock>>> (AinvList_d, uList_d, Ainv_tran, ratio_tran,
+					N, 1, numWalkers, numWalkers);
   clock_t end = clock();
   
   double time = (double)(end-start)/(double)CLOCKS_PER_SEC;
@@ -249,7 +313,4 @@ test_ratio()
 main()
 {
   test_ratio();
-
-
-
 }

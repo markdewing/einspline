@@ -406,6 +406,7 @@ test_multi_cuda2()
   time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
   fprintf (stderr, "VGH Evals per second = %1.8e\n", 1.0/time);
   
+  cudaFree (spline->coefs);
   cudaFree (valBlock_d);
   cudaFree (vals_d);
   cudaFree (grads_d);
@@ -536,10 +537,10 @@ test_multi_cuda(void *thread)
   time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
   fprintf (stderr, "Evals per second = %1.8e\n", 1.0/time);
   
-  cudaFree (valBlock_d);
-  cudaFree (vals_d);
-  cudaFree (coefs_d);
-  cudaFree (r_d);
+  // cudaFree (valBlock_d);
+  // cudaFree (vals_d);
+  // cudaFree (coefs_d);
+  // cudaFree (r_d);
 
   return NULL;
 
@@ -574,6 +575,7 @@ main()
 
   //  test_multi_cuda((void*)0);
   test_multi_cuda2();
+  fprintf (stderr, "After frees.\n");
 }
 
 #endif

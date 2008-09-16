@@ -8,10 +8,9 @@ class cuda_determinant
 {
 public:
   int N;
-  float *A, *Ainv;
+  float *A, *Atran, *Ainv;
   float *Ainv_delta, *Ainv_colk;
   float *new_row, *delta;
-
   
   void resize(int N);
   cuda_determinant(int N);
