@@ -7,7 +7,8 @@ endif
 
 if HAVE_CUDA
    MAYBE_CUDA = multi_bspline_create_cuda.cu \
-                multi_bspline_cuds_s_impl.h  
+                multi_bspline_cuda_s_impl.h  \
+                multi_bspline_eval_cuda.h
 endif
 
 if HAVE_SSE
@@ -161,6 +162,7 @@ include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
 	          nubspline_eval_sse_z.h nubspline_eval_std_z.h               \
                   nubspline_structs.h nubasis.h nubspline.h nugrid.h          \
                   multi_bspline_structs_cuda.h multi_bspline_create_cuda.h    \
+                  multi_bspline_eval_cuda.h                                   \
                   config.h
 
 EXTRA_DIST = multi_bspline_eval_cuda_c.cu
