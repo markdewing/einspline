@@ -3,7 +3,7 @@
 
 __constant__ float Acuda[48];
 
-#include "multi_bspline_cuda_s.cu"
+#include "multi_bspline_cuda_s_impl.h"
 #include "multi_bspline_cuda_c.cu"
 
 // typedef struct

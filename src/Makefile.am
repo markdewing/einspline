@@ -6,8 +6,8 @@ if WANT_BLIPS
 endif
 
 if HAVE_CUDA
-   MAYBE_CUDA = multi_bspline_create_cuda.cu # multi_bspline_cuda_c.cu multi_bspline_cuda_s.cu
-
+   MAYBE_CUDA = multi_bspline_create_cuda.cu \
+                multi_bspline_cuds_s_impl.h  
 endif
 
 if HAVE_SSE

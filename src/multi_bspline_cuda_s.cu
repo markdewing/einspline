@@ -29,7 +29,6 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
 		         0.0,      0.0,     -3.0,     1.0,
 		         0.0,      0.0,      1.0,     0.0 };
 
-  //cudaMemcpy(Acuda, A_h, 48*sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
 
   multi_UBspline_3d_s_cuda *cuda_spline =
@@ -79,8 +78,8 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
 
 
 __global__ static void
-eval_multi_multi_UBspline_3d_s_cuda (float *pos, float3 drInv, 
-				     float *coefs, float *vals[], uint3 strides)
+eval_multi_multi_UBspline_3d_s_kernel 
+(float *pos, float3 drInv, float *coefs, float *vals[], uint3 strides)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
@@ -92,9 +91,9 @@ eval_multi_multi_UBspline_3d_s_cuda (float *pos, float3 drInv,
 
   __shared__ float3 r;
   if (thr == 0) {
-    r.x = pos[4*ir+0];
-    r.y = pos[4*ir+1];
-    r.z = pos[4*ir+2];
+    r.x = pos[3*ir+0];
+    r.y = pos[3*ir+1];
+    r.z = pos[3*ir+2];
     myval = vals[ir];
   }
   __syncthreads();
@@ -154,9 +153,9 @@ eval_multi_multi_UBspline_3d_s_cuda (float *pos, float3 drInv,
 
 
 __global__ static void
-eval_multi_multi_UBspline_3d_s_vgh_cuda (float *pos, float3 drInv,  float *coefs, 
-					 float *vals[], float *grads[], float *hess[],
-					 uint3 strides)
+eval_multi_multi_UBspline_3d_s_vgh_kernel 
+(float *pos, float3 drInv,  float *coefs, 
+ float *vals[], float *grads[], float *hess[], uint3 strides)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
@@ -287,6 +286,18 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (float *pos, float3 drInv,  float *coefs
 }
 
 
+extern "C" void
+eval_multi_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s_cuda *spline,
+				     float *pos_d, float *vals_d, int num)
+{
+  dim3 dimBlock(SPLINE_BLOCK_SIZE);
+  dim3 dimGrid(spline->num_splines/SPLINE_BLOCK_SIZE, num);
+
+  eval_multi_multi_UBspline_3d_s_cuda<<<dimGrid,dimBlock>>>
+    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride);
+}
+
+
 
 
 void
@@ -370,7 +381,7 @@ test_multi_cuda2()
   for (int w=0; w<numWalkers; w++) {
     eval_multi_UBspline_3d_s (spline, r_h[4*w+0], r_h[4*w+1], r_h[4*w+2], vals_host);
     cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
-    eval_multi_multi_UBspline_3d_s_cuda<<<dimGrid,dimBlock>>> 
+    eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>> 
       (r_d, cudaspline->gridInv, cudaspline->coefs, vals_d, cudaspline->stride);
     cudaMemcpy(vals_cuda, valBlock_d+(N*w), N*sizeof(float), cudaMemcpyDeviceToHost);
     
@@ -385,7 +396,7 @@ test_multi_cuda2()
     if ((i%1000) == 0) 
       fprintf (stderr, "i = %d\n", i);
     cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
-    eval_multi_multi_UBspline_3d_s_cuda<<<dimGrid,dimBlock>>> 
+    eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>> 
        (r_d, cudaspline->gridInv, cudaspline->coefs, vals_d, cudaspline->stride);
   }
   end = clock();
@@ -397,7 +408,7 @@ test_multi_cuda2()
     if ((i%1000) == 0) 
       fprintf (stderr, "i = %d\n", i);
     cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
-    eval_multi_multi_UBspline_3d_s_vgh_cuda<<<dimGrid,dimBlock>>> 
+    eval_multi_multi_UBspline_3d_s_vgh_kernel<<<dimGrid,dimBlock>>> 
        (r_d, cudaspline->gridInv, cudaspline->coefs, vals_d, grads_d, hess_d, cudaspline->stride);
   }
   end = clock();
@@ -516,7 +527,7 @@ test_multi_cuda(void *thread)
     if ((i%1000) == 0) 
       fprintf (stderr, "i = %d\n", i);
     cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
-    eval_multi_multi_UBspline_3d_s_cuda<<<dimGrid,dimBlock>>> 
+    eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>> 
        (r_d, drInv, coefs_d, vals_d, strides);
   }
   end = clock();
@@ -528,7 +539,7 @@ test_multi_cuda(void *thread)
     if ((i%1000) == 0) 
       fprintf (stderr, "i = %d\n", i);
     cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
-    eval_multi_multi_UBspline_3d_s_vgh_cuda<<<dimGrid,dimBlock>>> 
+    eval_multi_multi_UBspline_3d_s_vgh_kernel<<<dimGrid,dimBlock>>> 
        (r_d, drInv, coefs_d, vals_d, grads_d, hess_d, strides);
   }
   end = clock();
