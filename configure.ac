@@ -38,7 +38,7 @@ AC_ARG_ENABLE(cuda, AC_HELP_STRING([--enable-cuda], [compile CUDA routines]))
 AM_CONDITIONAL([HAVE_CUDA], [test "$enable_cuda" = "yes"])
 if test "x$enable_cuda" = "xyes"; then
    NVCC="nvcc"
-   NVCCFLAGS="-DNO_CUDA_MAIN"
+   NVCCFLAGS="-DNO_CUDA_MAIN -g -O3"
    CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
    LIBS="$LIBS -L/usr/local/cuda/lib -lcuda -lcudart"
 fi
@@ -56,7 +56,7 @@ else
   CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
   NVCC="nvcc"
 fi
-NVCCFLAGS="-DNO_CUDA_MAIN -O3 -use_fast_math"
+NVCCFLAGS="-DNO_CUDA_MAIN -O3 -use_fast_math -g"
 AC_SUBST(CUDA_CFLAGS)
 AC_SUBST(CUDA_LIBS)
 AC_SUBST(NVCC)

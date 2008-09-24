@@ -1,7 +1,10 @@
 #include "multi_bspline.h"
 #include "multi_bspline_structs_cuda.h"
 
-//__constant__ float Acuda[48];
+__constant__ float Acuda[48];
+
+#include "multi_bspline_cuda_s.cu"
+#include "multi_bspline_cuda_c.cu"
 
 // typedef struct
 // {
@@ -54,7 +57,7 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
 
-  size_t size = Nx*Ny*Nz+N*sizeof(float);
+  size_t size = Nx*Ny*Nz*N*sizeof(float);
 
   cudaMalloc((void**)&(cuda_spline->coefs_real), size);
   cudaMalloc((void**)&(cuda_spline->coefs_imag), size);
@@ -127,7 +130,7 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
 
-  size_t size = Nx*Ny*Nz+N*sizeof(float);
+  size_t size = Nx*Ny*Nz*N*sizeof(float);
 
   cudaMalloc((void**)&(cuda_spline->coefs_real), size);
   cudaMalloc((void**)&(cuda_spline->coefs_imag), size);
@@ -141,7 +144,7 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
 	  spline_buff[ix*cuda_spline->stride.x +
 		      iy*cuda_spline->stride.y +
 		      iz*cuda_spline->stride.z + isp] =
-	    spline->coefs[ix*spline->x_stride +
+	    (float)spline->coefs[ix*spline->x_stride +
 			  iy*spline->y_stride +
 			  iz*spline->z_stride + isp].real();
 	}
@@ -154,7 +157,7 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
 	  spline_buff[ix*cuda_spline->stride.x +
 		      iy*cuda_spline->stride.y +
 		      iz*cuda_spline->stride.z + isp] =
-	    spline->coefs[ix*spline->x_stride +
+	    (float)spline->coefs[ix*spline->x_stride +
 			  iy*spline->y_stride +
 			  iz*spline->z_stride + isp].imag();
 	}

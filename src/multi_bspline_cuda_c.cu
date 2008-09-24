@@ -146,9 +146,9 @@ eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv,
 
   __shared__ float a[4], b[4], c[4];
   if (thr < 4) {
-    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].w;
-    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].w;
-    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].w;
+    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].w;
+    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].w;
+    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].w;
   }
   __syncthreads();
 
@@ -253,9 +253,9 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv,
   // second derivative.
   __shared__ float a[12], b[12], c[12];
   if (thr < 12) {
-    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].w;
-    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].w;
-    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].w;
+    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].w;
+    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].w;
+    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].w;
   }
   __syncthreads();
 
@@ -417,7 +417,7 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda (float *pos, float3 drInv,
 
 				    
 
-
+#ifndef NO_CUDA_MAIN
 static void *
 test_multi_cuda(void *thread)
 {
@@ -449,7 +449,7 @@ test_multi_cuda(void *thread)
 		         0.0,      0.0,      1.0,     0.0 };
 
   // Copy A to host
-  cudaMemcpy(A, A_h, 48*sizeof(float), cudaMemcpyHostToDevice); 
+  cudaMemcpy(Acuda, A_h, 48*sizeof(float), cudaMemcpyHostToDevice); 
 
   float *r_d, *r_h;
   int xs, ys, zs, N;
@@ -599,7 +599,7 @@ test_multi_cuda(void *thread)
   // cudaFree(coefs_d);
   // cudaFree(vals_d);
 }
-
+#endif
 
 #ifndef NO_CUDA_MAIN
 

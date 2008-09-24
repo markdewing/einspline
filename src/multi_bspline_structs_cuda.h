@@ -3,8 +3,6 @@
 
 #define SPLINE_BLOCK_SIZE 64
 
-__constant__ float Acuda[48];
-
 ////////
 // 2D //
 ////////
