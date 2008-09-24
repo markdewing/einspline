@@ -1,10 +1,8 @@
-#define BLOCK_SIZE 64
-
 #include <stdio.h>
 #include "multi_bspline.h"
 #include "multi_bspline_create_cuda.h"
 
-//__constant__ float A[48];
+//__constant__ float Acuda[48];
 
 // typedef struct
 // {
@@ -31,8 +29,8 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
 		         0.0,      0.0,     -3.0,     1.0,
 		         0.0,      0.0,      1.0,     0.0 };
 
-  //cudaMemcpy(A, A_h, 48*sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol(A, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
+  //cudaMemcpy(Acuda, A_h, 48*sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
 
   multi_UBspline_3d_s_cuda *cuda_spline =
     (multi_UBspline_3d_s_cuda*) malloc (sizeof (multi_UBspline_3d_s_cuda*));
@@ -44,8 +42,8 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
   int Nz = spline->z_grid.num+3;
 
   int N = spline->num_splines;
-  if ((N%BLOCK_SIZE) != 0)
-    N += 64 - (N%BLOCK_SIZE);
+  if ((N%SPLINE_BLOCK_SIZE) != 0)
+    N += 64 - (N%SPLINE_BLOCK_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
@@ -87,7 +85,7 @@ eval_multi_multi_UBspline_3d_s_cuda (float *pos, float3 drInv,
   int block = blockIdx.x;
   int thr   = threadIdx.x;
   int ir    = blockIdx.y;
-  int off   = block*BLOCK_SIZE+thr;
+  int off   = block*SPLINE_BLOCK_SIZE+thr;
 
   __shared__ float *myval;
   __shared__ float abc[64];
@@ -127,9 +125,9 @@ eval_multi_multi_UBspline_3d_s_cuda (float *pos, float3 drInv,
 
   __shared__ float a[4], b[4], c[4];
   if (thr < 4) {
-    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].w;
-    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].w;
-    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].w;
+    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].w;
+    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].w;
+    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].w;
   }
   __syncthreads();
 
@@ -163,7 +161,7 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (float *pos, float3 drInv,  float *coefs
   int block = blockIdx.x;
   int thr   = threadIdx.x;
   int ir    = blockIdx.y;
-  int off   = block*BLOCK_SIZE+threadIdx.x;
+  int off   = block*SPLINE_BLOCK_SIZE+threadIdx.x;
 
   __shared__ float *myval, *mygrad, *myhess;
   __shared__ float3 r;
@@ -205,9 +203,9 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (float *pos, float3 drInv,  float *coefs
   // second derivative.
   __shared__ float a[12], b[12], c[12];
   if (thr < 12) {
-    a[thr] = A[4*thr+0]*tp[0].x + A[4*thr+1]*tp[0].y + A[4*thr+2]*tp[0].z + A[4*thr+3]*tp[0].z;
-    b[thr] = A[4*thr+0]*tp[1].x + A[4*thr+1]*tp[1].y + A[4*thr+2]*tp[1].z + A[4*thr+3]*tp[1].z;
-    c[thr] = A[4*thr+0]*tp[2].x + A[4*thr+1]*tp[2].y + A[4*thr+2]*tp[2].z + A[4*thr+3]*tp[2].z;
+    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].z;
+    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].z;
+    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].z;
   }
   __syncthreads();
 
@@ -265,7 +263,7 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (float *pos, float3 drInv,  float *coefs
   h22 *= drInv.z * drInv.z;  
 
   
-  //  __shared__ float buff[6*BLOCK_SIZE];
+  //  __shared__ float buff[6*SPLINE_BLOCK_SIZE];
   // Note, we can reuse abc, by replacing buff with abc.
   myval[off] = v;
   abc[3*thr+0] = g0; 
@@ -273,7 +271,7 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (float *pos, float3 drInv,  float *coefs
   abc[3*thr+2] = g2; 
   __syncthreads();
   for (int i=0; i<3; i++) 
-    mygrad[(3*block+i)*BLOCK_SIZE+thr] = abc[i*BLOCK_SIZE+thr]; 
+    mygrad[(3*block+i)*SPLINE_BLOCK_SIZE+thr] = abc[i*SPLINE_BLOCK_SIZE+thr]; 
   __syncthreads();
 
   // Write first half of Hessians
@@ -285,7 +283,7 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (float *pos, float3 drInv,  float *coefs
   abc[6*thr+5]  = h22;
   __syncthreads();
   for (int i=0; i<6; i++) 
-    myhess[(6*block+i)*BLOCK_SIZE+thr] = abc[i*BLOCK_SIZE+thr];
+    myhess[(6*block+i)*SPLINE_BLOCK_SIZE+thr] = abc[i*SPLINE_BLOCK_SIZE+thr];
 }
 
 
@@ -363,8 +361,8 @@ test_multi_cuda2()
     r_h[4*ir+2] = 0.5*drand48();
   }
 
-  dim3 dimBlock(BLOCK_SIZE);
-  dim3 dimGrid(N/BLOCK_SIZE,numWalkers);
+  dim3 dimBlock(SPLINE_BLOCK_SIZE);
+  dim3 dimGrid(N/SPLINE_BLOCK_SIZE,numWalkers);
   
   float vals_host[N], vals_cuda[N];
 
@@ -439,7 +437,7 @@ test_multi_cuda(void *thread)
 		         0.0,      0.0,      1.0,     0.0 };
 
   // Copy A to host
-  cudaMemcpy(A, A_h, 48*sizeof(float), cudaMemcpyHostToDevice); 
+  cudaMemcpy(Acuda, A_h, 48*sizeof(float), cudaMemcpyHostToDevice); 
 
   float *r_d, *r_h;
   int xs, ys, zs, N;
@@ -508,8 +506,8 @@ test_multi_cuda(void *thread)
   strides.y = ys;
   strides.z = zs;
 
-  dim3 dimBlock(BLOCK_SIZE);
-  dim3 dimGrid(N/BLOCK_SIZE,numWalkers);
+  dim3 dimBlock(SPLINE_BLOCK_SIZE);
+  dim3 dimGrid(N/SPLINE_BLOCK_SIZE,numWalkers);
   
   clock_t start, end;
 

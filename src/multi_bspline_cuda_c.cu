@@ -4,7 +4,7 @@
 #include "multi_bspline.h"
 #include "multi_bspline_create_cuda.h"
 
-__constant__ float A[48];
+//__constant__ float A[48];
 
 // typedef struct
 // {
