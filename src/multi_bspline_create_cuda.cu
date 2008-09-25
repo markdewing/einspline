@@ -42,7 +42,7 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
   cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
 
   multi_UBspline_3d_c_cuda *cuda_spline =
-    (multi_UBspline_3d_c_cuda*) malloc (sizeof (multi_UBspline_3d_c_cuda*));
+    (multi_UBspline_3d_c_cuda*) malloc (sizeof (multi_UBspline_3d_c_cuda));
   
   cuda_spline->num_splines = spline->num_splines;
 
@@ -115,7 +115,7 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
   cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
 
   multi_UBspline_3d_c_cuda *cuda_spline =
-    (multi_UBspline_3d_c_cuda*) malloc (sizeof (multi_UBspline_3d_c_cuda*));
+    (multi_UBspline_3d_c_cuda*) malloc (sizeof (multi_UBspline_3d_c_cuda));
   
   cuda_spline->num_splines = spline->num_splines;
 
@@ -190,7 +190,7 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
   cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
 
   multi_UBspline_3d_s_cuda *cuda_spline =
-    (multi_UBspline_3d_s_cuda*) malloc (sizeof (multi_UBspline_3d_s_cuda*));
+    (multi_UBspline_3d_s_cuda*) malloc (sizeof (multi_UBspline_3d_s_cuda));
   
   cuda_spline->num_splines = spline->num_splines;
 
@@ -254,7 +254,7 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
   cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
 
   multi_UBspline_3d_s_cuda *cuda_spline =
-    (multi_UBspline_3d_s_cuda*) malloc (sizeof (multi_UBspline_3d_s_cuda*));
+    (multi_UBspline_3d_s_cuda*) malloc (sizeof (multi_UBspline_3d_s_cuda));
   
   cuda_spline->num_splines = spline->num_splines;
 
