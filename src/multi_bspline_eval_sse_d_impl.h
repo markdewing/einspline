@@ -779,8 +779,9 @@ eval_multi_UBspline_3d_d (multi_UBspline_3d_d *spline,
   _MM_DDOT4_PD (A_d[4], A_d[5], A_d[6], A_d[7], tpz01, tpz23, tpz01, tpz23,   c23);
 
   // Zero-out values
-  __m128d mvals[(N+1)/2];
-  for (int n=0; n<N; n++) 
+  int Nh = (N+1)/2;
+  __m128d mvals[Nh];
+  for (int n=0; n<Nh; n++) 
     mvals[n] = _mm_sub_pd (mvals[n], mvals[n]);
 
   __m128d a[4], b[4], c[4];
@@ -805,7 +806,7 @@ eval_multi_UBspline_3d_d (multi_UBspline_3d_d *spline,
 	__m128d abc = _mm_mul_pd (_mm_mul_pd(a[i], b[j]), c[k]);
 	__m128d* restrict coefs = (__m128d*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
 
-	for (int n=0; n<(N+1)/2; n++) 
+	for (int n=0; n<Nh; n++) 
 	  mvals[n] = _mm_add_pd (mvals[n], _mm_mul_pd (abc, coefs[n]));
       }
   
