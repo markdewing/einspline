@@ -238,6 +238,16 @@ eval_multi_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s_cuda *spline,
 
   eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride, spline->num_splines);
+
+
+  cudaThreadSynchronize();
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_cuda:\n  %s\n",
+	     cudaGetErrorString(err));
+    abort();
+  }
+
 }
 
 extern "C" void
@@ -254,6 +264,14 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
   eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride,
      spline->num_splines);
+
+  cudaThreadSynchronize();
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_vgh_cuda:\n  %s\n",
+	     cudaGetErrorString(err));
+    abort();
+  }
 }
 
 #endif
