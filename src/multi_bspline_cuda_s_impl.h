@@ -7,7 +7,8 @@
 
 __global__ static void
 eval_multi_multi_UBspline_3d_s_kernel 
-(float *pos, float3 drInv, float *coefs, float *vals[], uint3 strides)
+(float *pos, float3 drInv, float *coefs, float *vals[], uint3 strides,
+ int N)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
@@ -66,16 +67,17 @@ eval_multi_multi_UBspline_3d_s_kernel
     abc[thr] = a[i]*b[j]*c[k];
   __syncthreads();
 
-
-  float val = 0.0;
-  for (int i=0; i<4; i++) {
-    for (int j=0; j<4; j++) {
-      float *base = coefs + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
-      for (int k=0; k<4; k++) 
-  	val += abc[16*i+4*j+k] * base[off+k*strides.z];
+  if (off < N) {
+    float val = 0.0;
+    for (int i=0; i<4; i++) {
+      for (int j=0; j<4; j++) {
+	float *base = coefs + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
+	for (int k=0; k<4; k++) 
+	  val += abc[16*i+4*j+k] * base[off+k*strides.z];
+      }
     }
+    myval[off] = val;
   }
-  myval[off] = val;
 }
 
 
@@ -83,7 +85,8 @@ eval_multi_multi_UBspline_3d_s_kernel
 __global__ static void
 eval_multi_multi_UBspline_3d_s_vgh_kernel 
 (float *pos, float3 drInv,  float *coefs, 
- float *vals[], float *grads[], float *hess[], uint3 strides)
+ float *vals[], float *grads[], float *hess[], uint3 strides,
+ int N)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
@@ -159,49 +162,54 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
 
   int n = 0;
   float *b0 = coefs + index.x*strides.x + index.y*strides.y + index.z*strides.z + off;
-  for (int i=0; i<4; i++) {
-    for (int j=0; j<4; j++) {
-      float *base = b0 + i*strides.x + j*strides.y;
-      for (int k=0; k<4; k++) {
-	float c  = base[k*strides.z];
-	v   += abc[n+0] * c;
-	g0  += abc[n+1] * c;
-	g1  += abc[n+2] * c;
-	g2  += abc[n+3] * c;
-	h00 += abc[n+4] * c;
-	h01 += abc[n+5] * c;
-	h02 += abc[n+6] * c;
-	h11 += abc[n+7] * c;
-	h12 += abc[n+8] * c;
-	h22 += abc[n+9] * c;
-	n += 10;
+  if (off < N) {
+    for (int i=0; i<4; i++) {
+      for (int j=0; j<4; j++) {
+	float *base = b0 + i*strides.x + j*strides.y;
+	for (int k=0; k<4; k++) {
+	  float c  = base[k*strides.z];
+	  v   += abc[n+0] * c;
+	  g0  += abc[n+1] * c;
+	  g1  += abc[n+2] * c;
+	  g2  += abc[n+3] * c;
+	  h00 += abc[n+4] * c;
+	  h01 += abc[n+5] * c;
+	  h02 += abc[n+6] * c;
+	  h11 += abc[n+7] * c;
+	  h12 += abc[n+8] * c;
+	  h22 += abc[n+9] * c;
+	  n += 10;
+	}
       }
     }
-  }
-  g0 *= drInv.x; 
-  g1 *= drInv.y; 
-  g2 *= drInv.z; 
-
-  h00 *= drInv.x * drInv.x;  
-  h01 *= drInv.x * drInv.y;  
-  h02 *= drInv.x * drInv.z;  
-  h11 *= drInv.y * drInv.y;  
-  h12 *= drInv.y * drInv.z;  
-  h22 *= drInv.z * drInv.z;  
-
+    g0 *= drInv.x; 
+    g1 *= drInv.y; 
+    g2 *= drInv.z; 
+    
+    h00 *= drInv.x * drInv.x;  
+    h01 *= drInv.x * drInv.y;  
+    h02 *= drInv.x * drInv.z;  
+    h11 *= drInv.y * drInv.y;  
+    h12 *= drInv.y * drInv.z;  
+    h22 *= drInv.z * drInv.z;  
   
-  //  __shared__ float buff[6*SPLINE_BLOCK_SIZE];
-  // Note, we can reuse abc, by replacing buff with abc.
-  myval[off] = v;
+    
+    //  __shared__ float buff[6*SPLINE_BLOCK_SIZE];
+    // Note, we can reuse abc, by replacing buff with abc.
+    myval[off] = v;
+  }
   abc[3*thr+0] = g0; 
   abc[3*thr+1] = g1; 
   abc[3*thr+2] = g2; 
   __syncthreads();
-  for (int i=0; i<3; i++) 
-    mygrad[(3*block+i)*SPLINE_BLOCK_SIZE+thr] = abc[i*SPLINE_BLOCK_SIZE+thr]; 
+  for (int i=0; i<3; i++) {
+    int myoff = (3*block+i)*SPLINE_BLOCK_SIZE + thr;
+    if (myoff < 3*N)
+      mygrad[myoff] = abc[i*SPLINE_BLOCK_SIZE+thr]; 
+  }
   __syncthreads();
 
-  // Write first half of Hessians
+  // Write Hessians
   abc[6*thr+0]  = h00;
   abc[6*thr+1]  = h01;
   abc[6*thr+2]  = h02;
@@ -209,8 +217,11 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
   abc[6*thr+4]  = h12;
   abc[6*thr+5]  = h22;
   __syncthreads();
-  for (int i=0; i<6; i++) 
-    myhess[(6*block+i)*SPLINE_BLOCK_SIZE+thr] = abc[i*SPLINE_BLOCK_SIZE+thr];
+  for (int i=0; i<6; i++) {
+    int myoff = (6*block+i)*SPLINE_BLOCK_SIZE + thr;
+    if (myoff < 6*N)
+      myhess[myoff] = abc[i*SPLINE_BLOCK_SIZE+thr];
+  }
 }
 
 
@@ -221,8 +232,12 @@ eval_multi_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s_cuda *spline,
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
   dim3 dimGrid(spline->num_splines/SPLINE_BLOCK_SIZE, num);
 
+  if (spline->num_splines % SPLINE_BLOCK_SIZE)
+    dimGrid.x++;
+  
+
   eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
-    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride);
+    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride, spline->num_splines);
 }
 
 extern "C" void
@@ -233,8 +248,12 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
   dim3 dimGrid(spline->num_splines/SPLINE_BLOCK_SIZE, num);
 
+  if (spline->num_splines % SPLINE_BLOCK_SIZE)
+    dimGrid.x++;
+
   eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
-    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride);
+    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride,
+     spline->num_splines);
 }
 
 #endif

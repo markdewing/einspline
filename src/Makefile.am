@@ -8,6 +8,7 @@ endif
 if HAVE_CUDA
    MAYBE_CUDA = multi_bspline_create_cuda.cu \
                 multi_bspline_cuda_s_impl.h  \
+                multi_bspline_cuda_c_impl.h  \
                 multi_bspline_eval_cuda.h
 endif
 
