@@ -261,9 +261,9 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
   if (spline->num_splines % SPLINE_BLOCK_SIZE)
     dimGrid.x++;
 
-  eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
-    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride,
-     spline->num_splines);
+  eval_multi_multi_UBspline_3d_s_vgh_kernel<<<dimGrid,dimBlock>>>
+    (pos_d, spline->gridInv, spline->coefs, vals_d, grads_d, hess_d,
+     spline->stride, spline->num_splines);
 
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();
@@ -273,5 +273,180 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
     abort();
   }
 }
+
+
+__global__ static void
+eval_multi_multi_UBspline_3d_s_vgl_kernel 
+(float *pos, float3 drInv,  float *coefs,  float Linv[],
+ float *vals[], float *grad_lapl[], uint3 strides,
+ int N, int row_stride)
+{
+  int block = blockIdx.x;
+  int thr   = threadIdx.x;
+  int ir    = blockIdx.y;
+  int off   = block*SPLINE_BLOCK_SIZE+threadIdx.x;
+
+  __shared__ float *myval, *mygrad_lapl;
+  __shared__ float3 r;
+  if (thr == 0) {
+    r.x = pos[3*ir+0];
+    r.y = pos[3*ir+1];
+    r.z = pos[3*ir+2];
+    myval  = vals[ir];
+    mygrad_lapl = grad_lapl[ir];
+  }
+  __syncthreads();
+  
+  int3 index;
+  float3 t;
+  float s, sf;
+  float4 tp[3];
+
+  s = r.x * drInv.x;
+  sf = floor(s);
+  index.x = (int)sf;
+  t.x = s - sf;
+
+  s = r.y * drInv.y;
+  sf = floor(s);
+  index.y = (int)sf;
+  t.y = s - sf;
+
+  s = r.z * drInv.z;
+  sf = floor(s);
+  index.z = (int)sf;
+  t.z = s - sf;
+  
+  tp[0] = make_float4(t.x*t.x*t.x, t.x*t.x, t.x, 1.0);
+  tp[1] = make_float4(t.y*t.y*t.y, t.y*t.y, t.y, 1.0);
+  tp[2] = make_float4(t.z*t.z*t.z, t.z*t.z, t.z, 1.0);
+
+  // First 4 of a are value, second 4 are derivative, last four are
+  // second derivative.
+  __shared__ float a[12], b[12], c[12];
+  if (thr < 12) {
+    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].z;
+    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].z;
+    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].z;
+  }
+  __syncthreads();
+
+  __shared__ float abc[640];
+  int i = (thr>>4)&3;
+  int j = (thr>>2)&3;
+  int k = (thr & 3);
+
+  abc[(16*i+4*j+k)+0]   = a[i+0]*b[j+0]*c[k+0]; // val
+  abc[(16*i+4*j+k)+64]  = a[i+4]*b[j+0]*c[k+0]; // d/dx
+  abc[(16*i+4*j+k)+128] = a[i+0]*b[j+4]*c[k+0]; // d/dy
+  abc[(16*i+4*j+k)+192] = a[i+0]*b[j+0]*c[k+4]; // d/dz
+  abc[(16*i+4*j+k)+256] = a[i+8]*b[j+0]*c[k+0]; // d2/dx2
+  abc[(16*i+4*j+k)+320] = a[i+4]*b[j+4]*c[k+0]; // d2/dxdy
+  abc[(16*i+4*j+k)+384] = a[i+4]*b[j+0]*c[k+4]; // d2/dxdz
+  abc[(16*i+4*j+k)+448] = a[i+0]*b[j+8]*c[k+0]; // d2/dy2
+  abc[(16*i+4*j+k)+512] = a[i+0]*b[j+4]*c[k+4]; // d2/dydz
+  abc[(16*i+4*j+k)+576] = a[i+0]*b[j+0]*c[k+8]; // d2/dz2
+
+  __syncthreads();
+
+  float v = 0.0, g0=0.0,  g1=0.0, g2=0.0, 
+    h00=0.0, h01=0.0, h02=0.0, h11=0.0, h12=0.0, h22=0.0;
+
+  int n = 0;
+  float *b0 = coefs + index.x*strides.x + index.y*strides.y + index.z*strides.z + off;
+  if (off < N) {
+    for (int i=0; i<4; i++) {
+      for (int j=0; j<4; j++) {
+	float *base = b0 + i*strides.x + j*strides.y;
+	for (int k=0; k<4; k++) {
+	  float c  = base[k*strides.z];
+	  v   += abc[n+0] * c;
+	  g0  += abc[n+1] * c;
+	  g1  += abc[n+2] * c;
+	  g2  += abc[n+3] * c;
+	  h00 += abc[n+4] * c;
+	  h01 += abc[n+5] * c;
+	  h02 += abc[n+6] * c;
+	  h11 += abc[n+7] * c;
+	  h12 += abc[n+8] * c;
+	  h22 += abc[n+9] * c;
+	  n += 10;
+	}
+      }
+    }
+    g0 *= drInv.x; 
+    g1 *= drInv.y; 
+    g2 *= drInv.z; 
+    
+    h00 *= drInv.x * drInv.x;  
+    h01 *= drInv.x * drInv.y;  
+    h02 *= drInv.x * drInv.z;  
+    h11 *= drInv.y * drInv.y;  
+    h12 *= drInv.y * drInv.z;  
+    h22 *= drInv.z * drInv.z;  
+  
+    
+    //  __shared__ float buff[6*SPLINE_BLOCK_SIZE];
+    // Note, we can reuse abc, by replacing buff with abc.
+    myval[off] = v;
+  }
+
+  __shared__ float G[3][3], GGt[3][3];
+  int i0 = threadIdx.x/3;
+  int i1 = threadIdx.x - 3*i0;
+  if (threadIdx.x < 9) 
+    G[i0][i1] = Linv[threadIdx.x];
+  __syncthreads();
+  if (threadIdx.x < 9)   
+    GGt[i0][i1] = (G[i0][0]*G[0][i1] + 
+		   G[i0][1]*G[1][i1] + 
+		   G[i0][2]*G[2][i1]);
+
+  __syncthreads();
+  if (N < off) {
+    // Store gradients back to global memory
+    mygrad_lapl[off+0*row_stride] = G[0][0]*g0 + G[0][1]*g1 + G[0][2]*g2;
+    mygrad_lapl[off+1*row_stride] = G[1][0]*g0 + G[1][1]*g1 + G[1][2]*g2;
+    mygrad_lapl[off+2*row_stride] = G[2][0]*g0 + G[2][1]*g1 + G[2][2]*g2;
+    
+    // Store laplacians back to global memory
+    // Hessian = H00 H01 H02 H11 H12 H22
+    // Matrix = [0 1 2]
+    //          [1 3 4]
+    //          [2 4 5]
+    // laplacian = Trace(GGt*Hessian)
+    mygrad_lapl[off+3*row_stride] = 
+      (GGt[0][0]*h00 + GGt[0][1]*h01 + GGt[0][2]*h02 +
+       GGt[1][0]*h01 + GGt[1][1]*h11 + GGt[1][2]*h12 +
+       GGt[2][0]*h02 + GGt[2][1]*h12 + GGt[2][2]*h22);
+  }
+}
+
+
+extern "C" void
+eval_multi_multi_UBspline_3d_s_vgl_cuda (multi_UBspline_3d_s_cuda *spline, float *pos_d, 
+					 float Linv_d[], float *vals_d[], float *grad_lapl_d[],
+					 int num, int row_stride)
+{
+  dim3 dimBlock(SPLINE_BLOCK_SIZE);
+  dim3 dimGrid(spline->num_splines/SPLINE_BLOCK_SIZE, num);
+
+  if (spline->num_splines % SPLINE_BLOCK_SIZE)
+    dimGrid.x++;
+
+  eval_multi_multi_UBspline_3d_s_vgl_kernel<<<dimGrid,dimBlock>>>
+    (pos_d, spline->gridInv, spline->coefs, Linv_d, vals_d, 
+     grad_lapl_d, spline->stride, spline->num_splines, row_stride);
+
+  cudaThreadSynchronize();
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_vgh_cuda:\n  %s\n",
+	     cudaGetErrorString(err));
+    abort();
+  }
+}
+
+
 
 #endif
