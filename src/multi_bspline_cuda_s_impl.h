@@ -403,7 +403,7 @@ eval_multi_multi_UBspline_3d_s_vgl_kernel
 		   G[i0][2]*G[2][i1]);
 
   __syncthreads();
-  if (N < off) {
+  if (off < N) {
     // Store gradients back to global memory
     mygrad_lapl[off+0*row_stride] = G[0][0]*g0 + G[0][1]*g1 + G[0][2]*g2;
     mygrad_lapl[off+1*row_stride] = G[1][0]*g0 + G[1][1]*g1 + G[1][2]*g2;
@@ -416,17 +416,17 @@ eval_multi_multi_UBspline_3d_s_vgl_kernel
     //          [2 4 5]
     // laplacian = Trace(GGt*Hessian)
     mygrad_lapl[off+3*row_stride] = 
-      (GGt[0][0]*h00 + GGt[0][1]*h01 + GGt[0][2]*h02 +
-       GGt[1][0]*h01 + GGt[1][1]*h11 + GGt[1][2]*h12 +
-       GGt[2][0]*h02 + GGt[2][1]*h12 + GGt[2][2]*h22);
+      (GGt[0][0]*h00 + GGt[1][0]*h01 + GGt[2][0]*h02 +
+       GGt[0][1]*h01 + GGt[1][1]*h11 + GGt[2][1]*h12 +
+       GGt[0][2]*h02 + GGt[1][2]*h12 + GGt[2][2]*h22);
   }
 }
 
 
 extern "C" void
-eval_multi_multi_UBspline_3d_s_vgl_cuda (multi_UBspline_3d_s_cuda *spline, float *pos_d, 
-					 float Linv_d[], float *vals_d[], float *grad_lapl_d[],
-					 int num, int row_stride)
+eval_multi_multi_UBspline_3d_s_vgl_cuda 
+(multi_UBspline_3d_s_cuda *spline, float *pos_d, float *Linv_d, 
+ float *vals_d[], float *grad_lapl_d[], int num, int row_stride)
 {
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
   dim3 dimGrid(spline->num_splines/SPLINE_BLOCK_SIZE, num);
@@ -441,7 +441,7 @@ eval_multi_multi_UBspline_3d_s_vgl_cuda (multi_UBspline_3d_s_cuda *spline, float
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
-    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_vgh_cuda:\n  %s\n",
+    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_vgl_cuda:\n  %s\n",
 	     cudaGetErrorString(err));
     abort();
   }
