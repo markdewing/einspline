@@ -133,9 +133,9 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
   // second derivative.
   __shared__ float a[12], b[12], c[12];
   if (thr < 12) {
-    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].z;
-    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].z;
-    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].z;
+    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].w;
+    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].w;
+    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].w;
   }
   __syncthreads();
 
@@ -169,16 +169,16 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
 	for (int k=0; k<4; k++) {
 	  float c  = base[k*strides.z];
 	  v   += abc[n+0] * c;
-	  g0  += abc[n+1] * c;
-	  g1  += abc[n+2] * c;
-	  g2  += abc[n+3] * c;
-	  h00 += abc[n+4] * c;
-	  h01 += abc[n+5] * c;
-	  h02 += abc[n+6] * c;
-	  h11 += abc[n+7] * c;
-	  h12 += abc[n+8] * c;
-	  h22 += abc[n+9] * c;
-	  n += 10;
+	  g0  += abc[n+64] * c;
+	  g1  += abc[n+128] * c;
+	  g2  += abc[n+192] * c;
+	  h00 += abc[n+256] * c;
+	  h01 += abc[n+320] * c;
+	  h02 += abc[n+384] * c;
+	  h11 += abc[n+448] * c;
+	  h12 += abc[n+512] * c;
+	  h22 += abc[n+576] * c;
+	  n += 1;
 	}
       }
     }
@@ -325,9 +325,9 @@ eval_multi_multi_UBspline_3d_s_vgl_kernel
   // second derivative.
   __shared__ float a[12], b[12], c[12];
   if (thr < 12) {
-    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].z;
-    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].z;
-    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].z;
+    a[thr] = Acuda[4*thr+0]*tp[0].x + Acuda[4*thr+1]*tp[0].y + Acuda[4*thr+2]*tp[0].z + Acuda[4*thr+3]*tp[0].w;
+    b[thr] = Acuda[4*thr+0]*tp[1].x + Acuda[4*thr+1]*tp[1].y + Acuda[4*thr+2]*tp[1].z + Acuda[4*thr+3]*tp[1].w;
+    c[thr] = Acuda[4*thr+0]*tp[2].x + Acuda[4*thr+1]*tp[2].y + Acuda[4*thr+2]*tp[2].z + Acuda[4*thr+3]*tp[2].w;
   }
   __syncthreads();
 
@@ -360,17 +360,17 @@ eval_multi_multi_UBspline_3d_s_vgl_kernel
 	float *base = b0 + i*strides.x + j*strides.y;
 	for (int k=0; k<4; k++) {
 	  float c  = base[k*strides.z];
-	  v   += abc[n+0] * c;
-	  g0  += abc[n+1] * c;
-	  g1  += abc[n+2] * c;
-	  g2  += abc[n+3] * c;
-	  h00 += abc[n+4] * c;
-	  h01 += abc[n+5] * c;
-	  h02 += abc[n+6] * c;
-	  h11 += abc[n+7] * c;
-	  h12 += abc[n+8] * c;
-	  h22 += abc[n+9] * c;
-	  n += 10;
+	  v   += abc[n+  0] * c;
+	  g0  += abc[n+ 64] * c;
+	  g1  += abc[n+128] * c;
+	  g2  += abc[n+192] * c;
+	  h00 += abc[n+256] * c;
+	  h01 += abc[n+320] * c;
+	  h02 += abc[n+384] * c;
+	  h11 += abc[n+448] * c;
+	  h12 += abc[n+512] * c;
+	  h22 += abc[n+576] * c;
+	  n += 1;
 	}
       }
     }
