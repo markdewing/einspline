@@ -2,7 +2,9 @@
 #include "multi_bspline.h"
 #include "multi_bspline_create_cuda.h"
 
-//__constant__ float Acuda[48];
+#ifndef NO_CUDA_MAIN
+__constant__ float Acuda[48];
+#endif
 
 // typedef struct
 // {
@@ -165,9 +167,9 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
   __shared__ float *myval, *mygrad, *myhess;
   __shared__ float3 r;
   if (thr == 0) {
-    r.x = pos[4*ir+0];
-    r.y = pos[4*ir+1];
-    r.z = pos[4*ir+2];
+    r.x = pos[3*ir+0];
+    r.y = pos[3*ir+1];
+    r.z = pos[3*ir+2];
     myval  = vals[ir];
     mygrad = grads[ir];
     myhess = hess[ir];
@@ -288,12 +290,12 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
 
 extern "C" void
 eval_multi_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s_cuda *spline,
-				     float *pos_d, float *vals_d, int num)
+				     float *pos_d, float *vals_d[], int num)
 {
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
   dim3 dimGrid(spline->num_splines/SPLINE_BLOCK_SIZE, num);
 
-  eval_multi_multi_UBspline_3d_s_cuda<<<dimGrid,dimBlock>>>
+  eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride);
 }
 
@@ -363,13 +365,13 @@ test_multi_cuda2()
   fprintf (stderr, "Finished cuda allocations.\n");
 
   // Setup walker positions
-  cudaMalloc((void**)&(r_d),     4*numWalkers*sizeof(float));
-  cudaMallocHost((void**)&(r_h), 4*numWalkers*sizeof(float));
+  cudaMalloc((void**)&(r_d),     3*numWalkers*sizeof(float));
+  cudaMallocHost((void**)&(r_h), 3*numWalkers*sizeof(float));
 
   for (int ir=0; ir<numWalkers; ir++) {
-    r_h[4*ir+0] = 0.5*drand48();
-    r_h[4*ir+1] = 0.5*drand48();
-    r_h[4*ir+2] = 0.5*drand48();
+    r_h[3*ir+0] = 0.5*drand48();
+    r_h[3*ir+1] = 0.5*drand48();
+    r_h[3*ir+2] = 0.5*drand48();
   }
 
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
@@ -379,8 +381,8 @@ test_multi_cuda2()
 
   // Check value
   for (int w=0; w<numWalkers; w++) {
-    eval_multi_UBspline_3d_s (spline, r_h[4*w+0], r_h[4*w+1], r_h[4*w+2], vals_host);
-    cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
+    eval_multi_UBspline_3d_s (spline, r_h[3*w+0], r_h[3*w+1], r_h[3*w+2], vals_host);
+    cudaMemcpy(r_d, r_h, 3*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
     eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>> 
       (r_d, cudaspline->gridInv, cudaspline->coefs, vals_d, cudaspline->stride);
     cudaMemcpy(vals_cuda, valBlock_d+(N*w), N*sizeof(float), cudaMemcpyDeviceToHost);
@@ -395,7 +397,7 @@ test_multi_cuda2()
   for (int i=0; i<10000; i++) {
     if ((i%1000) == 0) 
       fprintf (stderr, "i = %d\n", i);
-    cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(r_d, r_h, 3*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
     eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>> 
        (r_d, cudaspline->gridInv, cudaspline->coefs, vals_d, cudaspline->stride);
   }
@@ -407,7 +409,7 @@ test_multi_cuda2()
   for (int i=0; i<10000; i++) {
     if ((i%1000) == 0) 
       fprintf (stderr, "i = %d\n", i);
-    cudaMemcpy(r_d, r_h, 4*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(r_d, r_h, 3*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
     eval_multi_multi_UBspline_3d_s_vgh_kernel<<<dimGrid,dimBlock>>> 
        (r_d, cudaspline->gridInv, cudaspline->coefs, vals_d, grads_d, hess_d, cudaspline->stride);
   }
@@ -580,6 +582,9 @@ main()
 	     deviceProp.totalConstMem);
     fprintf (stderr, "  Shared memory:     %10d\n", 
 	     deviceProp.sharedMemPerBlock);
+    fprintf (stderr, "  Clock rate:        %10d\n", 
+	     deviceProp.clockRate);
+
   }
 
   //  test_multi_cuda((void*)0);

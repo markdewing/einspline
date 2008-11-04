@@ -7,7 +7,8 @@
 
 __global__ static void
 eval_multi_multi_UBspline_3d_s_kernel 
-(float *pos, float3 drInv, float *coefs, float *vals[], uint3 strides,
+(float *pos, float3 drInv, float *coefs, float *vals[], 
+ uint3 dim, uint3 strides,
  int N)
 {
   int block = blockIdx.x;
@@ -34,17 +35,20 @@ eval_multi_multi_UBspline_3d_s_kernel
 
   s = r.x * drInv.x;
   sf = floor(s);
-  index.x = (int)sf;
+  index.x = min(max(0,(int)sf), dim.x-1);
+  //index.x = (int)sf;
   t.x = s - sf;
 
   s = r.y * drInv.y;
   sf = floor(s);
-  index.y = (int)sf;
+  index.y = min(max(0,(int)sf), dim.y-1);
+  //index.y = (int)sf;
   t.y = s - sf;
 
   s = r.z * drInv.z;
   sf = floor(s);
-  index.z = (int)sf;
+  index.z = min(max(0,(int)sf), dim.z-1);
+  //index.z = (int)sf;
   t.z = s - sf;
   
   tp[0] = make_float4(t.x*t.x*t.x, t.x*t.x, t.x, 1.0);
@@ -85,8 +89,8 @@ eval_multi_multi_UBspline_3d_s_kernel
 __global__ static void
 eval_multi_multi_UBspline_3d_s_vgh_kernel 
 (float *pos, float3 drInv,  float *coefs, 
- float *vals[], float *grads[], float *hess[], uint3 strides,
- int N)
+ float *vals[], float *grads[], float *hess[], 
+ uint3 dim, uint3 strides, int N)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
@@ -96,9 +100,9 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
   __shared__ float *myval, *mygrad, *myhess;
   __shared__ float3 r;
   if (thr == 0) {
-    r.x = pos[4*ir+0];
-    r.y = pos[4*ir+1];
-    r.z = pos[4*ir+2];
+    r.x = pos[3*ir+0];
+    r.y = pos[3*ir+1];
+    r.z = pos[3*ir+2];
     myval  = vals[ir];
     mygrad = grads[ir];
     myhess = hess[ir];
@@ -112,17 +116,18 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
 
   s = r.x * drInv.x;
   sf = floor(s);
-  index.x = (int)sf;
+  index.x = min(max(0,(int)sf), dim.x-1);
   t.x = s - sf;
 
   s = r.y * drInv.y;
   sf = floor(s);
-  index.y = (int)sf;
+  index.y = min(max(0,(int)sf), dim.y-1);
+
   t.y = s - sf;
 
   s = r.z * drInv.z;
   sf = floor(s);
-  index.z = (int)sf;
+  index.z = min(max(0,(int)sf), dim.z-1);
   t.z = s - sf;
   
   tp[0] = make_float4(t.x*t.x*t.x, t.x*t.x, t.x, 1.0);
@@ -237,7 +242,7 @@ eval_multi_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s_cuda *spline,
   
 
   eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
-    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->stride, spline->num_splines);
+    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->dim, spline->stride, spline->num_splines);
 
 
   cudaThreadSynchronize();
@@ -263,7 +268,7 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
 
   eval_multi_multi_UBspline_3d_s_vgh_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, vals_d, grads_d, hess_d,
-     spline->stride, spline->num_splines);
+     spline->dim, spline->stride, spline->num_splines);
 
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();
@@ -278,7 +283,7 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
 __global__ static void
 eval_multi_multi_UBspline_3d_s_vgl_kernel 
 (float *pos, float3 drInv,  float *coefs,  float Linv[],
- float *vals[], float *grad_lapl[], uint3 strides,
+ float *vals[], float *grad_lapl[], uint3 dim, uint3 strides,
  int N, int row_stride)
 {
   int block = blockIdx.x;
@@ -304,17 +309,17 @@ eval_multi_multi_UBspline_3d_s_vgl_kernel
 
   s = r.x * drInv.x;
   sf = floor(s);
-  index.x = (int)sf;
+  index.x = min(max(0,(int)sf), dim.x-1);
   t.x = s - sf;
 
   s = r.y * drInv.y;
   sf = floor(s);
-  index.y = (int)sf;
+  index.y = min(max(0,(int)sf), dim.y-1);
   t.y = s - sf;
 
   s = r.z * drInv.z;
   sf = floor(s);
-  index.z = (int)sf;
+  index.z = min(max(0,(int)sf), dim.z-1);
   t.z = s - sf;
   
   tp[0] = make_float4(t.x*t.x*t.x, t.x*t.x, t.x, 1.0);
@@ -436,7 +441,7 @@ eval_multi_multi_UBspline_3d_s_vgl_cuda
 
   eval_multi_multi_UBspline_3d_s_vgl_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, Linv_d, vals_d, 
-     grad_lapl_d, spline->stride, spline->num_splines, row_stride);
+     grad_lapl_d, spline->dim, spline->stride, spline->num_splines, row_stride);
 
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();

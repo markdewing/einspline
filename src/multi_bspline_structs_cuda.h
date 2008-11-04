@@ -48,6 +48,7 @@ typedef struct
   float *coefs;
   uint3 stride;
   float3 gridInv;
+  uint3 dim;
   int num_splines;
 } multi_UBspline_3d_s_cuda;
 

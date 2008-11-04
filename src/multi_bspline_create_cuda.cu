@@ -209,6 +209,10 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
   cuda_spline->gridInv.y = spline->y_grid.delta_inv;
   cuda_spline->gridInv.z = spline->z_grid.delta_inv;
 
+  cuda_spline->dim.x = spline->x_grid.num;
+  cuda_spline->dim.y = spline->y_grid.num;
+  cuda_spline->dim.z = spline->z_grid.num;
+
   size_t size = Nx*Ny*Nz*N*sizeof(float);
 
   cudaMalloc((void**)&(cuda_spline->coefs), size);
@@ -272,6 +276,10 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
   cuda_spline->gridInv.x = spline->x_grid.delta_inv;
   cuda_spline->gridInv.y = spline->y_grid.delta_inv;
   cuda_spline->gridInv.z = spline->z_grid.delta_inv;
+
+  cuda_spline->dim.x = spline->x_grid.num;
+  cuda_spline->dim.y = spline->y_grid.num;
+  cuda_spline->dim.z = spline->z_grid.num;
 
   size_t size = Nx*Ny*Nz*N*sizeof(float);
 
