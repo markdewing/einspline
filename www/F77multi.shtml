@@ -42,7 +42,7 @@ The subroutine names and parameters are given below:
 <tr> <td> x0_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Left BC value            </td> </tr>
 <tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
 <tr> <td> x1_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Right BC value           </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*4    </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -70,7 +70,7 @@ The subroutine names and parameters are given below:
 <tr> <td> x0_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Left BC value            </td> </tr>
 <tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
 <tr> <td> x1_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Right BC value           </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*8    </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER  </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -98,7 +98,7 @@ The subroutine names and parameters are given below:
 <tr> <td> x0_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Left BC value            </td> </tr>
 <tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
 <tr> <td> x1_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Right BC value           </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -126,7 +126,7 @@ The subroutine names and parameters are given below:
 <tr> <td> x0_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Left BC value            </td> </tr>
 <tr> <td> x1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right BC type            </td> </tr>
 <tr> <td> x1_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Right BC value           </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines </td> <td> IN  </td> <td> INTEGER   </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -164,7 +164,7 @@ The subroutine names and parameters are given below:
 <tr> <td> y0_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Left y BC value          </td> </tr>
 <tr> <td> y1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right y BC type          </td> </tr>
 <tr> <td> y1_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Right y BC value         </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*4    </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -201,7 +201,7 @@ The subroutine names and parameters are given below:
 <tr> <td> y0_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Left y BC value          </td> </tr>
 <tr> <td> y1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right y BC type          </td> </tr>
 <tr> <td> y1_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Right y BC value         </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*8    </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -238,7 +238,7 @@ The subroutine names and parameters are given below:
 <tr> <td> y0_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Left y BC value          </td> </tr>
 <tr> <td> y1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right y BC type          </td> </tr>
 <tr> <td> y1_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Right y BC value         </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -275,7 +275,7 @@ The subroutine names and parameters are given below:
 <tr> <td> y0_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Left y BC value          </td> </tr>
 <tr> <td> y1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right y BC type          </td> </tr>
 <tr> <td> y1_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Right y BC value         </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER</td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -322,7 +322,7 @@ The subroutine names and parameters are given below:
 <tr> <td> z0_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Left z BC value          </td> </tr>
 <tr> <td> z1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right z BC type          </td> </tr>
 <tr> <td> z1_val   </td> <td> IN     </td> <td> REAL*4    </td> <td> Right z BC value         </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*4    </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <br/>
@@ -367,7 +367,7 @@ The subroutine names and parameters are given below:
 <tr> <td> z0_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Left z BC value          </td> </tr>
 <tr> <td> z1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right z BC type          </td> </tr>
 <tr> <td> z1_val   </td> <td> IN     </td> <td> REAL*8    </td> <td> Right z BC value         </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> REAL*8    </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER    </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <pre>
@@ -411,7 +411,7 @@ The subroutine names and parameters are given below:
 <tr> <td> z0_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Left z BC value          </td> </tr>
 <tr> <td> z1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right z BC type          </td> </tr>
 <tr> <td> z1_val   </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> Right z BC value         </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*8 </td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <pre>
@@ -455,7 +455,7 @@ The subroutine names and parameters are given below:
 <tr> <td> z0_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Left z BC value          </td> </tr>
 <tr> <td> z1_code  </td> <td> IN     </td> <td> INTEGER   </td> <td> Right z BC type          </td> </tr>
 <tr> <td> z1_val   </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Right z BC value         </td> </tr>
-<tr> <td> num_splines     </td> <td> IN     </td> <td> COMPLEX*16</td> <td> # of splines to interpolate      </td> </tr>
+<tr> <td> num_splines     </td> <td> IN     </td> <td> INTEGER </td> <td> # of splines to interpolate      </td> </tr>
 <tr> <td> spline   </td> <td> OUT    </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 </table>
 <pre>
@@ -465,7 +465,7 @@ The subroutine names and parameters are given below:
 <tr> <td> Argument   </td> <td> Intent </td> <td> Type      </td> <td> Description              </td> </tr>
 <tr> <td> spline     </td> <td> IN     </td> <td> INTEGER*8 </td> <td> Handle for spline object </td> </tr>
 <tr> <td> spline_num </td> <td> IN     </td> <td> INTEGER   </td> <td> Spline index (0 to N-1)     </td> </tr>
-<tr> <td> data       </td> <td> IN     </td> <td> COMPLEX*16/td> <td> Data to interpolate      </td> </tr>
+<tr> <td> data       </td> <td> IN     </td> <td> COMPLEX*16</td> <td> Data to interpolate      </td> </tr>
 </table>
 <br/>
 <center> <h2><u> Spline destruction routine </u></h2> </center>
