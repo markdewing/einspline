@@ -47,11 +47,11 @@ fi
 ########################
 AC_ARG_WITH([cuda],
     [  --with-cuda=PATH        prefix where cuda is installed [default=auto]])
-if test "x$with_cuda" != x; then
+if test "x$with_cuda" != "x"; then
   CUDA_CFLAGS="-I$with_cuda/include"
   CUDA_LIBS="-L$with_cuda/lib -lcuda -lcudart"
   NVCC="$with_cuda/bin/nvcc"
-else
+elseif test "$enable_cuda" = "yes"
   CUDA_CFLAGS="-I/usr/local/cuda/include"
   CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
   NVCC="nvcc"
