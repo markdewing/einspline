@@ -9,6 +9,16 @@
 
 typedef struct
 {
+  double x,y,z;
+} double3;
+
+typedef struct
+{
+  double x,y,z,w;
+} double4;
+
+typedef struct
+{
   float *coefs;
   uint2 stride;
   float2 gridInv;
@@ -57,6 +67,7 @@ typedef struct
   float *coefs_real, *coefs_imag;
   uint3 stride;
   float3 gridInv;
+  uint3 dim;
   int num_splines;
 } multi_UBspline_3d_c_cuda;
 
@@ -64,7 +75,8 @@ typedef struct
 {
   double *coefs;
   uint3 stride;
-  double gridInv[3];
+  double3 gridInv;
+  uint3 dim;
   int num_splines;
 } multi_UBspline_3d_d_cuda;
 
@@ -72,7 +84,8 @@ typedef struct
 {
   double *coefs_real, *coefs_imag;
   uint3 stride;
-  double gridInv[3];
+  double3 gridInv;
+  uint3 dim;
   int num_splines;
 } multi_UBspline_3d_z_cuda;
 

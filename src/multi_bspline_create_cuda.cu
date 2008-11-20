@@ -1,27 +1,12 @@
 #include "multi_bspline.h"
 #include "multi_bspline_structs_cuda.h"
 
-__constant__ float Acuda[48];
+__constant__ float  Acuda[48];
+__constant__ double Bcuda[48];
 
 #include "multi_bspline_cuda_s_impl.h"
 #include "multi_bspline_cuda_c_impl.h"
-
-// typedef struct
-// {
-//   float *coefs;
-//   uint3 stride;
-//   float3 gridInv;
-//   int num_splines;
-// } multi_UBspline_3d_s_cuda;
-
-// typedef struct
-// {
-//   float *coefs_real, *coefs_imag;
-//   uint3 stride;
-//   float3 gridInv;
-//   int num_splines;
-// } multi_UBspline_3d_c_cuda;
-
+#include "multi_bspline_cuda_d_impl.h"
 
 extern "C" multi_UBspline_3d_c_cuda*
 create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
@@ -56,6 +41,14 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
+
+  cuda_spline->gridInv.x = spline->x_grid.delta_inv;
+  cuda_spline->gridInv.y = spline->y_grid.delta_inv;
+  cuda_spline->gridInv.z = spline->z_grid.delta_inv;
+
+  cuda_spline->dim.x = spline->x_grid.num;
+  cuda_spline->dim.y = spline->y_grid.num;
+  cuda_spline->dim.z = spline->z_grid.num;
 
   size_t size = Nx*Ny*Nz*N*sizeof(float);
 
@@ -129,6 +122,14 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
+
+  cuda_spline->gridInv.x = spline->x_grid.delta_inv;
+  cuda_spline->gridInv.y = spline->y_grid.delta_inv;
+  cuda_spline->gridInv.z = spline->z_grid.delta_inv;
+
+  cuda_spline->dim.x = spline->x_grid.num;
+  cuda_spline->dim.y = spline->y_grid.num;
+  cuda_spline->dim.z = spline->z_grid.num;
 
   size_t size = Nx*Ny*Nz*N*sizeof(float);
 
@@ -242,7 +243,7 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
 extern "C" multi_UBspline_3d_s_cuda*
 create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 {
-  float A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
+  double A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
 		     3.0/6.0, -6.0/6.0,  0.0/6.0, 4.0/6.0,
 		    -3.0/6.0,  3.0/6.0,  3.0/6.0, 1.0/6.0,
 		     1.0/6.0,  0.0/6.0,  0.0/6.0, 0.0/6.0,
@@ -311,7 +312,7 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 extern "C" multi_UBspline_3d_d_cuda*
 create_multi_UBspline_3d_d_cuda (multi_UBspline_3d_d* spline)
 {
-  double A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
+  double B_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
 		     3.0/6.0, -6.0/6.0,  0.0/6.0, 4.0/6.0,
 		    -3.0/6.0,  3.0/6.0,  3.0/6.0, 1.0/6.0,
 		     1.0/6.0,  0.0/6.0,  0.0/6.0, 0.0/6.0,
@@ -324,7 +325,7 @@ create_multi_UBspline_3d_d_cuda (multi_UBspline_3d_d* spline)
 		         0.0,      0.0,     -3.0,     1.0,
 		         0.0,      0.0,      1.0,     0.0 };
 
-  cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(double), 0, cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(Bcuda, B_h, 48*sizeof(double), 0, cudaMemcpyHostToDevice);
 
   multi_UBspline_3d_d_cuda *cuda_spline =
     (multi_UBspline_3d_d_cuda*) malloc (sizeof (multi_UBspline_3d_d_cuda));
@@ -337,7 +338,7 @@ create_multi_UBspline_3d_d_cuda (multi_UBspline_3d_d* spline)
 
   int N = spline->num_splines;
   if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+    N += SPLINE_BLOCK_SIZE - (N%SPLINE_BLOCK_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
@@ -379,7 +380,7 @@ create_multi_UBspline_3d_d_cuda (multi_UBspline_3d_d* spline)
 extern "C" multi_UBspline_3d_z_cuda*
 create_multi_UBspline_3d_z_cuda (multi_UBspline_3d_z* spline)
 {
-  double A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
+  double B_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
 		     3.0/6.0, -6.0/6.0,  0.0/6.0, 4.0/6.0,
 		    -3.0/6.0,  3.0/6.0,  3.0/6.0, 1.0/6.0,
 		     1.0/6.0,  0.0/6.0,  0.0/6.0, 0.0/6.0,
@@ -392,7 +393,7 @@ create_multi_UBspline_3d_z_cuda (multi_UBspline_3d_z* spline)
 		         0.0,      0.0,     -3.0,     1.0,
 		         0.0,      0.0,      1.0,     0.0 };
 
-  cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(double), 0, cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(Bcuda, B_h, 48*sizeof(double), 0, cudaMemcpyHostToDevice);
 
   multi_UBspline_3d_z_cuda *cuda_spline =
     (multi_UBspline_3d_z_cuda*) malloc (sizeof (multi_UBspline_3d_z_cuda));
@@ -409,6 +410,15 @@ create_multi_UBspline_3d_z_cuda (multi_UBspline_3d_z* spline)
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
+
+  cuda_spline->gridInv.x = spline->x_grid.delta_inv;
+  cuda_spline->gridInv.y = spline->y_grid.delta_inv;
+  cuda_spline->gridInv.z = spline->z_grid.delta_inv;
+
+  cuda_spline->dim.x = spline->x_grid.num;
+  cuda_spline->dim.y = spline->y_grid.num;
+  cuda_spline->dim.z = spline->z_grid.num;
+
 
   size_t size = Nx*Ny*Nz*N*sizeof(double);
 

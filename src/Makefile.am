@@ -10,6 +10,9 @@ if HAVE_CUDA
                 multi_bspline_cuda_s_impl.h  \
                 multi_bspline_cuda_c_impl.h  \
                 multi_bspline_eval_cuda.h
+   CHECK_CUDA = test_multi_cuda
+   test_multi_cuda_SOURCES = test_multi_cuda.cu
+   test_multi_cuda_LDADD   = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)	
 endif
 
 if HAVE_SSE
@@ -39,9 +42,9 @@ endif
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
                   test_bspline_s test_bspline_d test_multi \
-                  test_fmulti_bspline test_multi_cpp $(CHECK_BLIPS)
+                  test_fmulti_bspline test_multi_cpp $(CHECK_BLIPS) 
 
-bin_PROGRAMS = time_multi
+bin_PROGRAMS = time_multi $(CHECK_CUDA)
 
 
 TestBspline_SOURCES         = TestBspline.c
@@ -130,14 +133,8 @@ libeinspline_la_LIBADD = $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 
 includedir=$(prefix)/include/einspline
 
-
-#if WITH_F77
-#     libsprng_la_SOURCES += common/fwrap_mpi.c
-#endif
-
-#if HAVE_GMP
-#     libsprng_la_SOURCES += pmlcg/pmlcg.h pmlcg/pmlcg.c pmlcg/info.h pmlcg/basic.h 
-#endif
+.cu.o:
+	$(NVCC) -c $(NVCCFLAGS) $<
 
 .cu.lo:
 	$(top_builddir)/cudalt.py $@ $(NVCC) -c $(NVCCFLAGS) $<

@@ -1119,6 +1119,136 @@ test_2d_complex_float_all()
 
 
 int 
+test_3d_real_float_all()
+{
+  int Nx=33; int Ny=21; int Nz = 29;
+  int num_splines = 128;
+
+  Ugrid x_grid, y_grid, z_grid;
+  x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
+  y_grid.start = 8.7; y_grid.end = 12.7; y_grid.num = Ny;
+  z_grid.start = 4.5; z_grid.end =  9.3; z_grid.num = Nz;
+
+  BCtype_s xBC, yBC, zBC;
+  xBC.lCode = xBC.rCode = PERIODIC;
+  yBC.lCode = yBC.rCode = PERIODIC;
+  zBC.lCode = zBC.rCode = PERIODIC;
+
+  // First, create splines the normal way
+  UBspline_3d_s* norm_splines[num_splines];
+  multi_UBspline_3d_s *multi_spline;
+  
+  // First, create multispline
+  multi_spline = create_multi_UBspline_3d_s 
+    (x_grid, y_grid, z_grid, xBC, yBC, zBC, num_splines);
+
+  float data[Nx*Ny*Nz];
+  // Now, create normal splines and set multispline data
+  for (int i=0; i<num_splines; i++) {
+    for (int j=0; j<Nx*Ny*Nz; j++)
+      data[j] = (drand48()-0.5);
+    norm_splines[i] = create_UBspline_3d_s (x_grid, y_grid, z_grid, xBC, yBC, zBC, data);
+    set_multi_UBspline_3d_s (multi_spline, i, data);
+  }
+  
+  // Now, test random values
+  int num_vals = 100;
+  complex_float multi_vals[num_splines], norm_vals[num_splines];
+  complex_float multi_grads[3*num_splines], norm_grads[3*num_splines];
+  complex_float multi_lapl[num_splines], norm_lapl[num_splines];
+  complex_float multi_hess[9*num_splines], norm_hess[9*num_splines];
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    
+    /////////////////////////
+    // Check value routine //
+    /////////////////////////
+    eval_multi_UBspline_3d_s (multi_spline, x, y, z, multi_vals);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s (norm_splines[j], x, y, z, &(norm_vals[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (cdiff(norm_vals[j], multi_vals[j], 1.0e-6))
+	return -1;
+    }
+
+    ///////////////////////
+    // Check VG routine  //
+    ///////////////////////
+    eval_multi_UBspline_3d_s_vg (multi_spline, x, y, z, 
+				  multi_vals, multi_grads);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s_vg (norm_splines[j], x, y, z, &(norm_vals[j]),
+			  &(norm_grads[3*j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (cdiff(norm_vals[j], multi_vals[j], 1.0e-6))
+	return -2;
+      
+      // Check gradients
+      for (int n=0; n<3; n++) 
+	if (cdiff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-4))
+	  return -3;
+    }
+
+
+    ///////////////////////
+    // Check VGL routine //
+    ///////////////////////
+    eval_multi_UBspline_3d_s_vgl (multi_spline, x, y, z, 
+				  multi_vals, multi_grads, multi_lapl);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s_vgl (norm_splines[j], x, y, z, &(norm_vals[j]),
+			  &(norm_grads[3*j]), &(norm_lapl[j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (cdiff(norm_vals[j], multi_vals[j], 1.0e-6))
+	return -4;
+
+      // Check gradients
+      for (int n=0; n<3; n++) 
+	if (cdiff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-4))
+	  return -5;
+
+      // Check laplacian
+      if (cdiff (norm_lapl[j], multi_lapl[j], 1.0e-2)) 
+	return -6;
+    }
+
+
+    ///////////////////////
+    // Check VGH routine //
+    ///////////////////////
+    eval_multi_UBspline_3d_s_vgh (multi_spline, x, y, z, 
+				  multi_vals, multi_grads, multi_hess);
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s_vgh (norm_splines[j], x, y, z, &(norm_vals[j]),
+			  &(norm_grads[3*j]), &(norm_hess[9*j]));
+    for (int j=0; j<num_splines; j++) {
+      // Check value
+      if (cdiff(norm_vals[j], multi_vals[j], 1.0e-6))
+	return -7;
+
+      // Check gradients
+      for (int n=0; n<3; n++) 
+	if (cdiff (norm_grads[3*j+n], multi_grads[3*j+n], 1.0e-4)) 
+	  return -8;
+
+      // Check hessian
+      for (int n=0; n<9; n++) 
+	if (cdiff (norm_hess[9*j+n], multi_hess[9*j+n], 1.0e-2)) 
+	  return -9;
+    }
+  }
+  return 0;
+}
+
+
+
+
+int 
 test_3d_complex_float_all()
 {
   int Nx=33; int Ny=21; int Nz = 29;
@@ -1251,6 +1381,8 @@ test_3d_complex_float_all()
   }
   return 0;
 }
+
+
 
 
 
@@ -1766,6 +1898,259 @@ time_3d_complex_float_all()
   for (int i=0; i<num_splines; i++)
     destroy_Bspline(norm_splines[i]); 
 }
+
+
+
+void
+time_3d_real_float_all()
+{
+  int Nx=23; int Ny=21; int Nz = 29;
+  int num_splines = 128;
+
+  Ugrid x_grid, y_grid, z_grid;
+  x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
+  y_grid.start = 8.7; y_grid.end = 12.7; y_grid.num = Ny;
+  z_grid.start = 4.5; z_grid.end =  9.3; z_grid.num = Nz;
+
+  BCtype_s xBC, yBC, zBC;
+  xBC.lCode = xBC.rCode = PERIODIC;
+  yBC.lCode = yBC.rCode = PERIODIC;
+  zBC.lCode = zBC.rCode = PERIODIC;
+
+  // First, create splines the normal way
+  UBspline_3d_s* norm_splines[num_splines];
+  multi_UBspline_3d_s *multi_spline;
+  
+  // First, create multispline
+  multi_spline = create_multi_UBspline_3d_s 
+    (x_grid, y_grid, z_grid, xBC, yBC, zBC, num_splines);
+
+  float data[Nx*Ny*Nz];
+  // Now, create normal splines and set multispline data
+  for (int i=0; i<num_splines; i++) {
+    for (int j=0; j<Nx*Ny*Nz; j++)
+      data[j] = (drand48()-0.5);
+    norm_splines[i] = create_UBspline_3d_s 
+      (x_grid, y_grid, z_grid, xBC, yBC, zBC, data);
+    set_multi_UBspline_3d_s (multi_spline, i, data);
+  }
+  
+  // Now, test random values
+  int num_vals = 100000;
+  float multi_vals[num_splines], norm_vals[num_splines];
+  float multi_grads[3*num_splines], norm_grads[3*num_splines];
+  float multi_lapl[num_splines], norm_lapl[num_splines];
+  float multi_hess[9*num_splines], norm_hess[9*num_splines];
+
+  clock_t rand_start, rand_end, norm_start, norm_end, multi_start, multi_end;
+
+  rand_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+  }
+  rand_end = clock();
+
+  ///////////////////////
+  // Check value routine  //
+  ///////////////////////
+  multi_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    eval_multi_UBspline_3d_s (multi_spline, x, y, z, multi_vals);
+  }
+  multi_end = clock();
+
+  norm_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s (norm_splines[j], x, y, z, &(norm_vals[j]));
+  }
+  norm_end = clock();
+  
+  double norm_time   = (double)(norm_end - norm_start + rand_start - rand_end) / (double)CLOCKS_PER_SEC;
+  double multi_time  = (double)(multi_end - multi_start + rand_start - rand_end) / (double)CLOCKS_PER_SEC;
+  double norm_speed  = (double) num_vals*num_splines / norm_time;
+  double multi_speed = (double) num_vals*num_splines / multi_time;
+  fprintf (stderr, "Normal value speed = %13.3f evaluations per second.\n", 
+	   norm_speed);
+  fprintf (stderr, "Multi  value speed = %13.3f evaluations per second.\n", 
+	   multi_speed);
+  
+
+  ///////////////////////
+  // Check VGH routine //
+  ///////////////////////
+  multi_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    eval_multi_UBspline_3d_s_vgh (multi_spline, x, y, z, 
+				  multi_vals, multi_grads, multi_hess);
+  }
+  multi_end = clock();
+
+  norm_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_s_vgh (norm_splines[j], x, y, z, &(norm_vals[j]),
+			  &(norm_grads[3*j]), &(norm_hess[9*j]));
+  }
+  norm_end = clock();
+
+  norm_time   = (double)(norm_end - norm_start + rand_start - rand_end) / (double)CLOCKS_PER_SEC;
+  multi_time  = (double)(multi_end - multi_start + rand_start - rand_end) / (double)CLOCKS_PER_SEC;
+  norm_speed  = (double) num_vals*num_splines / norm_time;
+  multi_speed = (double) num_vals*num_splines / multi_time;
+  fprintf (stderr, "Normal VGH   speed = %13.3f evaluations per second.\n", 
+	   norm_speed);
+  fprintf (stderr, "Multi  VGH   speed = %13.3f evaluations per second.\n", 
+	   multi_speed);
+
+  destroy_Bspline (multi_spline);
+  for (int i=0; i<num_splines; i++)
+    destroy_Bspline(norm_splines[i]); 
+}
+
+
+
+
+
+void
+time_3d_real_double_all()
+{
+  int Nx=23; int Ny=21; int Nz = 29;
+  int num_splines = 128;
+
+  Ugrid x_grid, y_grid, z_grid;
+  x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;
+  y_grid.start = 8.7; y_grid.end = 12.7; y_grid.num = Ny;
+  z_grid.start = 4.5; z_grid.end =  9.3; z_grid.num = Nz;
+
+  BCtype_d xBC, yBC, zBC;
+  xBC.lCode = xBC.rCode = PERIODIC;
+  yBC.lCode = yBC.rCode = PERIODIC;
+  zBC.lCode = zBC.rCode = PERIODIC;
+
+  // First, create splines the normal way
+  UBspline_3d_d* norm_splines[num_splines];
+  multi_UBspline_3d_d *multi_spline;
+  
+  // First, create multispline
+  multi_spline = create_multi_UBspline_3d_d 
+    (x_grid, y_grid, z_grid, xBC, yBC, zBC, num_splines);
+
+  double data[Nx*Ny*Nz];
+  // Now, create normal splines and set multispline data
+  for (int i=0; i<num_splines; i++) {
+    for (int j=0; j<Nx*Ny*Nz; j++)
+      data[j] = (drand48()-0.5);
+    norm_splines[i] = create_UBspline_3d_d 
+      (x_grid, y_grid, z_grid, xBC, yBC, zBC, data);
+    set_multi_UBspline_3d_d (multi_spline, i, data);
+  }
+  
+  // Now, test random values
+  int num_vals = 100000;
+  double multi_vals[num_splines], norm_vals[num_splines];
+  double multi_grads[3*num_splines], norm_grads[3*num_splines];
+  double multi_lapl[num_splines], norm_lapl[num_splines];
+  double multi_hess[9*num_splines], norm_hess[9*num_splines];
+
+  clock_t rand_start, rand_end, norm_start, norm_end, multi_start, multi_end;
+
+  rand_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+  }
+  rand_end = clock();
+
+  ///////////////////////
+  // Check value routine  //
+  ///////////////////////
+  multi_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    eval_multi_UBspline_3d_d (multi_spline, x, y, z, multi_vals);
+  }
+  multi_end = clock();
+
+  norm_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_d (norm_splines[j], x, y, z, &(norm_vals[j]));
+  }
+  norm_end = clock();
+  
+  double norm_time   = (double)(norm_end - norm_start + rand_start - rand_end) / (double)CLOCKS_PER_SEC;
+  double multi_time  = (double)(multi_end - multi_start + rand_start - rand_end) / (double)CLOCKS_PER_SEC;
+  double norm_speed  = (double) num_vals*num_splines / norm_time;
+  double multi_speed = (double) num_vals*num_splines / multi_time;
+  fprintf (stderr, "Normal value speed = %13.3f evaluations per second.\n", 
+	   norm_speed);
+  fprintf (stderr, "Multi  value speed = %13.3f evaluations per second.\n", 
+	   multi_speed);
+  
+
+  ///////////////////////
+  // Check VGH routine //
+  ///////////////////////
+  multi_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    eval_multi_UBspline_3d_d_vgh (multi_spline, x, y, z, 
+				  multi_vals, multi_grads, multi_hess);
+  }
+  multi_end = clock();
+
+  norm_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
+    double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
+    double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+    for (int j=0; j<num_splines; j++)
+      eval_UBspline_3d_d_vgh (norm_splines[j], x, y, z, &(norm_vals[j]),
+			  &(norm_grads[3*j]), &(norm_hess[9*j]));
+  }
+  norm_end = clock();
+
+  norm_time   = (double)(norm_end - norm_start + rand_start - rand_end) / (double)CLOCKS_PER_SEC;
+  multi_time  = (double)(multi_end - multi_start + rand_start - rand_end) / (double)CLOCKS_PER_SEC;
+  norm_speed  = (double) num_vals*num_splines / norm_time;
+  multi_speed = (double) num_vals*num_splines / multi_time;
+  fprintf (stderr, "Normal VGH   speed = %13.3f evaluations per second.\n", 
+	   norm_speed);
+  fprintf (stderr, "Multi  VGH   speed = %13.3f evaluations per second.\n", 
+	   multi_speed);
+
+  destroy_Bspline (multi_spline);
+  for (int i=0; i<num_splines; i++)
+    destroy_Bspline(norm_splines[i]); 
+}
+
+
+
+
+
 
 
 void
@@ -2365,8 +2750,12 @@ main()
 {
   //  time_1d_NUB_complex_double_all();
 
-  fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
-  time_3d_complex_float_all();
+  // fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
+  // time_3d_complex_float_all();
+  // fprintf (stderr, "Timing 3D single-precision evaluation speed:\n");
+  // time_3d_real_float_all();
+  fprintf (stderr, "Timing 3D double-precision evaluation speed:\n");
+  time_3d_real_double_all();
 //   fprintf (stderr, "Timing 3D complex double-precision evaluation speed:\n");
 //   time_3d_complex_double_all();
 }

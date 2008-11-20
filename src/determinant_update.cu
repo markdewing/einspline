@@ -362,7 +362,7 @@ main()
 
   fprintf (stderr, "Before updates.\n");
   clock_t upStart = clock();
-  for (int i=0; i<N*10; i++) {
+  for (int i=0; i<1; i++) {
     update_inverse_cuda1<<<dimGrid2,dimBlock2>>>
       (AinvList_d, uList_d, Ainv_uList_d, Ainv_colkList_d, N, N, row);
     update_inverse_cuda2<<<dimGrid2,dimBlock2>>>
@@ -374,20 +374,20 @@ main()
   fprintf (stderr, "%1.2f updates per second.\n", uprate);
   fprintf (stderr, "%1.3f generations per second.\n", 10.0/uptime);
 
-  cudaMemcpy (Ainv_h, AinvList[0], N*N*sizeof(float),cudaMemcpyDeviceToHost);
+  cudaMemcpy (Ainv_h, AinvList[1], N*N*sizeof(float),cudaMemcpyDeviceToHost);
 
-//   for (int i=0; i<N; i++)
-//     A[row*N+i] += u_h[i];
-//   for (int i=0; i<N; i++)
-//     for (int j=0; j<N; j++) {
-//       double ident = 0.0;
-//       for (int k=0; k<N; k++)
-//   	ident += Ainv_h[i*N+k]*A[k*N+j];
-//       if ((i==j && fabs(ident - 1.0) > 1.0e-4) ||
-//   	  (i!=j && fabs(ident) > 1.0e-4))
-// 	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
-//     }
-//   fprintf (stderr, "Finished.\n");
+  for (int i=0; i<N; i++)
+    A[row*N+i] += u_h[i];
+  for (int i=0; i<N; i++)
+    for (int j=0; j<N; j++) {
+      double ident = 0.0;
+      for (int k=0; k<N; k++)
+  	ident += Ainv_h[i*N+k]*A[k*N+j];
+      if ((i==j && fabs(ident - 1.0) > 1.0e-4) ||
+  	  (i!=j && fabs(ident) > 1.0e-4))
+	fprintf (stderr, "Error in matrix inverse, (%d, %d) = %1.8f\n", i, j, ident);
+    }
+  fprintf (stderr, "Finished.\n");
 
 
 //   cudaMemcpy (AinvT_h, AinvT_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
