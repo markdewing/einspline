@@ -15,4 +15,11 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline);
 extern "C" multi_UBspline_3d_c_cuda*
 create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline);
 
+
+extern "C" multi_UBspline_3d_d_cuda*
+create_multi_UBspline_3d_d_cuda (multi_UBspline_3d_d* spline);
+
+extern "C" multi_UBspline_3d_z_cuda*
+create_multi_UBspline_3d_z_cuda (multi_UBspline_3d_z* spline);
+
 #endif
