@@ -15,7 +15,7 @@ eval_multi_multi_UBspline_3d_c_cuda (float *pos, float3 drInv,
   int off   = block*SPLINE_BLOCK_SIZE+thr;
 
   __shared__ float *myval;
-  __shared__ float abc[64], coefs[2*SPLINE_BLOCK_SIZE];
+  __shared__ float abc[64];
 
   // __shared__ float pos_s[SPLINE_BLOCK_SIZE];
   // int ir1 = (ir >> 4)*64;

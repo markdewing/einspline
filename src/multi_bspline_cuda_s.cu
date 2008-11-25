@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "multi_bspline.h"
 #include "multi_bspline_create_cuda.h"
 

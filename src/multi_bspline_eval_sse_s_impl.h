@@ -24,7 +24,6 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <pmmintrin.h>
-#include <stdio.h>
 #include <math.h>
 #include "bspline_base.h"
 #include "multi_bspline_structs.h"

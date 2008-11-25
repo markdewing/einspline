@@ -26,7 +26,6 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <pmmintrin.h>
-#include <stdio.h>
 #include <math.h>
 
 // extern __m128   A0,   A1,   A2,   A3;

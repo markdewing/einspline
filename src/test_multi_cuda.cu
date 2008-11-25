@@ -3,6 +3,7 @@
 #include "multi_bspline_structs_cuda.h"
 #include "multi_bspline_eval_cuda.h"
 
+
 void
 test_float()
 {

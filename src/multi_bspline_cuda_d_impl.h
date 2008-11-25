@@ -1,7 +1,6 @@
 #ifndef MULTI_BSPLINE_CUDA_D_IMPL_H
 #define MULTI_BSPLINE_CUDA_D_IMPL_H
 
-#include <stdio.h>
 #include "multi_bspline.h"
 #include "multi_bspline_create_cuda.h"
 

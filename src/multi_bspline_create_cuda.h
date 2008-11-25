@@ -9,6 +9,7 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline);
 extern "C" multi_UBspline_3d_s_cuda*
 create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline);
 
+
 extern "C" multi_UBspline_3d_c_cuda*
 create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline);
 

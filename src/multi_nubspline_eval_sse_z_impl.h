@@ -26,7 +26,6 @@
 #ifdef HAVE_SSE3
 #include <pmmintrin.h>
 #endif
-#include <stdio.h>
 #include <math.h>
 #include "bspline_base.h"
 #include "multi_nubspline_structs.h"

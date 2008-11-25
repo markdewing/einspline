@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "multi_bspline.h"
 #include "multi_bspline_structs_cuda.h"
 
@@ -243,7 +245,7 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
 extern "C" multi_UBspline_3d_s_cuda*
 create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 {
-  double A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
+  float A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
 		     3.0/6.0, -6.0/6.0,  0.0/6.0, 4.0/6.0,
 		    -3.0/6.0,  3.0/6.0,  3.0/6.0, 1.0/6.0,
 		     1.0/6.0,  0.0/6.0,  0.0/6.0, 0.0/6.0,
@@ -298,6 +300,11 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 	    spline->coefs[ix*spline->x_stride +
 			  iy*spline->y_stride +
 			  iz*spline->z_stride + isp];
+	  // if (isnan (spline->coefs[ix*spline->x_stride +
+	  // 			   iy*spline->y_stride +
+	  // 			   iz*spline->z_stride + isp]))
+	  //    fprintf (stderr, "NAN at ix=%d iy=%d iz=%d isp=%d\n",
+	  //    	     ix,iy,iz,isp);
 	}
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
 
