@@ -23,6 +23,19 @@ einspline library as in C, with a few exceptions:
   allocated in F77, care must be take to ensure all element data is
   contiguous in memory.  
 </ul>
+<table CELLPADDING=2 frame=border rules=all width="60%">
+<tr> <td> Boundary condition type </td> <td> Code </td> <td> Meaning </td> </tr>
+<tr> <td> PERIODIC                </td> <td>  0   </td> <td> Use periodic boundary conditions.  The value, first 
+                                                             derivative and second derivative at the left boundary match 
+                                                             those at the right boundary.                                       </td> </tr>
+<tr> <td> DERIV1                  </td> <td>  1   </td> <td> The value of the first derivative is specified in lVal or rVal.    </td> </tr>
+<tr> <td> DERIV2                  </td> <td>  2   </td> <td> The value of the second derivative is specified in lVal or rVal.   </td> </tr>
+<tr> <td> FLAT                    </td> <td>  3   </td> <td> The value of the first derivative is set to zero at the boundary.  </td> </tr>
+<tr> <td> NATURAL                 </td> <td>  4   </td> <td> The value of the second derivative is set to zero at the boundary. </td> </tr>
+<tr> <td> ANTIPERIODIC            </td> <td>  5   </td> <td> Use anti-periodic boundary conditions.  The value, first derivative 
+                                                             and second derivative at the left boundary are the negative of those 
+                                                             at the right boundary.                                             </td> </tr>
+</table>
 Please see the documentation for the C routines for more information.
 The subroutine names and parameters are given below:
 <br/><br/>
