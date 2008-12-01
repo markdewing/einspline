@@ -81,7 +81,7 @@ boundary).<br>
 <font color="blue">bc_code</font> is one of the enumerated value,
 {<font color="blue">PERIODIC</font>, <font color="blue">DERIV1</font>,
 <font color="blue">DERIV2</font>, <font color="blue">FLAT</font>,
-<font color="blue">NATURAL</font> }. <br/>
+<font color="blue">NATURAL</font>, <font color="blue">ANTIPERIODIC</font> }. <br/>
 <font color="blue">d_type</font> is the the C type corresponding to
 {s, d, c, z}, i.e. {float, double, complex_float, complex_double}
 <br/> <br/>
@@ -94,6 +94,8 @@ boundary match those at the right boundary. </td> </tr>
   <tr> <td> <font color="blue">DERIV2   </font> </td> <td> The value of the second derivative is specified in lVal or rVal. </td> </tr>
   <tr> <td> <font color="blue">FLAT     </font> </td> <td> The value of the first derivative is set to zero at the boundary. </td> </tr>
   <tr> <td> <font color="blue">NATURAL     </font> </td> <td> The value of the second derivative is set to zero at the boundary. </td> </tr>
+  <tr> <td> <font color="blue">ANTIPERIODIC </font> </td> <td> Use anti-periodic boundary conditions.  The value, first derivative and second derivative at the left
+boundary are the negative of those at the right boundary. </td> </tr>
 </table>
 
 
