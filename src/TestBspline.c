@@ -75,6 +75,38 @@ Test_1d_d()
 }
 
 void
+Test_1d_d_antiperiodic()
+{
+  Ugrid grid;
+  grid.start = 1.0;
+  grid.end   = 3.0;
+  grid.num = 10;
+  //  double data[] = { 3.0, -4.0, 2.0, 1.0, -2.0, 0.0, 3.0, 2.0, 0.5, 1.0, 3.0 };
+  double data[10];
+  for (int i=0; i<10; i++)
+    data[i] = -2.0 + 4.0*drand48();
+  BCtype_d bc;
+  bc.lCode = ANTIPERIODIC;
+  
+  FILE *fout = fopen ("Spline_1d_d_antiperiodic.dat", "w");
+  UBspline_1d_d *spline = 
+    (UBspline_1d_d*) create_UBspline_1d_d (grid, bc, data);
+  for (double x=1.0; x<=5.00001; x+=0.001) {
+    double val, grad, lapl;
+    double xp = x;
+    double sign = 1.0;
+    while (xp >= grid.end) {
+      xp -= (grid.end-grid.start);
+      sign *= -1.0;
+    }
+    eval_UBspline_1d_d_vgl (spline, xp, &val, &grad, &lapl);
+    fprintf (fout, "%1.5f %20.14f %20.14f %20.14f\n", x, sign*val, sign*grad, sign*lapl);
+  }
+  fclose (fout);
+}
+
+
+void
 Speed_1d_s()
 {
   Ugrid grid;
@@ -788,6 +820,7 @@ int main()
 {
   Test_1d_s();
   Test_1d_d();
+  Test_1d_d_antiperiodic();
   // Speed_1d_s();
   Test_2d_s();
   // Speed_2d_s();

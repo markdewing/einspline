@@ -46,7 +46,7 @@ typedef complex double complex_double;
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
 
-typedef enum { PERIODIC, DERIV1, DERIV2, FLAT, NATURAL } bc_code;
+typedef enum { PERIODIC, DERIV1, DERIV2, FLAT, NATURAL, ANTIPERIODIC } bc_code;
 typedef enum { U1D       , U2D       , U3D      , 
 	       NU1D      , NU2D      , NU3D     ,
                MULTI_U1D , MULTI_U2D , MULTI_U3D,

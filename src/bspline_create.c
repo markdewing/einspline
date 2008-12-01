@@ -145,6 +145,68 @@ solve_periodic_interp_1d_s (float bands[], float coefs[],
 }
 
 
+// On input, bands should be filled with:
+// row 0   :  abcdInitial from boundary conditions
+// rows 1:M:  basis functions in first 3 cols, data in last
+// row M+1 :  abcdFinal   from boundary conditions
+// cstride gives the stride between values in coefs.
+// On exit, coefs with contain interpolating B-spline coefs
+void 
+solve_antiperiodic_interp_1d_s (float bands[], float coefs[],
+				int M, int cstride)
+{
+  bands[4*0+0]     *= -1.0;
+  bands[4*(M-1)+2] *= -1.0;
+
+  float lastCol[M];
+  // Now solve:
+  // First and last rows are different
+  bands[4*(0)+2] /= bands[4*(0)+1];
+  bands[4*(0)+0] /= bands[4*(0)+1];
+  bands[4*(0)+3] /= bands[4*(0)+1];
+  bands[4*(0)+1]  = 1.0;
+  bands[4*(M-1)+1] -= bands[4*(M-1)+2]*bands[4*(0)+0];
+  bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(0)+3];
+  bands[4*(M-1)+2]  = -bands[4*(M-1)+2]*bands[4*(0)+2];
+  lastCol[0] = bands[4*(0)+0];
+  
+  for (int row=1; row < (M-1); row++) {
+    bands[4*(row)+1] -= bands[4*(row)+0] * bands[4*(row-1)+2];
+    bands[4*(row)+3] -= bands[4*(row)+0] * bands[4*(row-1)+3];
+    lastCol[row]   = -bands[4*(row)+0] * lastCol[row-1];
+    bands[4*(row)+0] = 0.0;
+    bands[4*(row)+2] /= bands[4*(row)+1];
+    bands[4*(row)+3] /= bands[4*(row)+1];
+    lastCol[row]  /= bands[4*(row)+1];
+    bands[4*(row)+1]  = 1.0;
+    if (row < (M-2)) {
+      bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(row)+3];
+      bands[4*(M-1)+1] -= bands[4*(M-1)+2]*lastCol[row];
+      bands[4*(M-1)+2] = -bands[4*(M-1)+2]*bands[4*(row)+2];
+    }
+  }
+
+  // Now do last row
+  // The [2] element and [0] element are now on top of each other 
+  bands[4*(M-1)+0] += bands[4*(M-1)+2];
+  bands[4*(M-1)+1] -= bands[4*(M-1)+0] * (bands[4*(M-2)+2]+lastCol[M-2]);
+  bands[4*(M-1)+3] -= bands[4*(M-1)+0] *  bands[4*(M-2)+3];
+  bands[4*(M-1)+3] /= bands[4*(M-1)+1];
+  coefs[M*cstride] = bands[4*(M-1)+3];
+  for (int row=M-2; row>=0; row--) 
+    coefs[(row+1)*cstride] = 
+      bands[4*(row)+3] - bands[4*(row)+2]*coefs[(row+2)*cstride] - lastCol[row]*coefs[M*cstride];
+  
+  coefs[0*cstride]     = -coefs[M*cstride];
+  coefs[(M+1)*cstride] = -coefs[1*cstride];
+  coefs[(M+2)*cstride] = -coefs[2*cstride];
+
+
+}
+
+
+
+
 #ifdef HIGH_PRECISION
 void
 find_coefs_1d_s (Ugrid grid, BCtype_s bc, 
@@ -157,7 +219,7 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
   d_bc.lCode = bc.lCode;   d_bc.rCode = bc.rCode;
   d_bc.lVal  = bc.lVal;    d_bc.rVal  = bc.rVal;
   int M = grid.num, N;
-  if (bc.lCode == PERIODIC)    N = M+3;
+  if (bc.lCode == PERIODIC || bc.lCode == ANTIPERIODIC)    N = M+3;
   else                         N = M+2;
 
   d_data  = malloc (N*sizeof(double));
@@ -179,7 +241,7 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
 {
   int M = grid.num;
   float basis[4] = {1.0/6.0, 2.0/3.0, 1.0/6.0, 0.0};
-  if (bc.lCode == PERIODIC) {
+  if (bc.lCode == PERIODIC || bc.lCode == ANTIPERIODIC) {
 #ifdef HAVE_C_VARARRAYS
     float bands[4*M];
 #else
@@ -191,7 +253,10 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
       bands[4*i+2] = basis[2];
       bands[4*i+3] = data[i*dstride];
     }
-    solve_periodic_interp_1d_s (bands, coefs, M, cstride);
+    if (bc.lCode == PERIODIC)
+      solve_periodic_interp_1d_s (bands, coefs, M, cstride);
+    else
+      solve_antiperiodic_interp_1d_s (bands, coefs, M, cstride);
 #ifndef HAVE_C_VARARRAYS
     free (bands);
 #endif
@@ -251,6 +316,7 @@ find_coefs_1d_s (Ugrid grid, BCtype_s bc,
 #endif
   }
 }
+
 #endif
 
 ////////////////////////////////////////////////////////////
@@ -278,7 +344,7 @@ create_UBspline_1d_s (Ugrid x_grid, BCtype_s xBC, float *data)
   int M = x_grid.num;
   int N;
 
-  if (xBC.lCode == PERIODIC) {
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC) {
     x_grid.delta     = (x_grid.end-x_grid.start)/(double)(x_grid.num);
     N = M+3;
   }
@@ -322,13 +388,13 @@ create_UBspline_2d_s (Ugrid x_grid, Ugrid y_grid,
   int My = y_grid.num;
   int Nx, Ny;
 
-  if (xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
   x_grid.delta = (x_grid.end - x_grid.start)/(double)(Nx-3);
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 
-  if (yBC.lCode == PERIODIC)     Ny = My+3;
+  if (yBC.lCode == PERIODIC || yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
@@ -366,9 +432,9 @@ recompute_UBspline_2d_s (UBspline_2d_s* spline, float *data)
   int My = spline->y_grid.num;
   int Nx, Ny;
 
-  if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
-  if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
+  if (spline->yBC.lCode == PERIODIC || spline->yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
 
   // First, solve in the X-direction 
@@ -405,19 +471,19 @@ create_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   int Mx = x_grid.num;  int My = y_grid.num; int Mz = z_grid.num;
   int Nx, Ny, Nz;
 
-  if (xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
   x_grid.delta = (x_grid.end - x_grid.start)/(double)(Nx-3);
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 
-  if (yBC.lCode == PERIODIC)     Ny = My+3;
+  if (yBC.lCode == PERIODIC || yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
 
-  if (zBC.lCode == PERIODIC)     Nz = Mz+3;
+  if (zBC.lCode == PERIODIC || zBC.lCode == ANTIPERIODIC)     Nz = Mz+3;
   else                           Nz = Mz+2;
   z_grid.delta = (z_grid.end - z_grid.start)/(double)(Nz-3);
   z_grid.delta_inv = 1.0/z_grid.delta;
@@ -470,11 +536,11 @@ recompute_UBspline_3d_s (UBspline_3d_s* spline, float *data)
   int Mz = spline->z_grid.num;
   int Nx, Ny, Nz;
 
-  if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
-  if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
+  if (spline->yBC.lCode == PERIODIC || spline->yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
-  if (spline->zBC.lCode == PERIODIC)     Nz = Mz+3;
+  if (spline->zBC.lCode == PERIODIC || spline->zBC.lCode == ANTIPERIODIC)     Nz = Mz+3;
   else                           Nz = Mz+2;
 
   // First, solve in the X-direction 
@@ -530,7 +596,7 @@ create_UBspline_1d_c (Ugrid x_grid, BCtype_c xBC, complex_float *data)
   int M = x_grid.num;
   int N;
 
-  if (xBC.lCode == PERIODIC) {
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC) {
     x_grid.delta     = (x_grid.end-x_grid.start)/(double)(x_grid.num);
     N = M+3;
   }
@@ -599,13 +665,13 @@ create_UBspline_2d_c (Ugrid x_grid, Ugrid y_grid,
   int My = y_grid.num;
   int Nx, Ny;
 
-  if (xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
   x_grid.delta = (x_grid.end - x_grid.start)/(double)(Nx-3);
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 
-  if (yBC.lCode == PERIODIC)     Ny = My+3;
+  if (yBC.lCode == PERIODIC || yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
@@ -663,10 +729,14 @@ recompute_UBspline_2d_c (UBspline_2d_c* spline, complex_float *data)
   int My = spline->y_grid.num;
   int Nx, Ny;
 
-  if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
-  else                           Nx = Mx+2;
-  if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
-  else                           Ny = My+2;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)     
+    Nx = Mx+3;
+  else                           
+    Nx = Mx+2;
+  if (spline->yBC.lCode == PERIODIC || spline->yBC.lCode == ANTIPERIODIC)     
+    Ny = My+3;
+  else                           
+    Ny = My+2;
 
   BCtype_s xBC_r, xBC_i, yBC_r, yBC_i;
   xBC_r.lCode = spline->xBC.lCode;  xBC_r.rCode = spline->xBC.rCode;
@@ -720,19 +790,19 @@ create_UBspline_3d_c (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   int Mx = x_grid.num;  int My = y_grid.num; int Mz = z_grid.num;
   int Nx, Ny, Nz;
 
-  if (xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
   x_grid.delta = (x_grid.end - x_grid.start)/(double)(Nx-3);
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 
-  if (yBC.lCode == PERIODIC)     Ny = My+3;
+  if (yBC.lCode == PERIODIC || yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
 
-  if (zBC.lCode == PERIODIC)     Nz = Mz+3;
+  if (zBC.lCode == PERIODIC || zBC.lCode == ANTIPERIODIC)     Nz = Mz+3;
   else                           Nz = Mz+2;
   z_grid.delta = (z_grid.end - z_grid.start)/(double)(Nz-3);
   z_grid.delta_inv = 1.0/z_grid.delta;
@@ -812,11 +882,11 @@ recompute_UBspline_3d_c (UBspline_3d_c* spline, complex_float *data)
   int Mz = spline->z_grid.num;
   int Nx, Ny, Nz;
 
-  if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
-  if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
+  if (spline->yBC.lCode == PERIODIC || spline->yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
-  if (spline->zBC.lCode == PERIODIC)     Nz = Mz+3;
+  if (spline->zBC.lCode == PERIODIC || spline->zBC.lCode == ANTIPERIODIC)     Nz = Mz+3;
   else                           Nz = Mz+2;
 
   BCtype_s xBC_r, xBC_i, yBC_r, yBC_i, zBC_r, zBC_i;
@@ -982,19 +1052,74 @@ solve_periodic_interp_1d_d (double bands[], double coefs[],
   coefs[0*cstride] = coefs[M*cstride];
   coefs[(M+1)*cstride] = coefs[1*cstride];
   coefs[(M+2)*cstride] = coefs[2*cstride];
+}
 
+// On input, bands should be filled with:
+// row 0   :  abcdInitial from boundary conditions
+// rows 1:M:  basis functions in first 3 cols, data in last
+// row M+1 :  abcdFinal   from boundary conditions
+// cstride gives the stride between values in coefs.
+// On exit, coefs with contain interpolating B-spline coefs
+void 
+solve_antiperiodic_interp_1d_d (double bands[], double coefs[],
+			    int M, int cstride)
+{
+  double lastCol[M];
+  bands[4*0+0]     *= -1.0;
+  bands[4*(M-1)+2] *= -1.0;
+  // Now solve:
+  // First and last rows are different
+  bands[4*(0)+2] /= bands[4*(0)+1];
+  bands[4*(0)+0] /= bands[4*(0)+1];
+  bands[4*(0)+3] /= bands[4*(0)+1];
+  bands[4*(0)+1]  = 1.0;
+  bands[4*(M-1)+1] -= bands[4*(M-1)+2]*bands[4*(0)+0];
+  bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(0)+3];
+  bands[4*(M-1)+2]  = -bands[4*(M-1)+2]*bands[4*(0)+2];
+  lastCol[0] = bands[4*(0)+0];
+  
+  for (int row=1; row < (M-1); row++) {
+    bands[4*(row)+1] -= bands[4*(row)+0] * bands[4*(row-1)+2];
+    bands[4*(row)+3] -= bands[4*(row)+0] * bands[4*(row-1)+3];
+    lastCol[row]   = -bands[4*(row)+0] * lastCol[row-1];
+    bands[4*(row)+0] = 0.0;
+    bands[4*(row)+2] /= bands[4*(row)+1];
+    bands[4*(row)+3] /= bands[4*(row)+1];
+    lastCol[row]  /= bands[4*(row)+1];
+    bands[4*(row)+1]  = 1.0;
+    if (row < (M-2)) {
+      bands[4*(M-1)+3] -= bands[4*(M-1)+2]*bands[4*(row)+3];
+      bands[4*(M-1)+1] -= bands[4*(M-1)+2]*lastCol[row];
+      bands[4*(M-1)+2] = -bands[4*(M-1)+2]*bands[4*(row)+2];
+    }
+  }
 
+  // Now do last row
+  // The [2] element and [0] element are now on top of each other 
+  bands[4*(M-1)+0] += bands[4*(M-1)+2];
+  bands[4*(M-1)+1] -= bands[4*(M-1)+0] * (bands[4*(M-2)+2]+lastCol[M-2]);
+  bands[4*(M-1)+3] -= bands[4*(M-1)+0] *  bands[4*(M-2)+3];
+  bands[4*(M-1)+3] /= bands[4*(M-1)+1];
+  coefs[M*cstride] = bands[4*(M-1)+3];
+  for (int row=M-2; row>=0; row--) 
+    coefs[(row+1)*cstride] = 
+      bands[4*(row)+3] - bands[4*(row)+2]*coefs[(row+2)*cstride] - lastCol[row]*coefs[M*cstride];
+  
+  coefs[0*cstride]     = -coefs[M*cstride];
+  coefs[(M+1)*cstride] = -coefs[1*cstride];
+  coefs[(M+2)*cstride] = -coefs[2*cstride];
 }
 
 
-void
+
+inline void
 find_coefs_1d_d (Ugrid grid, BCtype_d bc, 
 		 double *data,  intptr_t dstride,
 		 double *coefs, intptr_t cstride)
 {
   int M = grid.num;
   double basis[4] = {1.0/6.0, 2.0/3.0, 1.0/6.0, 0.0};
-  if (bc.lCode == PERIODIC) {
+  if (bc.lCode == PERIODIC || bc.lCode == ANTIPERIODIC) {
 #ifdef HAVE_C_VARARRAYS
     double bands[M*4];
 #else
@@ -1006,7 +1131,12 @@ find_coefs_1d_d (Ugrid grid, BCtype_d bc,
       bands[4*i+2] = basis[2];
       bands[4*i+3] = data[i*dstride];
     }
-    solve_periodic_interp_1d_d (bands, coefs, M, cstride);
+    if (bc.lCode == ANTIPERIODIC) 
+      solve_antiperiodic_interp_1d_d (bands, coefs, M, cstride);
+    else
+      solve_periodic_interp_1d_d (bands, coefs, M, cstride);
+
+
 #ifndef HAVE_C_VARARRAYS
     free (bands);
 #endif
@@ -1082,7 +1212,7 @@ create_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, double *data)
   int M = x_grid.num;
   int N;
 
-  if (xBC.lCode == PERIODIC) {
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC) {
     x_grid.delta     = (x_grid.end-x_grid.start)/(double)(x_grid.num);
     N = M+3;
   }
@@ -1128,13 +1258,13 @@ create_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,
   int My = y_grid.num;
   int Nx, Ny;
 
-  if (xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
   x_grid.delta = (x_grid.end - x_grid.start)/(double)(Nx-3);
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 
-  if (yBC.lCode == PERIODIC)     Ny = My+3;
+  if (yBC.lCode == PERIODIC || yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
@@ -1174,11 +1304,15 @@ recompute_UBspline_2d_d (UBspline_2d_d* spline, double *data)
   int My = spline->y_grid.num;
   int Nx, Ny;
 
-  if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
-  else                                   Nx = Mx+2;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)
+    Nx = Mx+3;
+  else                                   
+    Nx = Mx+2;
 
-  if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
-  else                                   Ny = My+2;
+  if (spline->yBC.lCode == PERIODIC || spline->yBC.lCode == ANTIPERIODIC)
+    Ny = My+3;
+  else                                   
+    Ny = My+2;
 
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) {
@@ -1215,19 +1349,19 @@ create_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   int Mx = x_grid.num;  int My = y_grid.num; int Mz = z_grid.num;
   int Nx, Ny, Nz;
 
-  if (xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
   x_grid.delta = (x_grid.end - x_grid.start)/(double)(Nx-3);
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 
-  if (yBC.lCode == PERIODIC)     Ny = My+3;
+  if (yBC.lCode == PERIODIC || yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
 
-  if (zBC.lCode == PERIODIC)     Nz = Mz+3;
+  if (zBC.lCode == PERIODIC || zBC.lCode == ANTIPERIODIC)     Nz = Mz+3;
   else                           Nz = Mz+2;
   z_grid.delta = (z_grid.end - z_grid.start)/(double)(Nz-3);
   z_grid.delta_inv = 1.0/z_grid.delta;
@@ -1281,12 +1415,18 @@ recompute_UBspline_3d_d (UBspline_3d_d* spline, double *data)
   int Mz = spline->z_grid.num;
   int Nx, Ny, Nz;
 
-  if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
-  else                                   Nx = Mx+2;
-  if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
-  else                                   Ny = My+2;
-  if (spline->zBC.lCode == PERIODIC)     Nz = Mz+3;
-  else                                   Nz = Mz+2;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)     
+    Nx = Mx+3;
+  else                                   
+    Nx = Mx+2;
+  if (spline->yBC.lCode == PERIODIC || spline->yBC.lCode == ANTIPERIODIC)     
+    Ny = My+3;
+  else                                   
+    Ny = My+2;
+  if (spline->zBC.lCode == PERIODIC || spline->zBC.lCode == ANTIPERIODIC)     
+    Nz = Mz+3;
+  else                                   
+    Nz = Mz+2;
 
   // First, solve in the X-direction 
   for (int iy=0; iy<My; iy++) 
@@ -1344,7 +1484,7 @@ create_UBspline_1d_z (Ugrid x_grid, BCtype_z xBC, complex_double *data)
   int M = x_grid.num;
   int N;
 
-  if (xBC.lCode == PERIODIC) {
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC) {
     x_grid.delta     = (x_grid.end-x_grid.start)/(double)(x_grid.num);
     N = M+3;
   }
@@ -1383,8 +1523,10 @@ recompute_UBspline_1d_z (UBspline_1d_z* spline, complex_double *data)
   int M = spline->x_grid.num;
   int N;
 
-  if (spline->xBC.lCode == PERIODIC)   N = M+3;
-  else                                 N = M+2;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)   
+    N = M+3;
+  else                                 
+    N = M+2;
 
   BCtype_d xBC_r, xBC_i;
   xBC_r.lCode = spline->xBC.lCode;  xBC_r.rCode = spline->xBC.rCode;
@@ -1417,14 +1559,18 @@ create_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
   int My = y_grid.num;
   int Nx, Ny;
 
-  if (xBC.lCode == PERIODIC)     Nx = Mx+3;
-  else                           Nx = Mx+2;
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC)     
+    Nx = Mx+3;
+  else                           
+    Nx = Mx+2;
   x_grid.delta = (x_grid.end - x_grid.start)/(double)(Nx-3);
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 
-  if (yBC.lCode == PERIODIC)     Ny = My+3;
-  else                           Ny = My+2;
+  if (yBC.lCode == PERIODIC || yBC.lCode == ANTIPERIODIC)     
+    Ny = My+3;
+  else                           
+    Ny = My+2;
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
@@ -1481,10 +1627,14 @@ recompute_UBspline_2d_z (UBspline_2d_z* spline, complex_double *data)
   int My = spline->y_grid.num;
   int Nx, Ny;
 
-  if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
-  else                           Nx = Mx+2;
-  if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
-  else                           Ny = My+2;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)     
+    Nx = Mx+3;
+  else                           
+    Nx = Mx+2;
+  if (spline->yBC.lCode == PERIODIC || spline->yBC.lCode == ANTIPERIODIC)     
+    Ny = My+3;
+  else                           
+    Ny = My+2;
 
   BCtype_d xBC_r, xBC_i, yBC_r, yBC_i;
   xBC_r.lCode = spline->xBC.lCode;  xBC_r.rCode = spline->xBC.rCode;
@@ -1540,19 +1690,19 @@ create_UBspline_3d_z (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
   int Mx = x_grid.num;  int My = y_grid.num; int Mz = z_grid.num;
   int Nx, Ny, Nz;
 
-  if (xBC.lCode == PERIODIC)     Nx = Mx+3;
+  if (xBC.lCode == PERIODIC || xBC.lCode == ANTIPERIODIC)     Nx = Mx+3;
   else                           Nx = Mx+2;
   x_grid.delta = (x_grid.end - x_grid.start)/(double)(Nx-3);
   x_grid.delta_inv = 1.0/x_grid.delta;
   spline->x_grid   = x_grid;
 
-  if (yBC.lCode == PERIODIC)     Ny = My+3;
+  if (yBC.lCode == PERIODIC || yBC.lCode == ANTIPERIODIC)     Ny = My+3;
   else                           Ny = My+2;
   y_grid.delta = (y_grid.end - y_grid.start)/(double)(Ny-3);
   y_grid.delta_inv = 1.0/y_grid.delta;
   spline->y_grid   = y_grid;
 
-  if (zBC.lCode == PERIODIC)     Nz = Mz+3;
+  if (zBC.lCode == PERIODIC || zBC.lCode == ANTIPERIODIC)     Nz = Mz+3;
   else                           Nz = Mz+2;
   z_grid.delta = (z_grid.end - z_grid.start)/(double)(Nz-3);
   z_grid.delta_inv = 1.0/z_grid.delta;
@@ -1631,12 +1781,18 @@ recompute_UBspline_3d_z (UBspline_3d_z* spline, complex_double *data)
   int Mz = spline->z_grid.num;
   int Nx, Ny, Nz;
 
-  if (spline->xBC.lCode == PERIODIC)     Nx = Mx+3;
-  else                                   Nx = Mx+2;
-  if (spline->yBC.lCode == PERIODIC)     Ny = My+3;
-  else                                   Ny = My+2;
-  if (spline->zBC.lCode == PERIODIC)     Nz = Mz+3;
-  else                                   Nz = Mz+2;
+  if (spline->xBC.lCode == PERIODIC || spline->xBC.lCode == ANTIPERIODIC)     
+    Nx = Mx+3;
+  else                                                                
+    Nx = Mx+2;
+  if (spline->yBC.lCode == PERIODIC || spline->yBC.lCode == ANTIPERIODIC)     
+    Ny = My+3;
+  else                                                                
+    Ny = My+2;
+  if (spline->zBC.lCode == PERIODIC || spline->zBC.lCode == ANTIPERIODIC)     
+    Nz = Mz+3;
+  else                                                                
+    Nz = Mz+2;
 
   BCtype_d xBC_r, xBC_i, yBC_r, yBC_i, zBC_r, zBC_i;
   xBC_r.lCode = spline->xBC.lCode;  xBC_r.rCode = spline->xBC.rCode;
