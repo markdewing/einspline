@@ -102,6 +102,9 @@ Test_1d_d_antiperiodic()
     eval_UBspline_1d_d_vgl (spline, xp, &val, &grad, &lapl);
     fprintf (fout, "%1.5f %20.14f %20.14f %20.14f\n", x, sign*val, sign*grad, sign*lapl);
   }
+  double val, grad, lapl;
+  double x = grid.start + (grid.end-grid.start) * (double)1/(double)grid.num;
+  eval_UBspline_1d_d_vgl (spline, x, &val, &grad, &lapl);
   fclose (fout);
 }
 

@@ -1112,7 +1112,7 @@ solve_antiperiodic_interp_1d_d (double bands[], double coefs[],
 
 
 
-inline void
+void
 find_coefs_1d_d (Ugrid grid, BCtype_d bc, 
 		 double *data,  intptr_t dstride,
 		 double *coefs, intptr_t cstride)
