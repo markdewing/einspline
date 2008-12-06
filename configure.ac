@@ -38,9 +38,9 @@ AC_ARG_ENABLE(cuda, AC_HELP_STRING([--enable-cuda], [compile CUDA routines]))
 AM_CONDITIONAL([HAVE_CUDA], [test "$enable_cuda" = "yes"])
 if test "x$enable_cuda" = "xyes"; then
    NVCC="nvcc"
-   NVCCFLAGS="-DNO_CUDA_MAIN -g -O3 -arch sm_13"
-   CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
-   LIBS="$LIBS -L/usr/local/cuda/lib -lcuda -lcudart"
+   NVCCFLAGS="-DNO_CUDA_MAIN -g -O3 -arch sm_13 -Drestrict=__restrict__"
+   CUDA_LIBS="-L/usr/local/cuda/lib -lcudart"
+   LIBS="$LIBS -L/usr/local/cuda/lib -lcudart"
 fi
 ########################
 # Check for CUDA
@@ -49,14 +49,14 @@ AC_ARG_WITH([cuda],
     [  --with-cuda=PATH        prefix where cuda is installed [default=auto]])
 if test "x$with_cuda" != "x"; then
   CUDA_CFLAGS="-I$with_cuda/include"
-  CUDA_LIBS="-L$with_cuda/lib -lcuda -lcudart"
+  CUDA_LIBS="-L$with_cuda/lib -lcudart"
   NVCC="$with_cuda/bin/nvcc"
 elseif test "$enable_cuda" = "yes"
   CUDA_CFLAGS="-I/usr/local/cuda/include"
-  CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
+  CUDA_LIBS="-L/usr/local/cuda/lib -lcudart"
   NVCC="nvcc"
 fi
-NVCCFLAGS="-DNO_CUDA_MAIN -O3 -use_fast_math -g -arch sm_13"
+NVCCFLAGS="-DNO_CUDA_MAIN -O3 -use_fast_math -g -arch sm_13 -Drestrict=__restrict__" 
 AC_SUBST(CUDA_CFLAGS)
 AC_SUBST(CUDA_LIBS)
 AC_SUBST(NVCC)
