@@ -8,9 +8,9 @@ AC_DEFUN([AX_EXT],
 [
   AC_REQUIRE([AX_GCC_X86_CPUID])
 
-  AX_GCC_X86_CPUID(0x00000001)
-  ecx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 3`
-  edx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 4`
+  AX_GCC_X86_CPUID(1)
+  ecx=`echo $ax_cv_gcc_x86_cpuid_1 | cut -d ":" -f 3`
+  edx=`echo $ax_cv_gcc_x86_cpuid_1 | cut -d ":" -f 4`
 
  AC_CACHE_CHECK([whether mmx is supported], [ax_have_mmx_ext],
   [
