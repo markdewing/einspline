@@ -47,5 +47,18 @@ eval_multi_multi_UBspline_3d_c_vgh_cuda
  complex_float *vals_d[], complex_float *grads_d[], 
  complex_float *hess_d[], int num);
 
+// Doublele-precision complex
+extern "C" void
+eval_multi_multi_UBspline_3d_z_cuda 
+(multi_UBspline_3d_z_cuda *spline, 
+ double *pos_d, complex_double *vals_d[], int num);
+
+extern "C" void
+eval_multi_multi_UBspline_3d_z_vgh_cuda 
+(multi_UBspline_3d_z_cuda *spline, double *pos_d, 
+ complex_double *vals_d[], complex_double *grads_d[], 
+ complex_double *hess_d[], int num);
+
+
 
 #endif

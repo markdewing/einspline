@@ -9,6 +9,7 @@ __constant__ float  Acuda[48];
 #include "multi_bspline_cuda_s_impl.h"
 #include "multi_bspline_cuda_c_impl.h"
 #include "multi_bspline_cuda_d_impl.h"
+#include "multi_bspline_cuda_z_impl.h"
 
 extern "C" multi_UBspline_3d_c_cuda*
 create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
@@ -416,6 +417,10 @@ create_multi_UBspline_3d_z_cuda (multi_UBspline_3d_z* spline)
 			  iz*spline->z_stride + isp];
 	}
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
+
+  cuda_spline->stride.x = 2*Ny*Nz*N;
+  cuda_spline->stride.y = 2*Nz*N;
+  cuda_spline->stride.z = 2*N;
 
   free(spline_buff);
 
