@@ -321,6 +321,7 @@ eval_multi_multi_UBspline_3d_d_vgl_kernel
   tp[1].x =t.y*t.y*t.y; tp[1].y=t.y*t.y; tp[1].z=t.y; tp[1].w=1.0;
   tp[2].x =t.z*t.z*t.z; tp[2].y=t.z*t.z; tp[2].z=t.z; tp[2].w=1.0;
 
+
   // First 4 of a are value, second 4 are derivative, last four are
   // second derivative.
   __shared__ double a[12], b[12], c[12];
@@ -403,6 +404,7 @@ eval_multi_multi_UBspline_3d_d_vgl_kernel
 		   G[i0][2]*G[2][i1]);
 
   __syncthreads();
+
   if (off < N) {
     // Store gradients back to global memory
     mygrad_lapl[off+0*row_stride] = G[0][0]*g0 + G[0][1]*g1 + G[0][2]*g2;

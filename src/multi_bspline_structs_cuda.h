@@ -43,7 +43,7 @@ typedef struct
 
 typedef struct
 {
-  double *coefs_real, *coefs_imag;
+  complex_double *coefs;
   uint2 stride;
   double gridInv[2];
   int num_splines;
@@ -64,7 +64,7 @@ typedef struct
 
 typedef struct
 {
-  float *coefs_real, *coefs_imag;
+  complex_float *coefs;
   uint3 stride;
   float3 gridInv;
   uint3 dim;
@@ -82,7 +82,7 @@ typedef struct
 
 typedef struct
 {
-  double *coefs_real, *coefs_imag;
+  complex_double *coefs;
   uint3 stride;
   double3 gridInv;
   uint3 dim;
