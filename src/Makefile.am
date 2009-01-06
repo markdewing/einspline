@@ -9,6 +9,8 @@ if HAVE_CUDA
    MAYBE_CUDA = multi_bspline_create_cuda.cu \
                 multi_bspline_cuda_s_impl.h  \
                 multi_bspline_cuda_c_impl.h  \
+                multi_bspline_cuda_d_impl.h  \
+                multi_bspline_cuda_z_impl.h  \
                 multi_bspline_eval_cuda.h
    CHECK_CUDA = test_multi_cuda
    test_multi_cuda_SOURCES = test_multi_cuda.cu
