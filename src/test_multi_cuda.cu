@@ -494,12 +494,12 @@ test_complex_double()
 
 main()
 {
-  // fprintf(stderr, "Testing single-precision real routines:\n");
-  // test_float();
-  // fprintf(stderr, "Testing single-precision complex routines:\n");
-  // test_complex_float();
-  // fprintf(stderr, "Testing double-precision real routines:\n");
-  // test_double();
+  fprintf(stderr, "Testing single-precision real routines:\n");
+  test_float();
+  fprintf(stderr, "Testing single-precision complex routines:\n");
+  test_complex_float();
+  fprintf(stderr, "Testing double-precision real routines:\n");
+  test_double();
   fprintf(stderr, "Testing double-precision complex routines:\n");
   test_complex_double();
 }

@@ -76,9 +76,9 @@ eval_multi_multi_UBspline_3d_c_kernel
     float val = 0.0;
     for (int i=0; i<4; i++) {
       for (int j=0; j<4; j++) {
-	float *base = coefs + 2*((index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z);
+	float *base = coefs + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
 	for (int k=0; k<4; k++) 
-	  val += abc[16*i+4*j+k] * base[off+2*k*strides.z];
+	  val += abc[16*i+4*j+k] * base[off+k*strides.z];
       }
     }
     myval[off] = val;
@@ -167,13 +167,13 @@ eval_multi_multi_UBspline_3d_c_vgh_kernel
     h00=0.0, h01=0.0, h02=0.0, h11=0.0, h12=0.0, h22=0.0;
 
   int n = 0;
-  float *b0 = coefs + 2*(index.x*strides.x + index.y*strides.y + index.z*strides.z) + off;
+  float *b0 = coefs + index.x*strides.x + index.y*strides.y + index.z*strides.z + off;
   if (off < 2*N) {
     for (int i=0; i<4; i++) {
       for (int j=0; j<4; j++) {
-	float *base = b0 + 2*(i*strides.x + j*strides.y);
+	float *base = b0 + i*strides.x + j*strides.y;
 	for (int k=0; k<4; k++) {
-	  float c  = base[2*k*strides.z];
+	  float c  = base[k*strides.z];
 	  v   += abc[n+0] * c;
 	  g0  += abc[n+64] * c;
 	  g1  += abc[n+128] * c;
@@ -360,13 +360,13 @@ eval_multi_multi_UBspline_3d_c_vgl_kernel
     h00=0.0, h01=0.0, h02=0.0, h11=0.0, h12=0.0, h22=0.0;
 
   int n = 0;
-  float *b0 = coefs + 2*(index.x*strides.x + index.y*strides.y + index.z*strides.z) + off;
+  float *b0 = coefs + index.x*strides.x + index.y*strides.y + index.z*strides.z + off;
   if (off < 2*N) {
     for (int i=0; i<4; i++) {
       for (int j=0; j<4; j++) {
-	float *base = b0 + 2*(i*strides.x + j*strides.y);
+	float *base = b0 + i*strides.x + j*strides.y;
 	for (int k=0; k<4; k++) {
-	  float c  = base[2*k*strides.z];
+	  float c  = base[k*strides.z];
 	  v   += abc[n+  0] * c;
 	  g0  += abc[n+ 64] * c;
 	  g1  += abc[n+128] * c;

@@ -73,6 +73,11 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
   free(spline_buff);
 
+  cuda_spline->stride.x = 2*Ny*Nz*N;
+  cuda_spline->stride.y = 2*Nz*N;
+  cuda_spline->stride.z = 2*N;
+
+
   return cuda_spline;
 }
 
@@ -139,6 +144,11 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
 
   free(spline_buff);
+
+  cuda_spline->stride.x = 2*Ny*Nz*N;
+  cuda_spline->stride.y = 2*Nz*N;
+  cuda_spline->stride.z = 2*N;
+
 
   return cuda_spline;
 }

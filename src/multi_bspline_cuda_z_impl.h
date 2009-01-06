@@ -437,7 +437,7 @@ eval_multi_multi_UBspline_3d_z_vgl_cuda
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
   dim3 dimGrid(2*spline->num_splines/SPLINE_BLOCK_SIZE, num);
 
-  if (spline->num_splines % SPLINE_BLOCK_SIZE)
+  if (2*spline->num_splines % SPLINE_BLOCK_SIZE)
     dimGrid.x++;
 
   eval_multi_multi_UBspline_3d_z_vgl_kernel<<<dimGrid,dimBlock>>>
@@ -452,6 +452,9 @@ eval_multi_multi_UBspline_3d_z_vgl_cuda
     abort();
   }
 }
+
+
+
 
 
 
