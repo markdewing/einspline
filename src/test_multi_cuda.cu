@@ -131,6 +131,7 @@ test_complex_float()
   int numWalkers = 1000;
   complex_float *vals[numWalkers], *grads[numWalkers], *hess[numWalkers];
   complex_float *coefs, __device__ **vals_d, **grads_d, **hess_d;
+  float *Linv_d;
   float *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
@@ -176,15 +177,18 @@ test_complex_float()
   cudaMalloc((void**)&(vals_d),  numWalkers*sizeof(complex_float*));
   cudaMalloc((void**)&(grads_d), numWalkers*sizeof(complex_float*));
   cudaMalloc((void**)&(hess_d),  numWalkers*sizeof(complex_float*));
+  cudaMalloc((void**)&(Linv_d), 9*sizeof(float));
   fprintf (stderr, "valBlock_d = %p\n", valBlock_d);
   for (int i=0; i<numWalkers; i++) {
     vals[i]  = valBlock_d + i*N;
     grads[i] = valBlock_d + N*numWalkers + 3*i*N;
     hess[i]  = valBlock_d + 4*N*numWalkers + 6*i*N;
   }
+  float Linv[9] = { 1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0 };
   cudaMemcpy(vals_d,  vals,  numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
   cudaMemcpy(grads_d, grads, numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
   cudaMemcpy(hess_d,  hess,  numWalkers*sizeof(float*), cudaMemcpyHostToDevice);
+  cudaMemcpy(Linv_d,  Linv,  9*sizeof(float), cudaMemcpyHostToDevice);
   fprintf (stderr, "Finished cuda allocations.\n");
 
   // Setup walker positions
@@ -202,11 +206,15 @@ test_complex_float()
   
   complex_float vals_host[N], vals_cuda[N];
 
+  
+
   // Check value
   for (int w=0; w<numWalkers; w++) {
     eval_multi_UBspline_3d_c (spline, r_h[3*w+0], r_h[3*w+1], r_h[3*w+2], vals_host);
     cudaMemcpy(r_d, r_h, 3*numWalkers*sizeof(float), cudaMemcpyHostToDevice);
-    eval_multi_multi_UBspline_3d_c_cuda (cudaspline, r_d, vals_d, numWalkers);
+    //eval_multi_multi_UBspline_3d_c_cuda (cudaspline, r_d, vals_d, numWalkers);
+    //eval_multi_multi_UBspline_3d_c_vgh_cuda (cudaspline, r_d, vals_d, grads_d, hess_d, numWalkers);
+    eval_multi_multi_UBspline_3d_c_vgl_cuda (cudaspline, r_d, Linv_d, vals_d, grads_d, numWalkers, N);
     cudaMemcpy(vals_cuda, valBlock_d+(N*w), N*sizeof(float), cudaMemcpyDeviceToHost);
     //for (int i=0; i<N; i++)
     fprintf (stderr, "%3i  %15.8e %15.8e  %15.8e %15.8e\n", w, 

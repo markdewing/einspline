@@ -210,7 +210,7 @@ eval_multi_multi_UBspline_3d_c_vgh_kernel
   __syncthreads();
   for (int i=0; i<3; i++) {
     int myoff = (3*block+i)*SPLINE_BLOCK_SIZE + thr;
-    if (myoff < 3*N)
+    if (myoff < 6*N)
       mygrad[myoff] = abc[i*SPLINE_BLOCK_SIZE+thr]; 
   }
   __syncthreads();
@@ -405,9 +405,9 @@ eval_multi_multi_UBspline_3d_c_vgl_kernel
     G[i0][i1] = Linv[threadIdx.x];
   __syncthreads();
   if (threadIdx.x < 9)   
-    GGt[i0][i1] = (G[i0][0]*G[0][i1] + 
-		   G[i0][1]*G[1][i1] + 
-		   G[i0][2]*G[2][i1]);
+    GGt[i0][i1] = (G[i0][0]*G[i1][0] + 
+		   G[i0][1]*G[i1][1] + 
+		   G[i0][2]*G[i1][2]);
 
   __syncthreads();
   if (off < 2*N) {
@@ -422,7 +422,7 @@ eval_multi_multi_UBspline_3d_c_vgl_kernel
     //          [1 3 4]
     //          [2 4 5]
     // laplacian = Trace(GGt*Hessian)
-    mygrad_lapl[off+6*row_stride] = 
+    mygrad_lapl[off+6*row_stride] =
       (GGt[0][0]*h00 + GGt[1][0]*h01 + GGt[2][0]*h02 +
        GGt[0][1]*h01 + GGt[1][1]*h11 + GGt[2][1]*h12 +
        GGt[0][2]*h02 + GGt[1][2]*h12 + GGt[2][2]*h22);
