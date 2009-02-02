@@ -88,6 +88,7 @@ test_float()
     eval_multi_multi_UBspline_3d_s_cuda (cudaspline, r_d, vals_d, numWalkers);
     cudaMemcpy(vals_cuda, valBlock_d+(N*w), N*sizeof(float), cudaMemcpyDeviceToHost);
     //for (int i=0; i<N; i++)
+    if (w < 10)
       fprintf (stderr, "%3i  %15.8e %15.8e\n", w, vals_host[0], vals_cuda[0]);
   }
 
@@ -217,9 +218,10 @@ test_complex_float()
     eval_multi_multi_UBspline_3d_c_vgl_cuda (cudaspline, r_d, Linv_d, vals_d, grads_d, numWalkers, N);
     cudaMemcpy(vals_cuda, valBlock_d+(N*w), N*sizeof(float), cudaMemcpyDeviceToHost);
     //for (int i=0; i<N; i++)
-    fprintf (stderr, "%3i  %15.8e %15.8e  %15.8e %15.8e\n", w, 
-	     vals_host[0].real(), vals_cuda[0].real(),
-	     vals_host[0].imag(), vals_cuda[0].imag());
+    if (w < 10)
+      fprintf (stderr, "%3i  %15.8e %15.8e  %15.8e %15.8e\n", w, 
+	       vals_host[0].real(), vals_cuda[0].real(),
+	       vals_host[0].imag(), vals_cuda[0].imag());
   }
 
 
@@ -340,6 +342,7 @@ test_double()
     eval_multi_multi_UBspline_3d_d_cuda (cudaspline, r_d, vals_d, numWalkers);
     cudaMemcpy(vals_cuda, valBlock_d+(N*w), N*sizeof(double), cudaMemcpyDeviceToHost);
     //for (int i=0; i<N; i++)
+    if (w < 10)
       fprintf (stderr, "%3i  %15.8e %15.8e\n", w, vals_host[0], vals_cuda[0]);
   }
 
@@ -461,9 +464,10 @@ test_complex_double()
     eval_multi_multi_UBspline_3d_z_cuda (cudaspline, r_d, vals_d, numWalkers);
     cudaMemcpy(vals_cuda, valBlock_d+(N*w), N*sizeof(double), cudaMemcpyDeviceToHost);
     //for (int i=0; i<N; i++)
-    fprintf (stderr, "%3i  %15.8e %15.8e  %15.8e %15.8e\n", w, 
-	     vals_host[0].real(), vals_cuda[0].real(),
-	     vals_host[0].imag(), vals_cuda[0].imag());
+    if (w < 10)
+      fprintf (stderr, "%3i  %15.8e %15.8e  %15.8e %15.8e\n", w, 
+	       vals_host[0].real(), vals_cuda[0].real(),
+	       vals_host[0].imag(), vals_cuda[0].imag());
   }
 
 
