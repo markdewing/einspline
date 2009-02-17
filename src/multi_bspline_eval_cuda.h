@@ -9,6 +9,11 @@ eval_multi_multi_UBspline_3d_s_cuda
 (multi_UBspline_3d_s_cuda *spline, float *pos_d, float *vals_d[], int num);
 
 extern "C" void
+eval_multi_multi_UBspline_3d_s_sign_cuda 
+(multi_UBspline_3d_s_cuda *spline, float *pos_d, float *sign_d, 
+ float *vals_d[], int num);
+
+extern "C" void
 eval_multi_multi_UBspline_3d_s_vgh_cuda 
 (multi_UBspline_3d_s_cuda *spline,
  float *pos_d, float *vals_d[], float *grads_d[], float *hess_d[], int num);
@@ -17,6 +22,12 @@ extern "C" void
 eval_multi_multi_UBspline_3d_s_vgl_cuda
 (multi_UBspline_3d_s_cuda *spline, float *pos_d, float *Linv_d, 
  float *vals_d[], float *grad_lapl_d[], int num, int row_stride);
+
+extern "C" void
+eval_multi_multi_UBspline_3d_s_vgl_sign_cuda
+(multi_UBspline_3d_s_cuda *spline, float *pos_d, float *sign_d, float *Linv_d, 
+ float *vals_d[], float *grad_lapl_d[], int num, int row_stride);
+
 
 
 // Double-precision real

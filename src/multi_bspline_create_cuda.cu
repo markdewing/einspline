@@ -269,9 +269,14 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
   size_t size = Nx*Ny*Nz*N*sizeof(float);
 
   cudaMalloc((void**)&(cuda_spline->coefs), size);
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "Failed to allocate %ld memory for GPU spline coefficients.  Error %s\n",
+	     size, cudaGetErrorString(err));
+    abort();
+  }
   
   float *spline_buff = (float*)malloc(size);
-
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
       for (int iz=0; iz<Nz; iz++) 
@@ -289,7 +294,12 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 	  //    	     ix,iy,iz,isp);
 	}
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
-
+  err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "Failed to copy spline to GPU memory.  Error:  %s\n",
+	     cudaGetErrorString(err));
+    abort();
+  }
   free(spline_buff);
 
   return cuda_spline;
