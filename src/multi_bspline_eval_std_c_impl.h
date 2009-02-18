@@ -340,7 +340,8 @@ eval_multi_UBspline_2d_c_vgl (multi_UBspline_2d_c *spline,
   intptr_t xs = spline->x_stride;
   intptr_t ys = spline->y_stride;
 
-  complex_float lapl2[2*spline->num_splines];
+  //  complex_float lapl2[2*spline->num_splines];
+  complex_float* restrict lapl2 = spline->lapl2;
   for (int n=0; n<spline->num_splines; n++) {
     vals[n] = 0.0;
     grads[2*n+0] = grads[2*n+1] = 0.0;
@@ -684,7 +685,8 @@ eval_multi_UBspline_3d_c_vgl (multi_UBspline_3d_c *spline,
   intptr_t ys = spline->y_stride;
   intptr_t zs = spline->z_stride;
 
-  complex_float lapl3[3*spline->num_splines];
+  //complex_float lapl3[3*spline->num_splines];
+  complex_float* restrict lapl3 = spline->lapl3;
   for (int n=0; n<spline->num_splines; n++) {
     vals[n] = 0.0;
     grads[3*n+0] = grads[3*n+1] = grads[3*n+2] = 0.0;

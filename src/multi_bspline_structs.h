@@ -121,6 +121,8 @@ typedef struct
   Ugrid x_grid, y_grid;
   BCtype_c xBC, yBC;
   int num_splines;
+  // temporary storage for laplacian components
+  complex_float* restrict lapl2;
 } multi_UBspline_2d_c;
 
 typedef struct
@@ -132,6 +134,8 @@ typedef struct
   Ugrid x_grid, y_grid, z_grid;
   BCtype_c xBC, yBC, zBC;
   int num_splines;
+  // temporary storage for laplacian components
+  complex_float* restrict lapl3;
 } multi_UBspline_3d_c;
 
 
@@ -158,6 +162,8 @@ typedef struct
   Ugrid x_grid, y_grid;
   BCtype_z xBC, yBC;
   int num_splines;
+  // temporary storage for laplacian components
+  complex_double* restrict lapl2;
 } multi_UBspline_2d_z;
 
 typedef struct
@@ -169,6 +175,8 @@ typedef struct
   Ugrid x_grid, y_grid, z_grid;
   BCtype_z xBC, yBC, zBC;
   int num_splines;
+  // temporary storage for laplacian components
+  complex_double* restrict lapl3;
 } multi_UBspline_3d_z;
 
 

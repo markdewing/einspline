@@ -1,5 +1,12 @@
 AM_LDFLAGS = $(ALL_STATIC)
 
+if WANT_FORTRAN
+  MAYBE_FORTRAN = fbspline.c        \
+                  fbspline.h        \
+                  fmulti_bspline.c  \
+                  fmulti_bspline.h
+endif
+
 if WANT_BLIPS
    MAYBE_BLIPS = blip_create.c blip_create.h
    CHECK_BLIPS = test_blip
@@ -127,7 +134,8 @@ libeinspline_la_SOURCES =                             \
                        $(SINGLE_SRC)                  \
                        $(DOUBLE_SRC)                  \
                        $(MAYBE_BLIPS)                 \
-                       $(MAYBE_CUDA)
+                       $(MAYBE_CUDA)                  \
+                       $(MAYBE_FORTRAN) 
 
 
 libeinspline_la_LIBADD = $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
