@@ -16,10 +16,13 @@ PKG_PROG_PKG_CONFIG
 # Optimal compiler flags
 AX_CC_MAXOPT
 AX_CXX_MAXOPT
-AX_F77_MAXOPT
 AC_CXX_RESTRICT
 
-
+AC_ARG_ENABLE(fortran, AC_HELP_STRING([--disable-fortran],[disable fortran bindings]))
+if test "x$enable_fortran" != "xno"; then
+   AX_F77_MAXOPT
+fi
+AM_CONDITIONAL([WANT_FORTRAN], [test "$enable_fortran" != "no"])
 
 AC_CHECK_LIB([m], [sqrt])
 AC_MSG_CHECKING([LIBS = $LIBS])
