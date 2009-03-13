@@ -61,7 +61,7 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
 
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
-      for (int iz=0; iz<Nz; iz++) 
+      for (int iz=0; iz<Nz; iz++) {
 	for (int isp=0; isp<spline->num_splines; isp++) {
 	  spline_buff[ix*cuda_spline->stride.x +
 		      iy*cuda_spline->stride.y +
@@ -70,6 +70,13 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
 			  iy*spline->y_stride +
 			  iz*spline->z_stride + isp];
 	}
+	for (int isp=spline->num_splines; isp < N; isp++) {
+	  spline_buff[ix*cuda_spline->stride.x +
+		      iy*cuda_spline->stride.y +
+		      iz*cuda_spline->stride.z + isp] = 0.0;
+	}
+
+      }
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
   free(spline_buff);
 
@@ -132,7 +139,7 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
 
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
-      for (int iz=0; iz<Nz; iz++) 
+      for (int iz=0; iz<Nz; iz++) {
 	for (int isp=0; isp<spline->num_splines; isp++) {
 	  std::complex<double> z = spline->coefs[ix*spline->x_stride +
 						 iy*spline->y_stride +
@@ -141,6 +148,14 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
 		      iy*cuda_spline->stride.y +
 		      iz*cuda_spline->stride.z + isp] = std::complex<float>(z.real(), z.imag());
 	}
+	for (int isp=spline->num_splines; isp < N; isp++) 
+	  spline_buff[ix*cuda_spline->stride.x +
+		      iy*cuda_spline->stride.y +
+		      iz*cuda_spline->stride.z + isp] = 0.0;
+      }
+
+	
+
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
 
   free(spline_buff);
