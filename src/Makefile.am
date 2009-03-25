@@ -18,7 +18,9 @@ if HAVE_CUDA
                 multi_bspline_cuda_c_impl.h  \
                 multi_bspline_cuda_d_impl.h  \
                 multi_bspline_cuda_z_impl.h  \
-                multi_bspline_eval_cuda.h
+                multi_bspline_eval_cuda.h    \
+                bspline_structs_cuda.h       \
+                bspline_create_cuda.cu
    CHECK_CUDA = test_multi_cuda
    test_multi_cuda_SOURCES = test_multi_cuda.cu
    test_multi_cuda_LDADD   = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)	

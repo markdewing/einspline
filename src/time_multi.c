@@ -2081,10 +2081,14 @@ time_3d_real_double_all()
   // Check value routine  //
   ///////////////////////
   multi_start = clock();
-  for (int i=0; i<num_vals; i++) {
     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
     double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
+
+  for (int i=0; i<num_vals; i++) {
+    /* double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end; */
+    /* double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end; */
+    /* double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end; */
     eval_multi_UBspline_3d_d (multi_spline, x, y, z, multi_vals);
   }
   multi_end = clock();
