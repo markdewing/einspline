@@ -4,7 +4,10 @@ if WANT_FORTRAN
   MAYBE_FORTRAN = fbspline.c        \
                   fbspline.h        \
                   fmulti_bspline.c  \
-                  fmulti_bspline.h
+                  fmulti_bspline.h  \
+	          fnubspline.c      \
+                  fnubspline.h
+
 endif
 
 if WANT_BLIPS
@@ -127,12 +130,6 @@ libeinspline_la_SOURCES =                             \
                        nubasis.c                      \
                        nugrid.h                       \
                        nugrid.c                       \
-                       fbspline.c                     \
-                       fbspline.h                     \
-                       fmulti_bspline.c               \
-                       fmulti_bspline.h               \
-                       fnubspline.c                   \
-                       fnubspline.h                   \
                        $(SINGLE_SRC)                  \
                        $(DOUBLE_SRC)                  \
                        $(MAYBE_BLIPS)                 \
