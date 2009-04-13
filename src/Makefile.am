@@ -26,7 +26,7 @@ if HAVE_CUDA
                 bspline_create_cuda.cu
    CHECK_CUDA = test_multi_cuda
    test_multi_cuda_SOURCES = test_multi_cuda.cu
-   test_multi_cuda_LDADD   = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)	
+   test_multi_cuda_LDADD   = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIB) $(CUDA_LIBS)
 endif
 
 if HAVE_SSE

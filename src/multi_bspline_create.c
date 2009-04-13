@@ -1299,6 +1299,7 @@ set_multi_UBspline_3d_z (multi_UBspline_3d_z* spline, int num, complex_double *d
 
   complex_double *coefs = spline->coefs + num;
 
+
   int N = spline->num_splines;
   int zs = spline->z_stride;
   // First, solve in the X-direction 
