@@ -1,92 +1,14 @@
-#ifndef MULTI_BSPLINE_CUDA_S_IMPL_H
-#define MULTI_BSPLINE_CUDA_S_IMPL_H
+#ifndef BSPLINE_CUDA_S_IMPL_H
+#define BSPLINE_CUDA_S_IMPL_H
 
 //#include <stdio.h>
-#include "multi_bspline.h"
-#include "multi_bspline_create_cuda.h"
-
-
-template<int BS> __global__ static void
-eval_multi_multi_UBspline_1d_s_kernel
-(float *pos, float drInv, float *coefs, float **vals, 
- uint dim, uint stride, int N)
-{
-  int tid   = threadIdx.x;
-  int ir    = blockIdx.x;
-
-  __shared__ float *ourval;
-  __shared__ float r;
-  if (tid == 0) {
-    r = pos[ir];
-    ourval = vals[ir];
-  }
-  __syncthreads();
-  
-  int index;
-  float t;
-  float s, sf;
-  float4 tp;
-
-  s = r * drInv;
-  sf = floor(s);
-  index = min(max(0,(int)sf), dim-1);
-  t = s - sf;
-  tp = make_float4(t*t*t, t*t, t, 1.0);
-
-  __shared__ float a[4];
-  if (tid < 4) 
-    a[tid] = Acuda[4*tid+0]*tp.x + Acuda[4*tid+1]*tp.y + Acuda[4*tid+2]*tp.z + Acuda[4*tid+3]*tp.w;
-  __syncthreads();
-
-  int numBlocks = N / BS;
-  float *c = coefs + index*stride + tid;
-  float *myval = ourval + tid;
-  int stride2 = 2*stride;
-  int stride3 = 3*stride;
-  for (int block=0; block < numBlocks; block++) {
-     *myval = (a[0] * c[0] +
-	       a[1] * c[stride] +
-	       a[2] * c[stride2] +
-	       a[3] * c[stride3]);
-     myval += BS;    c += BS;
-  }
-      
-  int remainder = N - numBlocks*BS;
-  if (tid < remainder) {
-    *myval = (a[0] * c[0] +
-	      a[1] * c[stride] +
-	      a[2] * c[stride2] +
-	      a[3] * c[stride3]);
-  }
-}
-
-extern "C" void
-eval_multi_multi_UBspline_1d_s_cuda (multi_UBspline_1d_s_cuda *spline,
-				     float *pos_d, float *vals_d[], int num)
-{
-  const int BS = 64;
-  dim3 dimBlock(BS);
-  dim3 dimGrid(num);
-
-  if (spline->num_splines % BS)
-    dimGrid.x++;
-
-  eval_multi_multi_UBspline_1d_s_kernel<BS><<<dimGrid,dimBlock>>>
-    (pos_d, spline->gridInv, spline->coefs, vals_d, spline->dim, spline->stride, spline->num_splines);
-
-  cudaThreadSynchronize();
-  cudaError_t err = cudaGetLastError();
-  if (err != cudaSuccess) {
-    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_1d_s_cuda:\n  %s\n",
-	     cudaGetErrorString(err));
-    abort();
-  }
-}
+#include "bspline.h"
+#include "bspline_create_cuda.h"
 
 __global__ static void
-eval_multi_multi_UBspline_3d_s_kernel 
+eval_multi_UBspline_3d_s_kernel 
 (float *pos, float3 drInv, float *coefs, float *vals[], 
- uint3 dim, uint3 strides, int N)
+ uint3 dim, uint2 strides, int N)
 {
   int block = blockIdx.x;
   int thr   = threadIdx.x;
@@ -164,7 +86,7 @@ eval_multi_multi_UBspline_3d_s_kernel
 
 
 __global__ static void
-eval_multi_multi_UBspline_3d_s_sign_kernel 
+eval_multi_UBspline_3d_s_sign_kernel 
 (float *pos, float *sign, float3 drInv, float *coefs, float *vals[], 
  uint3 dim, uint3 strides, int N)
 {
@@ -247,7 +169,7 @@ eval_multi_multi_UBspline_3d_s_sign_kernel
 
 
 __global__ static void
-eval_multi_multi_UBspline_3d_s_vgh_kernel 
+eval_multi_UBspline_3d_s_vgh_kernel 
 (float *pos, float3 drInv,  float *coefs, 
  float *vals[], float *grads[], float *hess[], 
  uint3 dim, uint3 strides, int N)
@@ -391,7 +313,7 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
 
 
 extern "C" void
-eval_multi_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s_cuda *spline,
+eval_multi_UBspline_3d_s_cuda (UBspline_3d_s_cuda *spline,
 				     float *pos_d, float *vals_d[], int num)
 {
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
@@ -401,14 +323,14 @@ eval_multi_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s_cuda *spline,
     dimGrid.x++;
   
 
-  eval_multi_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
+  eval_multi_UBspline_3d_s_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, vals_d, spline->dim, spline->stride, spline->num_splines);
 
 
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
-    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_cuda:\n  %s\n",
+    fprintf (stderr, "CUDA error in eval_multi_UBspline_3d_s_cuda:\n  %s\n",
 	     cudaGetErrorString(err));
     abort();
   }
@@ -416,7 +338,7 @@ eval_multi_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s_cuda *spline,
 }
 
 extern "C" void
-eval_multi_multi_UBspline_3d_s_sign_cuda (multi_UBspline_3d_s_cuda *spline,
+eval_multi_UBspline_3d_s_sign_cuda (UBspline_3d_s_cuda *spline,
 					  float *pos_d, float *sign_d, 
 					  float *vals_d[], int num)
 {
@@ -427,7 +349,7 @@ eval_multi_multi_UBspline_3d_s_sign_cuda (multi_UBspline_3d_s_cuda *spline,
     dimGrid.x++;
   
 
-  eval_multi_multi_UBspline_3d_s_sign_kernel<<<dimGrid,dimBlock>>>
+  eval_multi_UBspline_3d_s_sign_kernel<<<dimGrid,dimBlock>>>
     (pos_d, sign_d, spline->gridInv, spline->coefs, 
      vals_d, spline->dim, spline->stride, spline->num_splines);
 
@@ -435,7 +357,7 @@ eval_multi_multi_UBspline_3d_s_sign_cuda (multi_UBspline_3d_s_cuda *spline,
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
-    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_cuda:\n  %s\n",
+    fprintf (stderr, "CUDA error in eval_multi_UBspline_3d_s_cuda:\n  %s\n",
 	     cudaGetErrorString(err));
     abort();
   }
@@ -445,7 +367,7 @@ eval_multi_multi_UBspline_3d_s_sign_cuda (multi_UBspline_3d_s_cuda *spline,
 
 
 extern "C" void
-eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
+eval_multi_UBspline_3d_s_vgh_cuda (UBspline_3d_s_cuda *spline,
 					 float *pos_d, float *vals_d[], float *grads_d[],
 					 float *hess_d[], int num)
 {
@@ -455,14 +377,14 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
   if (spline->num_splines % SPLINE_BLOCK_SIZE)
     dimGrid.x++;
 
-  eval_multi_multi_UBspline_3d_s_vgh_kernel<<<dimGrid,dimBlock>>>
+  eval_multi_UBspline_3d_s_vgh_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, vals_d, grads_d, hess_d,
      spline->dim, spline->stride, spline->num_splines);
 
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
-    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_vgh_cuda:\n  %s\n",
+    fprintf (stderr, "CUDA error in eval_multi_UBspline_3d_s_vgh_cuda:\n  %s\n",
 	     cudaGetErrorString(err));
     abort();
   }
@@ -470,7 +392,7 @@ eval_multi_multi_UBspline_3d_s_vgh_cuda (multi_UBspline_3d_s_cuda *spline,
 
 
 __global__ static void
-eval_multi_multi_UBspline_3d_s_vgl_kernel 
+eval_multi_UBspline_3d_s_vgl_kernel 
 (float *pos, float3 drInv,  float *coefs,  float Linv[],
  float *vals[], float *grad_lapl[], uint3 dim, uint3 strides,
  int N, int row_stride)
@@ -617,8 +539,8 @@ eval_multi_multi_UBspline_3d_s_vgl_kernel
 
 
 extern "C" void
-eval_multi_multi_UBspline_3d_s_vgl_cuda 
-(multi_UBspline_3d_s_cuda *spline, float *pos_d, float *Linv_d, 
+eval_multi_UBspline_3d_s_vgl_cuda 
+(UBspline_3d_s_cuda *spline, float *pos_d, float *Linv_d, 
  float *vals_d[], float *grad_lapl_d[], int num, int row_stride)
 {
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
@@ -627,14 +549,14 @@ eval_multi_multi_UBspline_3d_s_vgl_cuda
   if (spline->num_splines % SPLINE_BLOCK_SIZE)
     dimGrid.x++;
 
-  eval_multi_multi_UBspline_3d_s_vgl_kernel<<<dimGrid,dimBlock>>>
+  eval_multi_UBspline_3d_s_vgl_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, Linv_d, vals_d, 
      grad_lapl_d, spline->dim, spline->stride, spline->num_splines, row_stride);
 
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
-    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_vgl_cuda:\n  %s\n",
+    fprintf (stderr, "CUDA error in eval_multi_UBspline_3d_s_vgl_cuda:\n  %s\n",
 	     cudaGetErrorString(err));
     abort();
   }
@@ -643,7 +565,7 @@ eval_multi_multi_UBspline_3d_s_vgl_cuda
 
 
 __global__ static void
-eval_multi_multi_UBspline_3d_s_vgl_sign_kernel 
+eval_multi_UBspline_3d_s_vgl_sign_kernel 
 (float *pos, float sign[], float3 drInv,  float *coefs, float Linv[],
    float *vals[], float *grad_lapl[], uint3 dim, uint3 strides,
    int N, int row_stride)
@@ -791,8 +713,8 @@ eval_multi_multi_UBspline_3d_s_vgl_sign_kernel
 
 
 extern "C" void
-eval_multi_multi_UBspline_3d_s_vgl_sign_cuda 
-(multi_UBspline_3d_s_cuda *spline, float *pos_d, float *sign_d, float *Linv_d, 
+eval_multi_UBspline_3d_s_vgl_sign_cuda 
+(UBspline_3d_s_cuda *spline, float *pos_d, float *sign_d, float *Linv_d, 
  float *vals_d[], float *grad_lapl_d[], int num, int row_stride)
 {
   dim3 dimBlock(SPLINE_BLOCK_SIZE);
@@ -801,14 +723,14 @@ eval_multi_multi_UBspline_3d_s_vgl_sign_cuda
   if (spline->num_splines % SPLINE_BLOCK_SIZE)
     dimGrid.x++;
 
-  eval_multi_multi_UBspline_3d_s_vgl_sign_kernel<<<dimGrid,dimBlock>>>
+  eval_multi_UBspline_3d_s_vgl_sign_kernel<<<dimGrid,dimBlock>>>
     (pos_d, sign_d, spline->gridInv, spline->coefs, Linv_d, vals_d, 
      grad_lapl_d, spline->dim, spline->stride, spline->num_splines, row_stride);
 
   cudaThreadSynchronize();
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
-    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_3d_s_vgl_cuda:\n  %s\n",
+    fprintf (stderr, "CUDA error in eval_multi_UBspline_3d_s_vgl_cuda:\n  %s\n",
 	     cudaGetErrorString(err));
     abort();
   }

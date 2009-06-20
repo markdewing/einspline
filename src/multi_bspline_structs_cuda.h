@@ -4,6 +4,45 @@
 #define SPLINE_BLOCK_SIZE 64
 
 ////////
+// 1D //
+////////
+typedef struct
+{
+  float *coefs;
+  uint stride;
+  float gridInv;
+  int num_splines;
+  int dim;
+} multi_UBspline_1d_s_cuda;
+
+typedef struct
+{
+  complex_float *coefs;
+  uint stride;
+  float gridInv;
+  int num_splines;
+  int dim;
+} multi_UBspline_1d_c_cuda;
+
+typedef struct
+{
+  double *coefs;
+  uint stride;
+  double gridInv;
+  int num_splines;
+  int dim;
+} multi_UBspline_1d_d_cuda;
+
+typedef struct
+{
+  complex_double *coefs;
+  uint stride;
+  double gridInv;
+  int num_splines;
+  int dim;
+} multi_UBspline_1d_z_cuda;
+
+////////
 // 2D //
 ////////
 
@@ -27,7 +66,7 @@ typedef struct
 
 typedef struct
 {
-  float *coefs_real, *coefs_imag;
+  complex_float *coefs;
   uint2 stride;
   float2 gridInv;
   int num_splines;

@@ -2029,7 +2029,7 @@ time_3d_real_float_all()
 void
 time_3d_real_double_all()
 {
-  int Nx=23; int Ny=21; int Nz = 29;
+  int Nx=63; int Ny=61; int Nz = 69;
   int num_splines = 128;
 
   Ugrid x_grid, y_grid, z_grid;
@@ -2752,7 +2752,7 @@ void PrintPassFail (int code)
 
 main()
 {
-  //  time_1d_NUB_complex_double_all();
+  time_1d_NUB_complex_double_all();
 
   // fprintf (stderr, "Timing 3D complex single-precision evaluation speed:\n");
   // time_3d_complex_float_all();

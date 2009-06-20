@@ -11,6 +11,57 @@ __constant__ float  Acuda[48];
 #include "multi_bspline_cuda_d_impl.h"
 #include "multi_bspline_cuda_z_impl.h"
 
+
+extern "C" multi_UBspline_1d_s_cuda*
+create_multi_UBspline_1d_s_cuda (multi_UBspline_1d_s* spline)
+{
+  float A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
+		     3.0/6.0, -6.0/6.0,  0.0/6.0, 4.0/6.0,
+		    -3.0/6.0,  3.0/6.0,  3.0/6.0, 1.0/6.0,
+		     1.0/6.0,  0.0/6.0,  0.0/6.0, 0.0/6.0,
+		         0.0,     -0.5,      1.0,    -0.5,
+		         0.0,      1.5,     -2.0,     0.0,
+		         0.0,     -1.5,      1.0,     0.5,
+		         0.0,      0.5,      0.0,     0.0,
+		         0.0,      0.0,     -1.0,     1.0,
+		         0.0,      0.0,      3.0,    -2.0,
+		         0.0,      0.0,     -3.0,     1.0,
+		         0.0,      0.0,      1.0,     0.0 };
+
+  cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
+
+  multi_UBspline_1d_s_cuda *cuda_spline =
+    (multi_UBspline_1d_s_cuda*) malloc (sizeof (multi_UBspline_1d_s_cuda));
+  
+  cuda_spline->num_splines = spline->num_splines;
+
+  int Nx = spline->x_grid.num+3;
+  int N = spline->num_splines;
+
+  if ((N%SPLINE_BLOCK_SIZE) != 0)
+    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  cuda_spline->stride = N;
+  cuda_spline->gridInv = spline->x_grid.delta_inv;
+  cuda_spline->dim = spline->x_grid.num;
+
+  size_t size = Nx*N*sizeof(float);
+
+  cudaMalloc((void**)&(cuda_spline->coefs), size);
+  
+  float *spline_buff = (float*)malloc(size);
+
+  for (int ix=0; ix<Nx; ix++)
+    for (int isp=0; isp<spline->num_splines; isp++) 
+      spline_buff[ix*cuda_spline->stride + isp] =
+	spline->coefs[ix*spline->x_stride + isp];
+  cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
+  
+  free(spline_buff);
+  
+  return cuda_spline;
+}
+
+
 extern "C" multi_UBspline_3d_c_cuda*
 create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
 {
