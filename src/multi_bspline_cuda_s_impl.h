@@ -6,7 +6,7 @@
 #include "multi_bspline_create_cuda.h"
 
 
-template<int BS> __global__ static void
+__global__ static void
 eval_multi_multi_UBspline_1d_s_kernel
 (float *pos, float drInv, float *coefs, float **vals, 
  uint dim, uint stride, int N)
@@ -38,7 +38,7 @@ eval_multi_multi_UBspline_1d_s_kernel
     a[tid] = Acuda[4*tid+0]*tp.x + Acuda[4*tid+1]*tp.y + Acuda[4*tid+2]*tp.z + Acuda[4*tid+3]*tp.w;
   __syncthreads();
 
-  int numBlocks = N / BS;
+  int numBlocks = N / SPLINE_BLOCK_SIZE;
   float *c = coefs + index*stride + tid;
   float *myval = ourval + tid;
   int stride2 = 2*stride;
@@ -48,10 +48,10 @@ eval_multi_multi_UBspline_1d_s_kernel
 	       a[1] * c[stride] +
 	       a[2] * c[stride2] +
 	       a[3] * c[stride3]);
-     myval += BS;    c += BS;
+     myval += SPLINE_BLOCK_SIZE;    c += SPLINE_BLOCK_SIZE;
   }
       
-  int remainder = N - numBlocks*BS;
+  int remainder = N - numBlocks*SPLINE_BLOCK_SIZE;
   if (tid < remainder) {
     *myval = (a[0] * c[0] +
 	      a[1] * c[stride] +
@@ -65,13 +65,13 @@ eval_multi_multi_UBspline_1d_s_cuda (multi_UBspline_1d_s_cuda *spline,
 				     float *pos_d, float *vals_d[], int num)
 {
   const int BS = 64;
-  dim3 dimBlock(BS);
+  dim3 dimBlock(SPLINE_BLOCK_SIZE);
   dim3 dimGrid(num);
 
-  if (spline->num_splines % BS)
+  if (spline->num_splines % SPLINE_BLOCK_SIZE)
     dimGrid.x++;
 
-  eval_multi_multi_UBspline_1d_s_kernel<BS><<<dimGrid,dimBlock>>>
+  eval_multi_multi_UBspline_1d_s_kernel<<<dimGrid,dimBlock>>>
     (pos_d, spline->gridInv, spline->coefs, vals_d, spline->dim, spline->stride, spline->num_splines);
 
   cudaThreadSynchronize();
