@@ -90,16 +90,16 @@ test_float_1d()
   double time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
   fprintf (stderr, "Evals per second = %1.8e\n", 1.0/time);
 
-  // start = clock();
-  // for (int i=0; i<10000; i++) {
-  //   if ((i%1000) == 0) 
-  //     fprintf (stderr, "i = %d\n", i);
-  //   cudaMemcpy(r_d, r_h, numWalkers*sizeof(float), cudaMemcpyHostToDevice);
-  //   eval_multi_multi_UBspline_1d_s_vgl_cuda (cudaspline, r_d, vals_d, grads_d, hess_d, numWalkers);
-  // }
-  // end = clock();
-  // time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
-  // fprintf (stderr, "VGL Evals per second = %1.8e\n", 1.0/time);
+  start = clock();
+  for (int i=0; i<10000; i++) {
+    if ((i%1000) == 0) 
+      fprintf (stderr, "i = %d\n", i);
+    cudaMemcpy(r_d, r_h, numWalkers*sizeof(float), cudaMemcpyHostToDevice);
+    eval_multi_multi_UBspline_1d_s_vgl_cuda (cudaspline, r_d, vals_d, grads_d, hess_d, numWalkers);
+  }
+  end = clock();
+  time = (double)(end-start)/(double)((double)CLOCKS_PER_SEC*(double)10000*N*numWalkers);
+  fprintf (stderr, "VGL Evals per second = %1.8e\n", 1.0/time);
   
   cudaFree (cudaspline->coefs);
   cudaFree (valBlock_d);
@@ -615,9 +615,6 @@ main()
 {
   fprintf(stderr, "Testing 1D single-precision real routines:\n");
   test_float_1d();
-
-  exit(0);
-
   fprintf(stderr, "Testing 3D single-precision real routines:\n");
   test_float();
   fprintf(stderr, "Testing 3D single-precision complex routines:\n");

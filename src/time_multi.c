@@ -2661,8 +2661,8 @@ void test_double_vgh()
 int 
 time_1d_NUB_complex_double_all()
 {
-  int Nx=73;
-  int num_splines = 1200;
+  int Nx=100;
+  int num_splines = 128*36;
 
   NUgrid *x_grid = create_log_grid (1.0e-4, 3.0, Nx);
   //  for (int i=0; i<Nx; i++) 
@@ -2729,6 +2729,33 @@ time_1d_NUB_complex_double_all()
   double multi_speed = (double)num_vals * (double)num_splines/ dt; 
   fprintf (stderr, "1D complex nonuniform multi-spline speed = %9.2f\n",
 	   multi_speed);
+
+
+  //////////////////////////
+  // Time VGL routine   //
+  //////////////////////////
+  multi_start = clock();
+  for (int i=0; i<num_vals; i++) {
+    double rx = drand48();  
+    double x = rx*x_grid->start + (1.0-rx)*x_grid->end;
+    eval_multi_NUBspline_1d_z_vgl (multi_spline, x, multi_vals, multi_grads, multi_lapl);
+  }
+  multi_end = clock();
+
+  /* norm_start = clock(); */
+  /* for (int i=0; i<num_vals; i++) { */
+  /*   double rx = drand48();   */
+  /*   double x = rx*x_grid->start + (1.0-rx)*x_grid->end; */
+
+  /*   for (int j=0; j<num_splines; j++) */
+  /*     eval_NUBspline_1d_z (norm_splines[j], x, &(norm_vals[j])); */
+  /* } */
+  /* norm_end = clock(); */
+  dt = (double)(multi_end - multi_start) / (double)CLOCKS_PER_SEC;
+  multi_speed = (double)num_vals * (double)num_splines/ dt; 
+  fprintf (stderr, "1D complex nonuniform multi-spline speed = %9.2f\n",
+	   multi_speed);
+
 
  return 0;
 }

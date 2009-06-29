@@ -16,7 +16,7 @@ eval_multi_multi_UBspline_1d_s_cuda
 extern "C" void
 eval_multi_multi_UBspline_1d_s_vgl_cuda
 (multi_UBspline_1d_s_cuda *spline, float *pos_d, 
- float *vals_d[], float *grad_lapl_d[], int num, int row_stride);
+ float *vals_d[], float *grads_d[], float *lapl_d[], int num);
 
 // Double-precision real
 extern "C" void
