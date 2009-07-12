@@ -5,6 +5,173 @@
 #include "multi_bspline_create_cuda.h"
 
 
+__global__ static void
+eval_multi_multi_UBspline_1d_c_kernel
+(float *pos, float drInv, float *coefs, float **vals, 
+ uint dim, uint stride, int N)
+{
+  int tid   = threadIdx.x;
+  int ir    = blockIdx.x;
+
+  __shared__ float *ourval;
+  __shared__ float r;
+  if (tid == 0) {
+    r = pos[ir];
+    ourval = vals[ir];
+  }
+  __syncthreads();
+  
+  int index;
+  float t;
+  float s, sf;
+  float4 tp;
+
+  s = r * drInv;
+  sf = floor(s);
+  index = min(max(0,(int)sf), dim-1);
+  t = s - sf;
+  tp = make_float4(t*t*t, t*t, t, 1.0);
+
+  __shared__ float a[4];
+  if (tid < 4) 
+    a[tid] = Acuda[4*tid+0]*tp.x + Acuda[4*tid+1]*tp.y + Acuda[4*tid+2]*tp.z + Acuda[4*tid+3]*tp.w;
+  __syncthreads();
+
+  int numBlocks = 2*N / SPLINE_BLOCK_SIZE;
+  float *c = coefs + index*stride + tid;
+  float *myval = ourval + tid;
+  int stride2 = 2*stride;
+  int stride3 = 3*stride;
+  for (int block=0; block < numBlocks; block++) {
+     *myval = (a[0] * c[0] +
+	       a[1] * c[stride] +
+	       a[2] * c[stride2] +
+	       a[3] * c[stride3]);
+     myval += SPLINE_BLOCK_SIZE;    c += SPLINE_BLOCK_SIZE;
+  }
+      
+  int remainder = 2*N - numBlocks*SPLINE_BLOCK_SIZE;
+  if (tid < remainder) {
+    *myval = (a[0] * c[0] +
+	      a[1] * c[stride] +
+	      a[2] * c[stride2] +
+	      a[3] * c[stride3]);
+  }
+}
+
+extern "C" void
+eval_multi_multi_UBspline_1d_c_cuda (multi_UBspline_1d_c_cuda *spline,
+				     float *pos_d, float *vals_d[], int num)
+{
+  dim3 dimBlock(SPLINE_BLOCK_SIZE);
+  dim3 dimGrid(num);
+
+  eval_multi_multi_UBspline_1d_c_kernel<<<dimGrid,dimBlock>>>
+    (pos_d, spline->gridInv, (float*)spline->coefs, vals_d, spline->dim, spline->stride, spline->num_splines);
+
+  cudaThreadSynchronize();
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_1d_c_cuda:\n  %s\n",
+	     cudaGetErrorString(err));
+    abort();
+  }
+}
+
+
+
+
+
+__global__ static void
+eval_multi_multi_UBspline_1d_c_vgl_kernel
+(float *pos, float drInv, float *coefs, float **vals, 
+float **grads, float **lapl, 
+ uint dim, uint stride, int N)
+{
+  int tid   = threadIdx.x;
+  int ir    = blockIdx.x;
+
+  __shared__ float *ourval, *ourgrad, *ourlapl;
+  __shared__ float r;
+  if (tid == 0) {
+    r = pos[ir];
+    ourval = vals[ir];
+    ourgrad = grads[ir];
+    ourlapl = lapl[ir];
+  }
+  __syncthreads();
+  
+  int index;
+  float t;
+  float s, sf;
+  float4 tp;
+
+  s = r * drInv;
+  sf = floor(s);
+  index = min(max(0,(int)sf), dim-1);
+  t = s - sf;
+  tp = make_float4(t*t*t, t*t, t, 1.0);
+
+  __shared__ float a[12];
+  if (tid < 12) 
+    a[tid] = Acuda[4*tid+0]*tp.x + Acuda[4*tid+1]*tp.y + Acuda[4*tid+2]*tp.z + Acuda[4*tid+3]*tp.w;
+  __syncthreads();
+
+  int numBlocks = 2*N / SPLINE_BLOCK_SIZE;
+  float *c = coefs + index*stride + tid;
+  float *myval  = ourval + tid;
+  float *mygrad = ourgrad + tid;
+  float *mylapl = ourlapl + tid;
+  int stride2 = 2*stride;
+  int stride3 = 3*stride;
+  __shared__ float coef[SPLINE_BLOCK_SIZE][5];
+  for (int block=0; block < numBlocks; block++) {
+    coef[tid][0] = c[0];
+    coef[tid][1] = c[stride];
+    coef[tid][2] = c[stride2];
+    coef[tid][3] = c[stride3];
+    *myval = (a[0] * coef[tid][0]   + a[1] * coef[tid][1] +
+	      a[2] * coef[tid][2]   + a[3] * coef[tid][3]);
+    *mygrad = (a[4] * coef[tid][0]  + a[5] * coef[tid][1] +
+	       a[6] * coef[tid][2]  + a[7] * coef[tid][3]);
+    *mylapl = (a[8] * coef[tid][0]  + a[9] * coef[tid][1] +
+	       a[10] * coef[tid][2] + a[11]* coef[tid][3]);
+    myval  += SPLINE_BLOCK_SIZE;    
+    mygrad += SPLINE_BLOCK_SIZE;    
+    mylapl += SPLINE_BLOCK_SIZE;    
+    c += SPLINE_BLOCK_SIZE;
+  }
+      
+  int remainder = 2*N - numBlocks*SPLINE_BLOCK_SIZE;
+  if (tid < remainder) {
+    *myval = (a[0] * c[0] +
+	      a[1] * c[stride] +
+	      a[2] * c[stride2] +
+	      a[3] * c[stride3]);
+  }
+}
+
+extern "C" void
+eval_multi_multi_UBspline_1d_c_vgl_cuda (multi_UBspline_1d_c_cuda *spline,
+					 float *pos_d, float *vals_d[], 
+					 float *grads_d[], float *lapl_d[], int num)
+{
+  dim3 dimBlock(SPLINE_BLOCK_SIZE);
+  dim3 dimGrid(num);
+
+  eval_multi_multi_UBspline_1d_c_vgl_kernel<<<dimGrid,dimBlock>>>
+    (pos_d, spline->gridInv, (float*)spline->coefs, vals_d, grads_d, lapl_d,
+     spline->dim, spline->stride, spline->num_splines);
+
+  cudaThreadSynchronize();
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "CUDA error in eval_multi_multi_UBspline_1d_c_cuda:\n  %s\n",
+	     cudaGetErrorString(err));
+    abort();
+  }
+}
+
 
 
 __global__ static void

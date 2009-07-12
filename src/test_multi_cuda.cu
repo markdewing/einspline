@@ -611,8 +611,7 @@ test_complex_double()
 
 
 
-main()
-{
+main() {
   fprintf(stderr, "Testing 1D single-precision real routines:\n");
   test_float_1d();
   fprintf(stderr, "Testing 3D single-precision real routines:\n");
