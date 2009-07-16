@@ -43,7 +43,7 @@ if test "x$enable_cuda" = "xyes"; then
    NVCC="nvcc"
    NVCCFLAGS="-DNO_CUDA_MAIN -g -O3 -arch sm_13 -Drestrict=__restrict__"
    CUDA_LIBS="-L/usr/local/cuda/lib -lcudart"
-   LIBS="$LIBS -L/usr/local/cuda/lib -lcudart"
+#   LIBS="$LIBS -L/usr/local/cuda/lib -lcudart"
 fi
 ########################
 # Check for CUDA
@@ -54,11 +54,15 @@ if test "x$with_cuda" != "x"; then
   CUDA_CFLAGS="-I$with_cuda/include"
   CUDA_LIBS="-L$with_cuda/lib -lcudart"
   NVCC="$with_cuda/bin/nvcc"
+  LIBS="$LIBS $CUDA_LIBS"
 elseif test "$enable_cuda" = "yes"
   CUDA_CFLAGS="-I/usr/local/cuda/include"
   CUDA_LIBS="-L/usr/local/cuda/lib -lcudart"
   NVCC="nvcc"
 fi
+
+LIBS="$LIBS $CUDA_LIBS"
+
 NVCCFLAGS="-DNO_CUDA_MAIN -O3 -use_fast_math -g -arch sm_13 -Drestrict=__restrict__" 
 AC_SUBST(CUDA_CFLAGS)
 AC_SUBST(CUDA_LIBS)
