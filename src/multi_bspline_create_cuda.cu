@@ -49,6 +49,10 @@ create_multi_UBspline_1d_s_cuda (multi_UBspline_1d_s* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   float *spline_buff = (float*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
 
   for (int ix=0; ix<Nx; ix++)
     for (int isp=0; isp<spline->num_splines; isp++) 
@@ -99,6 +103,11 @@ create_multi_UBspline_1d_s_cuda_conv (multi_UBspline_1d_d* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   float *spline_buff = (float*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
+
 
   for (int ix=0; ix<Nx; ix++)
     for (int isp=0; isp<spline->num_splines; isp++) 
@@ -150,6 +159,11 @@ create_multi_UBspline_1d_c_cuda (multi_UBspline_1d_c* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   complex_float *spline_buff = (complex_float*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
+
 
   for (int ix=0; ix<Nx; ix++)
     for (int isp=0; isp<spline->num_splines; isp++) 
@@ -200,6 +214,11 @@ create_multi_UBspline_1d_c_cuda_conv (multi_UBspline_1d_z* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   complex_float *spline_buff = (complex_float*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
+
 
   for (int ix=0; ix<Nx; ix++)
     for (int isp=0; isp<spline->num_splines; isp++) 
@@ -262,6 +281,11 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   std::complex<float> *spline_buff = (std::complex<float>*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
+
 
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
@@ -340,6 +364,11 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   std::complex<float> *spline_buff = (std::complex<float>*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
+
 
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
@@ -422,6 +451,11 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   float *spline_buff = (float*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
+
 
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
@@ -472,7 +506,7 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 
   int N = spline->num_splines;
   if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+    N += SPLINE_BLOCK_SIZE - (N%SPLINE_BLOCK_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
@@ -494,8 +528,11 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 	     size, cudaGetErrorString(err));
     abort();
   }
-  
   float *spline_buff = (float*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
       for (int iz=0; iz<Nz; iz++) 
@@ -574,6 +611,10 @@ create_multi_UBspline_3d_d_cuda (multi_UBspline_3d_d* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   double *spline_buff = (double*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
 
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
@@ -643,6 +684,11 @@ create_multi_UBspline_3d_z_cuda (multi_UBspline_3d_z* spline)
   cudaMalloc((void**)&(cuda_spline->coefs), size);
   
   std::complex<double> *spline_buff = (std::complex<double>*)malloc(size);
+  if (!spline_buff) {
+    fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
+    abort();
+  }
+
 
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)

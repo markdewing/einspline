@@ -60,6 +60,7 @@ test_float_1d()
   // Setup walker positions
   cudaMalloc((void**)&(r_d),     numWalkers*sizeof(float));
   cudaMallocHost((void**)&(r_h), numWalkers*sizeof(float));
+  fprintf (stderr, "r_h = %p\n", r_h);
 
   for (int ir=0; ir<numWalkers; ir++) 
     r_h[ir] = 0.5*drand48();
