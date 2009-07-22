@@ -23,7 +23,9 @@
 
 #include <xmmintrin.h>
 #include <emmintrin.h>
+#ifdef HAVE_SSE3
 #include <pmmintrin.h>
+#endif
 #include <stdio.h>
 #include <math.h>
 

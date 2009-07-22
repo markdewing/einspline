@@ -23,7 +23,9 @@
 
 #include <xmmintrin.h>
 #include <emmintrin.h>
-#include <pmmintrin.h>
+#ifdef HAVE_SSE3
+  #include <pmmintrin.h>
+#endif
 #include <math.h>
 
 extern __m128d *restrict A_d;

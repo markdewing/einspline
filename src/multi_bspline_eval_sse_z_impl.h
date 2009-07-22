@@ -23,7 +23,9 @@
 
 #include <xmmintrin.h>
 #include <emmintrin.h>
-#include <pmmintrin.h>
+#ifdef HAVE_SSE3
+  #include <pmmintrin.h>
+#endif
 #include <math.h>
 #include "bspline_base.h"
 #include "multi_bspline_structs.h"
