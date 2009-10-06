@@ -7,15 +7,15 @@
 // 2D //
 ////////
 
-typedef struct
-{
-  double x,y,z;
-} double3;
+// typedef struct
+// {
+//   double x,y,z;
+// } double3;
 
-typedef struct
-{
-  double x,y,z,w;
-} double4;
+// typedef struct
+// {
+//   double x,y,z,w;
+// } double4;
 
 typedef struct
 {

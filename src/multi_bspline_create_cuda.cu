@@ -194,6 +194,12 @@ create_multi_UBspline_1d_c_cuda_conv (multi_UBspline_1d_z* spline)
 		         0.0,      0.0,      1.0,     0.0 };
 
   cudaMemcpyToSymbol(Acuda, A_h, 48*sizeof(float), 0, cudaMemcpyHostToDevice);
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "Error copying A matrix to GPU constant memory:  Erorr = %s\n",
+	     cudaGetErrorString(err));
+    abort();
+  }
 
   multi_UBspline_1d_c_cuda *cuda_spline =
     (multi_UBspline_1d_c_cuda*) malloc (sizeof (multi_UBspline_1d_c_cuda));
@@ -362,7 +368,13 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
   size_t size = Nx*Ny*Nz*N*sizeof(std::complex<float>);
 
   cudaMalloc((void**)&(cuda_spline->coefs), size);
-  
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "Failed to allocate %ld memory for GPU spline coefficients.  Error %s\n",
+	     size, cudaGetErrorString(err));
+    abort();
+  }
+ 
   std::complex<float> *spline_buff = (std::complex<float>*)malloc(size);
   if (!spline_buff) {
     fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
@@ -390,7 +402,13 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
 	
 
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
-
+  cudaThreadSynchronize();
+  err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    fprintf (stderr, "Failed to copy spline to GPU memory.  Error:  %s\n",
+	     cudaGetErrorString(err));
+    abort();
+  }
   free(spline_buff);
 
   cuda_spline->stride.x = 2*Ny*Nz*N;
@@ -480,6 +498,7 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
 extern "C" multi_UBspline_3d_s_cuda*
 create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 {
+  fprintf (stderr, "In create_multi_UBspline_3d_s_cuda_conv.\n");
   float A_h[48] = { -1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
 		     3.0/6.0, -6.0/6.0,  0.0/6.0, 4.0/6.0,
 		    -3.0/6.0,  3.0/6.0,  3.0/6.0, 1.0/6.0,
@@ -533,6 +552,7 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
     fprintf (stderr, "Failed to allocate memory for temporary spline buffer.\n");
     abort();
   }
+
   for (int ix=0; ix<Nx; ix++)
     for (int iy=0; iy<Ny; iy++)
       for (int iz=0; iz<Nz; iz++) 
@@ -550,6 +570,7 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
 	  //    	     ix,iy,iz,isp);
 	}
   cudaMemcpy(cuda_spline->coefs, spline_buff, size, cudaMemcpyHostToDevice);
+  cudaThreadSynchronize();
   err = cudaGetLastError();
   if (err != cudaSuccess) {
     fprintf (stderr, "Failed to copy spline to GPU memory.  Error:  %s\n",

@@ -2,6 +2,7 @@
 #define MULTI_BSPLINE_STRUCTS_CUDA_H
 
 #define SPLINE_BLOCK_SIZE 64
+#include "bspline_base.h"
 
 ////////
 // 1D //
@@ -45,16 +46,6 @@ typedef struct
 ////////
 // 2D //
 ////////
-
-typedef struct
-{
-  double x,y,z;
-} double3;
-
-typedef struct
-{
-  double x,y,z,w;
-} double4;
 
 typedef struct
 {

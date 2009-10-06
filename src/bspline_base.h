@@ -54,6 +54,17 @@ typedef enum { U1D       , U2D       , U3D      ,
 typedef enum { SINGLE_REAL, DOUBLE_REAL, SINGLE_COMPLEX, DOUBLE_COMPLEX }
   type_code;
 
+typedef struct
+{
+  double x,y,z;
+} double3;
+
+typedef struct
+{
+  double x,y,z,w;
+} double4;
+
+
 typedef struct 
 {
   bc_code lCode, rCode;
