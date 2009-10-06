@@ -56,6 +56,7 @@ create_multi_UBspline_2d_z_cuda (multi_UBspline_2d_z* spline);
 ////////
 // 3D //
 ////////
+
 extern "C" multi_UBspline_3d_s_cuda*
 create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline);
 

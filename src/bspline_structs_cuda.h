@@ -52,7 +52,7 @@ typedef struct
 typedef struct
 {
   float *coefs;
-  uint2 stride;
+  uint3 stride;
   float3 gridInv;
   uint3 dim;
 } UBspline_3d_s_cuda;
@@ -60,7 +60,7 @@ typedef struct
 typedef struct
 {
   complex_float *coefs;
-  uint2 stride;
+  uint3 stride;
   float3 gridInv;
   uint3 dim;
 } UBspline_3d_c_cuda;
@@ -68,7 +68,7 @@ typedef struct
 typedef struct
 {
   double *coefs;
-  uint2 stride;
+  uint3 stride;
   double3 gridInv;
   uint3 dim;
 } UBspline_3d_d_cuda;
@@ -76,7 +76,7 @@ typedef struct
 typedef struct
 {
   complex_double *coefs;
-  uint2 stride;
+  uint3 stride;
   double3 gridInv;
   uint3 dim;
 } UBspline_3d_z_cuda;

@@ -177,6 +177,7 @@ create_UBspline_3d_s_cuda (UBspline_3d_s* spline)
 
   cuda_spline->stride.x = Ny*N;
   cuda_spline->stride.y = N;
+  cuda_spline->stride.z = 1;
 
   cuda_spline->gridInv.x = spline->x_grid.delta_inv;
   cuda_spline->gridInv.y = spline->y_grid.delta_inv;
@@ -236,6 +237,7 @@ create_UBspline_3d_s_cuda_conv (UBspline_3d_d* spline)
   int N = ((Nz+31)/32)*32;
   cuda_spline->stride.x = Ny*N;
   cuda_spline->stride.y = N;
+  cuda_spline->stride.z = 1;
 
   cuda_spline->gridInv.x = spline->x_grid.delta_inv;
   cuda_spline->gridInv.y = spline->y_grid.delta_inv;
@@ -306,6 +308,7 @@ create_UBspline_3d_d_cuda (UBspline_3d_d* spline)
   int N = ((Nz+31)/32)*32;
   cuda_spline->stride.x = Ny*N;
   cuda_spline->stride.y = N;
+  cuda_spline->stride.z = 1;
 
   cuda_spline->gridInv.x = spline->x_grid.delta_inv;
   cuda_spline->gridInv.y = spline->y_grid.delta_inv;
@@ -364,7 +367,8 @@ create_UBspline_3d_z_cuda (UBspline_3d_z* spline)
 
   int N = ((Nz+31)/32)*32;
   cuda_spline->stride.x = Ny*N;
-  cuda_spline->stride.y = N;
+  cuda_spline->stride.y = N;  
+  cuda_spline->stride.z = 1;
 
   cuda_spline->gridInv.x = spline->x_grid.delta_inv;
   cuda_spline->gridInv.y = spline->y_grid.delta_inv;
@@ -391,6 +395,7 @@ create_UBspline_3d_z_cuda (UBspline_3d_z* spline)
 
   cuda_spline->stride.x = 2*Ny*N;
   cuda_spline->stride.y = 2*N;
+  cuda_spline->stride.z = 2;
 
   free(spline_buff);
 
