@@ -339,20 +339,35 @@ eval_multi_multi_UBspline_3d_c_vgh_kernel
     for (int i=0; i<4; i++) {
       for (int j=0; j<4; j++) {
 	float *base = b0 + i*strides.x + j*strides.y;
-	for (int k=0; k<4; k++) {
-	  float c  = base[k*strides.z];
-	  v   += abc[n+0] * c;
-	  g0  += abc[n+64] * c;
-	  g1  += abc[n+128] * c;
-	  g2  += abc[n+192] * c;
-	  h00 += abc[n+256] * c;
-	  h01 += abc[n+320] * c;
-	  h02 += abc[n+384] * c;
-	  h11 += abc[n+448] * c;
-	  h12 += abc[n+512] * c;
-	  h22 += abc[n+576] * c;
-	  n += 1;
-	}
+	float c0  = base[0*strides.z];
+	float c1  = base[1*strides.z];
+	float c2  = base[2*strides.z];
+	float c3  = base[3*strides.z];
+	v   += abc[n+  0]*c0 + abc[n+  1]*c1  + abc[n+  2]*c2  + abc[n+  3]*c3;
+	g0  += abc[n+ 64]*c0 + abc[n+ 65]*c1  + abc[n+ 66]*c2  + abc[n+ 67]*c3;
+	g1  += abc[n+128]*c0 + abc[n+129]*c1  + abc[n+130]*c2  + abc[n+131]*c3;
+	g2  += abc[n+192]*c0 + abc[n+193]*c1  + abc[n+194]*c2  + abc[n+195]*c3;
+	h00 += abc[n+256]*c0 + abc[n+257]*c1  + abc[n+258]*c2  + abc[n+259]*c3;
+	h01 += abc[n+320]*c0 + abc[n+321]*c1  + abc[n+322]*c2  + abc[n+323]*c3;
+	h02 += abc[n+384]*c0 + abc[n+385]*c1  + abc[n+386]*c2  + abc[n+387]*c3;
+	h11 += abc[n+448]*c0 + abc[n+449]*c1  + abc[n+450]*c2  + abc[n+451]*c3;
+	h12 += abc[n+512]*c0 + abc[n+513]*c1  + abc[n+514]*c2  + abc[n+515]*c3;
+	h22 += abc[n+576]*c0 + abc[n+577]*c1  + abc[n+578]*c2  + abc[n+579]*c3;
+	n += 4;
+	// for (int k=0; k<4; k++) {
+	//   float c  = base[k*strides.z];
+	//   v   += abc[n+0] * c;
+	//   g0  += abc[n+64] * c;
+	//   g1  += abc[n+128] * c;
+	//   g2  += abc[n+192] * c;
+	//   h00 += abc[n+256] * c;
+	//   h01 += abc[n+320] * c;
+	//   h02 += abc[n+384] * c;
+	//   h11 += abc[n+448] * c;
+	//   h12 += abc[n+512] * c;
+	//   h22 += abc[n+576] * c;
+	//   n += 1;
+	// }
       }
     }
     g0 *= drInv.x; 
@@ -532,20 +547,35 @@ eval_multi_multi_UBspline_3d_c_vgl_kernel
     for (int i=0; i<4; i++) {
       for (int j=0; j<4; j++) {
 	float *base = b0 + i*strides.x + j*strides.y;
-	for (int k=0; k<4; k++) {
-	  float c  = base[k*strides.z];
-	  v   += abc[n+  0] * c;
-	  g0  += abc[n+ 64] * c;
-	  g1  += abc[n+128] * c;
-	  g2  += abc[n+192] * c;
-	  h00 += abc[n+256] * c;
-	  h01 += abc[n+320] * c;
-	  h02 += abc[n+384] * c;
-	  h11 += abc[n+448] * c;
-	  h12 += abc[n+512] * c;
-	  h22 += abc[n+576] * c;
-	  n += 1;
-	}
+	float c0  = base[0*strides.z];
+	float c1  = base[1*strides.z];
+	float c2  = base[2*strides.z];
+	float c3  = base[3*strides.z];
+	v   += abc[n+  0]*c0 + abc[n+  1]*c1  + abc[n+  2]*c2  + abc[n+  3]*c3;
+	g0  += abc[n+ 64]*c0 + abc[n+ 65]*c1  + abc[n+ 66]*c2  + abc[n+ 67]*c3;
+	g1  += abc[n+128]*c0 + abc[n+129]*c1  + abc[n+130]*c2  + abc[n+131]*c3;
+	g2  += abc[n+192]*c0 + abc[n+193]*c1  + abc[n+194]*c2  + abc[n+195]*c3;
+	h00 += abc[n+256]*c0 + abc[n+257]*c1  + abc[n+258]*c2  + abc[n+259]*c3;
+	h01 += abc[n+320]*c0 + abc[n+321]*c1  + abc[n+322]*c2  + abc[n+323]*c3;
+	h02 += abc[n+384]*c0 + abc[n+385]*c1  + abc[n+386]*c2  + abc[n+387]*c3;
+	h11 += abc[n+448]*c0 + abc[n+449]*c1  + abc[n+450]*c2  + abc[n+451]*c3;
+	h12 += abc[n+512]*c0 + abc[n+513]*c1  + abc[n+514]*c2  + abc[n+515]*c3;
+	h22 += abc[n+576]*c0 + abc[n+577]*c1  + abc[n+578]*c2  + abc[n+579]*c3;
+	n += 4;
+	// for (int k=0; k<4; k++) {
+	//   float c  = base[k*strides.z];
+	//   v   += abc[n+  0] * c;
+	//   g0  += abc[n+ 64] * c;
+	//   g1  += abc[n+128] * c;
+	//   g2  += abc[n+192] * c;
+	//   h00 += abc[n+256] * c;
+	//   h01 += abc[n+320] * c;
+	//   h02 += abc[n+384] * c;
+	//   h11 += abc[n+448] * c;
+	//   h12 += abc[n+512] * c;
+	//   h22 += abc[n+576] * c;
+	//   n += 1;
+	// }
       }
     }
     g0 *= drInv.x; 
