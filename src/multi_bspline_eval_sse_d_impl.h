@@ -69,6 +69,7 @@ do {                                                                  \
 /*********************************************************/
 /* 1D double-precision, real evaulation functions        */
 /*********************************************************/
+#include <stdio.h>
 void
 eval_multi_UBspline_1d_d (multi_UBspline_1d_d *spline,
 			  double x,
@@ -87,6 +88,14 @@ eval_multi_UBspline_1d_d (multi_UBspline_1d_d *spline,
   a[1]  = (Ad[ 4]*tpx[0] + Ad[ 5]*tpx[1] + Ad[ 6]*tpx[2] + Ad[ 7]*tpx[3]);
   a[2]  = (Ad[ 8]*tpx[0] + Ad[ 9]*tpx[1] + Ad[10]*tpx[2] + Ad[11]*tpx[3]);
   a[3]  = (Ad[12]*tpx[0] + Ad[13]*tpx[1] + Ad[14]*tpx[2] + Ad[15]*tpx[3]);
+
+  // fprintf (stderr, "ux = %12.8f\n", ux);
+  // fprintf (stderr, "ipart = %ix  tx = %12.7f\n", ix, tx);
+  // fprintf (stderr, "a[0] = %1.8e\n", a[0]);
+  // fprintf (stderr, "a[1] = %1.8e\n", a[1]);
+  // fprintf (stderr, "a[2] = %1.8e\n", a[2]);
+  // fprintf (stderr, "a[3] = %1.8e\n", a[3]);
+  // fprintf (stderr, "tpx[0] = %1.8e\n", tpx[0]);
 
   intptr_t xs = spline->x_stride;
 

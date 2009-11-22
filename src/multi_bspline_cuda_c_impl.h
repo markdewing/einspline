@@ -602,9 +602,9 @@ eval_multi_multi_UBspline_3d_c_vgl_kernel
     G[i0][i1] = Linv[threadIdx.x];
   __syncthreads();
   if (threadIdx.x < 9)   
-    GGt[i0][i1] = (G[i0][0]*G[i1][0] + 
-		   G[i0][1]*G[i1][1] + 
-		   G[i0][2]*G[i1][2]);
+    GGt[i0][i1] = (G[0][i0]*G[0][i1] + 
+		   G[1][i0]*G[1][i1] + 
+		   G[2][i0]*G[2][i1]);
 
   __syncthreads();
   if (off < 2*N) {
