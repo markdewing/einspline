@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-AC_INIT(einspline, 0.9.1, esler@uiuc.edu, einspline)
-AM_INIT_AUTOMAKE(einspline, 0.9.1)
+AC_INIT(einspline, 0.9.2, esler@uiuc.edu, einspline)
+AM_INIT_AUTOMAKE(einspline, 0.9.2)
 AC_CONFIG_SRCDIR([src/bspline.h])
 AC_CONFIG_HEADER([src/config.h])
 
@@ -10,7 +10,6 @@ AC_CONFIG_HEADER([src/config.h])
 # Checks for programs.
 AC_PROG_CC_STDC
 AC_PROG_CXX
-AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG
 
 # Optimal compiler flags
@@ -18,10 +17,23 @@ AX_CC_MAXOPT
 AX_CXX_MAXOPT
 AC_CXX_RESTRICT
 
+
+
 AC_ARG_ENABLE(fortran, AC_HELP_STRING([--disable-fortran],[disable fortran bindings]))
 if test "x$enable_fortran" != "xno"; then
+   AC_MSG_RESULT([*************** Enabling F77! ***************])
    AX_F77_MAXOPT
 fi
+
+#if test "x$enable_fortran" = "xyes"; then
+   m4_defun([_LT_AC_LANG_F77_CONFIG], [:])
+#fi
+
+
+AC_PROG_LIBTOOL
+
+AC_MSG_RESULT([enable_foratran = $enable_fortran])
+
 AM_CONDITIONAL([WANT_FORTRAN], [test "$enable_fortran" != "no"])
 
 AC_CHECK_LIB([m], [sqrt])
@@ -89,9 +101,9 @@ AC_SUBST(PTHREAD_FLAG)
 # Compile with -openmp
 AC_ARG_ENABLE(openmp, AC_HELP_STRING([--enable-openmp], [compile with -openmp]))
 if test "x$enable_openmp" = "xyes"; then
-   CFLAGS="$CFLAGS -openmp"
-   CXXFLAGS="$CXXFLAGS -openmp"
-   OPENMP_FLAG="-openmp"
+   CFLAGS="$CFLAGS -fopenmp"
+   CXXFLAGS="$CXXFLAGS -fopenmp"
+   OPENMP_FLAG="-fopenmp"
 else
    OPENMP_FLAG=""
 fi
@@ -179,10 +191,12 @@ if test "x$enable_debug" = "xyes"; then
    FFLAGS="-DDEBUG $FFLAGS"
 fi
 
-
-AC_F77_WRAPPERS
-AC_F77_LIBRARY_LDFLAGS
-AC_F77_DUMMY_MAIN
+if test "x$enable_fortran" != "xno"; then
+  AC_MSG_RESULT([*************** Enabling F77! ***************])
+  AC_F77_WRAPPERS
+  AC_F77_LIBRARY_LDFLAGS
+  AC_F77_DUMMY_MAIN
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
