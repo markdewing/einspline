@@ -104,6 +104,7 @@ if test "x$enable_openmp" = "xyes"; then
    CFLAGS="$CFLAGS -fopenmp"
    CXXFLAGS="$CXXFLAGS -fopenmp"
    OPENMP_FLAG="-fopenmp"
+   LIBS="$LIBS -lnuma"
 else
    OPENMP_FLAG=""
 fi

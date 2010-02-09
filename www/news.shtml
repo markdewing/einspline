@@ -7,6 +7,10 @@
 
 <body bgcolor=#FFFFD0>
 <!--#include virtual="header.shtml" -->
+<h2> 1/28/90 </h2>
+For the past few releases, einspline has included optional routines which
+run on NVIDIA GPUs via CUDA.  Because of the high memory bandwidth available
+on graphics cards, these routines may run 10x - 20x faster than on CPUs.
 <h2> 1/18/08 </h2>
 Releasing einspline-0.8.0.  This release contains new functions which, for a 
 given evaluation point, evaluate a whole set of splines with a single

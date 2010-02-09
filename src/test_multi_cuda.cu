@@ -4,7 +4,6 @@
 #include "multi_bspline_eval_cuda.h"
 
 
-
 void
 test_float_1d()
 {
@@ -115,14 +114,14 @@ test_float_1d()
 void
 test_float()
 {
-  int numWalkers = 1000;
+  int numWalkers = 512;
   float *vals[numWalkers], *grads[numWalkers], *hess[numWalkers];
   float *coefs, __device__ **vals_d, **grads_d, **hess_d;
   float *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
 
-  N = 128;
+  N = 256;
   Nx = Ny = Nz = 32;
   xs = Ny*Nz*N;
   ys = Nz*N;
@@ -613,14 +612,14 @@ test_complex_double()
 
 
 main() {
-  fprintf(stderr, "Testing 1D single-precision real routines:\n");
-  test_float_1d();
+  // fprintf(stderr, "Testing 1D single-precision real routines:\n");
+  // test_float_1d();
   fprintf(stderr, "Testing 3D single-precision real routines:\n");
   test_float();
-  fprintf(stderr, "Testing 3D single-precision complex routines:\n");
-  test_complex_float();
-  fprintf(stderr, "Testing 3D double-precision real routines:\n");
-  test_double();
-  fprintf(stderr, "Testing 3D double-precision complex routines:\n");
-  test_complex_double();
+  // fprintf(stderr, "Testing 3D single-precision complex routines:\n");
+  // test_complex_float();
+  // fprintf(stderr, "Testing 3D double-precision real routines:\n");
+  // test_double();
+  // fprintf(stderr, "Testing 3D double-precision complex routines:\n");
+  // test_complex_double();
 }
