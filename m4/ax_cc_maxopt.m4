@@ -82,6 +82,7 @@ if test "$ac_test_CFLAGS" != "set"; then
 	      case $ax_cv_gcc_x86_cpuid_0 in # see AX_GCC_ARCHFLAG
                 *:756e6547:*:*) # Intel
                   case $ax_cv_gcc_x86_cpuid_1 in
+                    106a?:*:*:*) icc_flags="-xSSE4.2";;
                     1067?:*:*:*) icc_flags="-xS";;
                     *6a?:*[[234]]:*:*|*6[[789b]]?:*:*:*) icc_flags="-xK";;
                     *6f?:*:*:*) icc_flags="-xT";;
