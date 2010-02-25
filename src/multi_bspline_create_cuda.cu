@@ -11,6 +11,7 @@ __constant__ float  Acuda[48];
 #include "multi_bspline_cuda_d_impl.h"
 #include "multi_bspline_cuda_z_impl.h"
 
+#define COALLESCED_SIZE 16
 
 extern "C" multi_UBspline_1d_s_cuda*
 create_multi_UBspline_1d_s_cuda (multi_UBspline_1d_s* spline)
@@ -38,8 +39,8 @@ create_multi_UBspline_1d_s_cuda (multi_UBspline_1d_s* spline)
   int Nx = spline->x_grid.num+3;
   int N = spline->num_splines;
 
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride = N;
   cuda_spline->gridInv = spline->x_grid.delta_inv;
   cuda_spline->dim = spline->x_grid.num;
@@ -92,8 +93,8 @@ create_multi_UBspline_1d_s_cuda_conv (multi_UBspline_1d_d* spline)
   int Nx = spline->x_grid.num+3;
   int N = spline->num_splines;
 
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride = N;
   cuda_spline->gridInv = spline->x_grid.delta_inv;
   cuda_spline->dim = spline->x_grid.num;
@@ -148,8 +149,8 @@ create_multi_UBspline_1d_c_cuda (multi_UBspline_1d_c* spline)
   int Nx = spline->x_grid.num+3;
   int N = spline->num_splines;
 
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride = N;
   cuda_spline->gridInv = spline->x_grid.delta_inv;
   cuda_spline->dim = spline->x_grid.num;
@@ -209,8 +210,8 @@ create_multi_UBspline_1d_c_cuda_conv (multi_UBspline_1d_z* spline)
   int Nx = spline->x_grid.num+3;
   int N = spline->num_splines;
 
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride = N;
   cuda_spline->gridInv = spline->x_grid.delta_inv;
   cuda_spline->dim = spline->x_grid.num;
@@ -268,8 +269,8 @@ create_multi_UBspline_3d_c_cuda (multi_UBspline_3d_c* spline)
   int Nz = spline->z_grid.num+3;
 
   int N = spline->num_splines;
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
@@ -351,8 +352,8 @@ create_multi_UBspline_3d_c_cuda_conv (multi_UBspline_3d_z* spline)
   int Nz = spline->z_grid.num+3;
 
   int N = spline->num_splines;
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
@@ -450,8 +451,8 @@ create_multi_UBspline_3d_s_cuda (multi_UBspline_3d_s* spline)
   int Nz = spline->z_grid.num+3;
 
   int N = spline->num_splines;
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
@@ -524,8 +525,8 @@ create_multi_UBspline_3d_s_cuda_conv (multi_UBspline_3d_d* spline)
   int Nz = spline->z_grid.num+3;
 
   int N = spline->num_splines;
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += SPLINE_BLOCK_SIZE - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
@@ -613,8 +614,8 @@ create_multi_UBspline_3d_d_cuda (multi_UBspline_3d_d* spline)
   int Nz = spline->z_grid.num+3;
 
   int N = spline->num_splines;
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += SPLINE_BLOCK_SIZE - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
@@ -685,8 +686,8 @@ create_multi_UBspline_3d_z_cuda (multi_UBspline_3d_z* spline)
   int Nz = spline->z_grid.num+3;
 
   int N = spline->num_splines;
-  if ((N%SPLINE_BLOCK_SIZE) != 0)
-    N += 64 - (N%SPLINE_BLOCK_SIZE);
+  if ((N%COALLESCED_SIZE) != 0)
+    N += COALLESCED_SIZE - (N%COALLESCED_SIZE);
   cuda_spline->stride.x = Ny*Nz*N;
   cuda_spline->stride.y = Nz*N;
   cuda_spline->stride.z = N;
