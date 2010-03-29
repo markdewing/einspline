@@ -242,11 +242,12 @@ eval_multi_multi_UBspline_3d_s_kernel
 
   if (off < N) {
     float val = 0.0;
-    for (int i=0; i<4; i++) {
-      for (int j=0; j<4; j++) {
-	float *base = coefs + (index.x+i)*strides.x + (index.y+j)*strides.y + index.z*strides.z;
-	for (int k=0; k<4; k++) 
-	  val += abc[16*i+4*j+k] * base[off+k*strides.z];
+    for (unsigned i=0; i<4; i++) {
+      float *base = coefs + (index.x+i)*strides.x + (index.y)*strides.y + index.z*strides.z + off;
+      for (unsigned j=0; j<4; j++) {
+	for (unsigned k=0; k<4; k++) 
+	  val += abc[16*i+4*j+k] * base[k*strides.z];
+	base += strides.y;
       }
     }
     myval[off] = val;
@@ -420,8 +421,8 @@ eval_multi_multi_UBspline_3d_s_vgh_kernel
   int n = 0;
   float *b0 = coefs + index.x*strides.x + index.y*strides.y + index.z*strides.z + off;
   if (off < N) {
-    for (int i=0; i<4; i++) {
-      for (int j=0; j<4; j++) {
+    for (unsigned i=0; i<4; i++) {
+      for (unsigned j=0; j<4; j++) {
 	float *base = b0 + i*strides.x + j*strides.y;
 	float c0  = base[0*strides.z];
 	float c1  = base[1*strides.z];
