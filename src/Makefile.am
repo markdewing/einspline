@@ -16,13 +16,18 @@ if WANT_BLIPS
 endif
 
 if HAVE_CUDA
-   MAYBE_CUDA = multi_bspline_create_cuda.cu \
+   MAYBE_CUDA = bspline_base_cuda.h          \
+                multi_bspline_create_cuda.cu \
                 multi_bspline_cuda_s_impl.h  \
                 multi_bspline_cuda_c_impl.h  \
                 multi_bspline_cuda_d_impl.h  \
                 multi_bspline_cuda_z_impl.h  \
                 multi_bspline_eval_cuda.h    \
+                bspline_base_cuda.h          \
+                bspline_eval_cuda.h          \
                 bspline_structs_cuda.h       \
+                bspline_create_cuda.h        \
+                bspline_cuda_s_impl.h        \
                 bspline_create_cuda.cu
    CHECK_CUDA = test_multi_cuda
    test_multi_cuda_SOURCES = test_multi_cuda.cu
@@ -171,6 +176,6 @@ include_HEADERS = bspline_base.h bspline_create.h bspline_eval_sse_c.h        \
                   multi_bspline_structs_cuda.h multi_bspline_create_cuda.h    \
                   multi_bspline_eval_cuda.h bspline_eval_cuda.h               \
 		  bspline_structs_cuda.h bspline_create_cuda.h                \
-                  config.h
+	          bspline_base_cuda.h config.h
 
 EXTRA_DIST = multi_bspline_eval_cuda_c.cu

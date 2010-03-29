@@ -1,22 +1,9 @@
 #ifndef BSPLINE_STRUCTS_CUDA_H
 #define BSPLINE_STRUCTS_CUDA_H
 
-#include <cuda.h>
+#include "bspline_base_cuda.h"
 
 #define SPLINE_BLOCK_SIZE 64
-
-
-#if CUDA_VERSION!=3000 /* 3.0 */
-typedef struct
-{
-  double x,y,z;
-} double3;
-
-typedef struct
-{
-  double x,y,z,w;
-} double4;
-#endif
 
 ////////
 // 2D //

@@ -2,7 +2,11 @@
 #define MULTI_BSPLINE_STRUCTS_CUDA_H
 
 #define SPLINE_BLOCK_SIZE 64
+
 #include "bspline_base.h"
+#include "bspline_base_cuda.h"
+
+
 
 ////////
 // 1D //
