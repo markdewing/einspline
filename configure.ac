@@ -54,7 +54,7 @@ AM_CONDITIONAL([HAVE_CUDA], [test "$enable_cuda" = "yes"])
 if test "x$enable_cuda" = "xyes"; then
    NVCC="nvcc"
    NVCCFLAGS="-DNO_CUDA_MAIN -g -O3 -arch sm_13 -Drestrict=__restrict__"
-   CUDA_LIBS="-L/usr/local/cuda/lib -lcudart"
+   CUDA_LIBS="-L/usr/local/cuda/lib64 -lcudart"
 #   LIBS="$LIBS -L/usr/local/cuda/lib -lcudart"
 fi
 ########################
@@ -64,7 +64,7 @@ AC_ARG_WITH([cuda],
     [  --with-cuda=PATH        prefix where cuda is installed [default=auto]])
 if test "x$with_cuda" != "x"; then
   CUDA_CFLAGS="-I$with_cuda/include"
-  CUDA_LIBS="-L$with_cuda/lib -lcudart"
+  CUDA_LIBS="-L$with_cuda/lib64 -lcudart"
   NVCC="$with_cuda/bin/nvcc"
   LIBS="$LIBS $CUDA_LIBS"
 elseif test "$enable_cuda" = "yes"
