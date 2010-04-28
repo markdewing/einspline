@@ -522,10 +522,16 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) {
+//       vector double abc0 = vec_splats(a[i]*b[j]*c[0]);
+//       vector double abc1 = vec_splats(a[i]*b[j]*c[1]);
+//       vector double abc2 = vec_splats(a[i]*b[j]*c[2]);
+//       vector double abc3 = vec_splats(a[i]*b[j]*c[3]);
+
       double abc0 = a[i]*b[j]*c[0];
       double abc1 = a[i]*b[j]*c[1];
       double abc2 = a[i]*b[j]*c[2];
       double abc3 = a[i]*b[j]*c[3];
+
       complex_double* restrict coefs0 = spline->coefs + ((ix+i)*xs +(iy+j)*ys +(iz+0)*zs);
       complex_double* restrict coefs1 = spline->coefs + ((ix+i)*xs +(iy+j)*ys +(iz+1)*zs);
       complex_double* restrict coefs2 = spline->coefs + ((ix+i)*xs +(iy+j)*ys +(iz+2)*zs);
@@ -533,6 +539,8 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
       for (int n=0; n<spline->num_splines; n+=2) {
 	vals[n] += (abc0*coefs0[n] + abc1*coefs1[n] +
 		    abc2*coefs2[n] + abc3*coefs3[n] );
+	vals[n+1] += (abc0*coefs0[n+1] + abc1*coefs1[n+1] +
+		    abc2*coefs2[n+1] + abc3*coefs3[n+1] );
       }
     }
 }
