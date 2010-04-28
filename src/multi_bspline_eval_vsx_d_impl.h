@@ -18,8 +18,8 @@
 //  Boston, MA  02110-1301  USA                                            //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef MULTI_BSPLINE_EVAL_STD_D_H
-#define MULTI_BSPLINE_EVAL_STD_D_H
+#ifndef MULTI_BSPLINE_EVAL_VSX_D_H
+#define MULTI_BSPLINE_EVAL_VSX_D_H
 
 #include <math.h>
 #include <stdio.h>
@@ -913,10 +913,10 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
 
 	double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz)*zs);
 	for (int n=0; n<spline->num_splines; n+=2) {
-	  vector double c0 = *(vector double*)&(coefs[n     ]);
-	  vector double c1 = *(vector double*)&(coefs[n+  zs]);
-	  vector double c2 = *(vector double*)&(coefs[n+2*zs]);
-	  vector double c3 = *(vector double*)&(coefs[n+3*zs]);
+	  vector double c0 = *(vector double*)&(coefs[n     ]);//vec_xld2 (n     ,coefs);
+	  vector double c1 = *(vector double*)&(coefs[n+  zs]);//vec_xld2 (n+  zs,coefs);
+	  vector double c2 = *(vector double*)&(coefs[n+2*zs]);//vec_xld2 (n+2*zs,coefs);
+	  vector double c3 = *(vector double*)&(coefs[n+3*zs]);//vec_xld2 (n+3*zs,coefs);
 
 	  vector double v = *(vector double*)&(vals[n]);
 	  v           = vec_madd (c0, abc_v[0], v);
@@ -953,9 +953,9 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
 	  vector double h67 = *(vector double*)&(hess[9*n+6]);
 	  vector double h89 = *(vector double*)&(hess[9*n+8]);
 	  vector double h1011 = *(vector double*)&(hess[9*n+10]);
-	  vector double h1213 = *(vector double*)&(hess[9*n+10]);
-	  vector double h1415 = *(vector double*)&(hess[9*n+10]);
-	  vector double h1617 = *(vector double*)&(hess[9*n+10]);
+	  vector double h1213 = *(vector double*)&(hess[9*n+12]);
+	  vector double h1415 = *(vector double*)&(hess[9*n+14]);
+	  vector double h1617 = *(vector double*)&(hess[9*n+16]);
 	  vector double h0 = vec_permi(h01,h89,  1);
 	  vector double h1 = vec_permi(h01,h1011,2);
 	  vector double h2 = vec_permi(h23,h1011,1);
@@ -986,12 +986,15 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
 	  h8 = vec_madd (c1, abc_v[37], h8);
 	  h8 = vec_madd (c2, abc_v[38], h8);
 	  h8 = vec_madd (c3, abc_v[39], h8);
-	  *(vector double*)&(hess[9*n+0]) = h0;
-	  *(vector double*)&(hess[9*n+2]) = h1;
-	  *(vector double*)&(hess[9*n+4]) = h2;
-	  *(vector double*)&(hess[9*n+8]) = h4;
-	  *(vector double*)&(hess[9*n+10]) = h5;
-	  *(vector double*)&(hess[9*n+16]) = h8;
+	  *(vector double*)&(hess[9*n+0])  = vec_permi(h0,h1,0);
+	  *(vector double*)&(hess[9*n+2])  = vec_permi(h2,h1,0);
+	  *(vector double*)&(hess[9*n+4])  = vec_permi(h4,h5,0);
+	  *(vector double*)&(hess[9*n+6])  = vec_permi(h2,h5,0);
+	  *(vector double*)&(hess[9*n+8])  = vec_permi(h8,h0,1);
+	  *(vector double*)&(hess[9*n+10]) = vec_permi(h1,h2,3);
+	  *(vector double*)&(hess[9*n+12]) = vec_permi(h1,h4,3);
+	  *(vector double*)&(hess[9*n+14]) = vec_permi(h5,h2,3);
+	  *(vector double*)&(hess[9*n+16]) = vec_permi(h5,h8,3);
 
 	  // vector double *g0 = (vector double*)&(grads[3*n+0]);
 	  // vector double *g1 = (vector double*)&(grads[3*n+1]);
