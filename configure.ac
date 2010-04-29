@@ -157,6 +157,22 @@ AM_CONDITIONAL([HAVE_SSSE3],  [test "$ax_have_ssse3_ext"  = "yes"])
 AM_CONDITIONAL([HAVE_SSE4_1], [test "$ax_have_sse4_1_ext" = "yes"])
 AM_CONDITIONAL([HAVE_SSE4_2], [test "$ax_have_sse4_2_ext" = "yes"])
 
+AC_ARG_ENABLE(vsx, AC_HELP_STRING([--enable-vsx],[enable VSX SIMD instructions]))
+if test "x$enable_vsx" = "xyes"; then
+  AC_DEFINE([HAVE_VSX], [1], [VSX instructions are available])
+fi
+AM_CONDITIONAL([HAVE_VSX],   [test "$enable_vsx" = "yes"])
+
+AM_CONDITIONAL([VSX_DOUBLE], [test "$enable_vsx" = "yes"])
+AM_CONDITIONAL([SSE_DOUBLE], [test "$ax_have_sse2_ext" = "yes"])
+use_std="no"
+if test "x$ax_have_sse2_ext" != "xyes"; then
+  if test "$enable_vsx" != "yes"; then
+    use_std="yes"
+  fi
+fi
+AM_CONDITIONAL([STD_DOUBLE], [test "$use_std" = "yes"])
+
 AC_ARG_ENABLE(blips, AC_HELP_STRING([--enable-blips],[enable routines for creating BLIPS (default=no)]))
 AM_CONDITIONAL([WANT_BLIPS], [test "$enable_blips" = "yes"])
 if test "x$enable_blips" = "xyes"; then

@@ -44,26 +44,35 @@ else
                 multi_bspline_eval_std_s_impl.h  multi_bspline_eval_std_c_impl.h 
 endif
 
-if HAVE_SSE2
+if SSE_DOUBLE
    DOUBLE_SRC = multi_bspline_eval_sse_d.c multi_bspline_eval_sse_d_cpp.cc       \
                 multi_bspline_eval_sse_z.c multi_bspline_eval_sse_z_cpp.cc       \
                 multi_bspline_eval_sse_d_impl.h multi_bspline_eval_sse_z_impl.h  \
                 multi_nubspline_eval_sse_z.c multi_nubspline_eval_sse_z_cpp.cc   \
                 multi_nubspline_eval_sse_z_impl.h
-else
+endif
+if VSX_DOUBLE
+   DOUBLE_SRC = multi_bspline_eval_vsx_d.c multi_bspline_eval_vsx_d_cpp.cc       \
+                multi_bspline_eval_vsx_z.c multi_bspline_eval_vsx_z_cpp.cc       \
+                multi_bspline_eval_vsx_d_impl.h multi_bspline_eval_vsx_z_impl.h  \
+                multi_nubspline_eval_std_z.c multi_nubspline_eval_std_z_cpp.cc   \
+                multi_nubspline_eval_std_z_impl.h
+endif
+if STD_DOUBLE
    DOUBLE_SRC = multi_bspline_eval_std_d.c multi_bspline_eval_std_d_cpp.cc       \
                 multi_bspline_eval_std_z.c multi_bspline_eval_std_z_cpp.cc       \
                 multi_bspline_eval_std_d_impl.h multi_bspline_eval_std_z_impl.h  \
                 multi_nubspline_eval_std_z.c multi_nubspline_eval_std_z_cpp.cc   \
                 multi_nubspline_eval_std_z_impl.h
-
 endif
+
+
 
 check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
                   test_bspline_s test_bspline_d test_multi \
                   test_fmulti_bspline test_multi_cpp $(CHECK_BLIPS) 
 
-bin_PROGRAMS = time_multi $(CHECK_CUDA)
+bin_PROGRAMS = time_multi time_multi_omp test_multi_double $(CHECK_CUDA)
 
 
 TestBspline_SOURCES         = TestBspline.c
@@ -73,11 +82,13 @@ test_fmulti_bspline_SOURCES = test_fmulti_bspline.f
 if WANT_BLIPS
    test_blip_SOURCES     = test_blip.c
 endif
-test_bspline_s_SOURCES = test_bspline_s.c
-test_bspline_d_SOURCES = test_bspline_d.c
-test_multi_SOURCES     = test_multi.c
-test_multi_cpp_SOURCES = test_multi_cpp.cc
-time_multi_SOURCES     = time_multi.c
+test_bspline_s_SOURCES    = test_bspline_s.c
+test_bspline_d_SOURCES    = test_bspline_d.c
+test_multi_SOURCES        = test_multi.c
+test_multi_double_SOURCES = test_multi_double.c
+test_multi_cpp_SOURCES    = test_multi_cpp.cc
+time_multi_SOURCES        = time_multi.c
+time_multi_omp_SOURCES    = time_multi_omp.c
 
 LDADD = 
 AM_CCFLAGS = -g 
@@ -91,50 +102,52 @@ test_bspline_s_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_bspline_d_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_multi_cpp_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
+test_multi_double_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 time_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
+time_multi_omp_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 
 
 lib_LTLIBRARIES = libeinspline.la
-libeinspline_la_SOURCES =                             \
-                       aligned_alloc.h                \
-                       bspline_base.h                 \
-                       bspline_create.c               \
-                       bspline_create.h               \
-                       bspline_structs.h              \
-                       bspline_data.c                 \
-                       bspline_eval_std_s.h           \
-                       bspline_eval_sse_s.h           \
-                       bspline_eval_std_c.h           \
-                       bspline_eval_sse_c.h           \
-                       bspline_eval_std_d.h           \
-                       bspline_eval_sse_d.h           \
-                       bspline_eval_std_z.h           \
-                       bspline_eval_sse_z.h           \
-                       multi_bspline.h                \
-                       multi_bspline_create.c         \
-                       multi_bspline_create.h         \
-                       multi_bspline_eval_c.h         \
-                       multi_bspline_eval_d.h         \
-                       multi_bspline_eval_s.h         \
-                       multi_bspline_eval_z.h         \
-                       multi_bspline_structs.h        \
-                       multi_nubspline_create.c       \
-                       nubspline_base.h               \
-                       nubspline_create.c             \
-                       nubspline_create.h             \
-                       nubspline_eval_sse_s.h         \
-                       nubspline_eval_std_s.h         \
-                       nubspline_eval_sse_c.h         \
-                       nubspline_eval_std_c.h         \
-                       nubspline_eval_sse_d.h         \
-                       nubspline_eval_std_d.h         \
-                       nubspline_eval_sse_z.h         \
-                       nubspline_eval_std_z.h         \
-                       nubspline_structs.h            \
-                       nubasis.h                      \
-                       nubasis.c                      \
-                       nugrid.h                       \
-                       nugrid.c                       \
+libeinspline_la_SOURCES =                              \
+                       aligned_alloc.h                 \
+                       bspline_base.h                  \
+                       bspline_create.c                \
+                       bspline_create.h                \
+                       bspline_structs.h               \
+                       bspline_data.c                  \
+                       bspline_eval_std_s.h            \
+                       bspline_eval_sse_s.h            \
+                       bspline_eval_std_c.h            \
+                       bspline_eval_sse_c.h            \
+                       bspline_eval_std_d.h            \
+                       bspline_eval_sse_d.h            \
+                       bspline_eval_std_z.h            \
+                       bspline_eval_sse_z.h            \
+                       multi_bspline.h                 \
+                       multi_bspline_create.c          \
+                       multi_bspline_create.h          \
+                       multi_bspline_eval_c.h          \
+                       multi_bspline_eval_d.h          \
+                       multi_bspline_eval_s.h          \
+                       multi_bspline_eval_z.h          \
+                       multi_bspline_structs.h         \
+                       multi_nubspline_create.c        \
+                       nubspline_base.h                \
+                       nubspline_create.c              \
+                       nubspline_create.h              \
+                       nubspline_eval_sse_s.h          \
+                       nubspline_eval_std_s.h          \
+                       nubspline_eval_sse_c.h          \
+                       nubspline_eval_std_c.h          \
+                       nubspline_eval_sse_d.h          \
+                       nubspline_eval_std_d.h          \
+                       nubspline_eval_sse_z.h          \
+                       nubspline_eval_std_z.h          \
+                       nubspline_structs.h             \
+                       nubasis.h                       \
+                       nubasis.c                       \
+                       nugrid.h                        \
+                       nugrid.c                        \
                        $(SINGLE_SRC)                  \
                        $(DOUBLE_SRC)                  \
                        $(MAYBE_BLIPS)                 \

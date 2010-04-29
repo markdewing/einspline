@@ -898,7 +898,7 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 	vector double abc_38 = vec_splats(  a[i] *  b[j] *d2c[2]);
 	vector double abc_39 = vec_splats(  a[i] *  b[j] *d2c[3]);
 
-	double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz)*zs);
+	double* restrict coefs = (double* restrict)spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz)*zs);
 	for (int n=0; n<spline->num_splines; n++) {
 	  vector double c0 = *(vector double*)&(coefs[n     ]);//vec_xld2 (n     ,coefs);
 	  vector double c1 = *(vector double*)&(coefs[n+  zs]);//vec_xld2 (n+  zs,coefs);
