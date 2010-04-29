@@ -87,7 +87,7 @@ test_bspline_d_SOURCES    = test_bspline_d.c
 test_multi_SOURCES        = test_multi.c
 test_multi_double_SOURCES = test_multi_double.c
 test_multi_cpp_SOURCES    = test_multi_cpp.cc
-time_multi_SOURCES        = time_multi.c
+time_multi_SOURCES        = time_multi_new.c
 time_multi_omp_SOURCES    = time_multi_omp.c
 
 LDADD = 
