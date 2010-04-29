@@ -544,10 +544,10 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 	vector double v0 = *((vector double*)&(vals[n]));
 	vector double v1 = *((vector double*)&(vals[n+1]));
 
-	v0 = vec_madd (coefs0[n], abc0, v0);
-	v0 = vec_madd (coefs1[n], abc1, v0);
-	v0 = vec_madd (coefs2[n], abc2, v0);
-	v0 = vec_madd (coefs3[n], abc3, v0);
+	v0 = vec_madd (coefs0[n  ], abc0, v0);
+	v0 = vec_madd (coefs1[n  ], abc1, v0);
+	v0 = vec_madd (coefs2[n  ], abc2, v0);
+	v0 = vec_madd (coefs3[n  ], abc3, v0);
 	v1 = vec_madd (coefs0[n+1], abc0, v1);
 	v1 = vec_madd (coefs1[n+1], abc1, v1);
 	v1 = vec_madd (coefs2[n+1], abc2, v1);
@@ -846,34 +846,165 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
   }
 
   for (int i=0; i<4; i++)
-    for (int j=0; j<4; j++) 
-      for (int k=0; k<4; k++) {
-	double abc = a[i]*b[j]*c[k];
-	double dabc[3], d2abc[6];
-	dabc[0] = da[i]* b[j]* c[k];
-	dabc[1] =  a[i]*db[j]* c[k];
-	dabc[2] =  a[i]* b[j]*dc[k];
-	d2abc[0] = d2a[i]*  b[j]*  c[k];
-	d2abc[1] =  da[i]* db[j]*  c[k];
-	d2abc[2] =  da[i]*  b[j]* dc[k];
-	d2abc[3] =   a[i]*d2b[j]*  c[k];
-	d2abc[4] =   a[i]* db[j]* dc[k];
-	d2abc[5] =   a[i]*  b[j]*d2c[k];
+    for (int j=0; j<4; j++) {
+      //      	vector double abc_v[40];
+	vector double abc_0 = vec_splats(  a[i] *  b[j] *  c[0]);
+	vector double abc_1 = vec_splats(  a[i] *  b[j] *  c[1]);
+	vector double abc_2 = vec_splats(  a[i] *  b[j] *  c[2]);
+	vector double abc_3 = vec_splats(  a[i] *  b[j] *  c[3]);
 
-	complex_double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+	vector double abc_4 = vec_splats( da[i] *  b[j] *  c[0]);
+	vector double abc_5 = vec_splats( da[i] *  b[j] *  c[1]);
+	vector double abc_6 = vec_splats( da[i] *  b[j] *  c[2]);
+	vector double abc_7 = vec_splats( da[i] *  b[j] *  c[3]);
+
+	vector double abc_8 = vec_splats(  a[i] * db[j]  *  c[0]);
+	vector double abc_9 = vec_splats(  a[i] * db[j]  *  c[1]);
+	vector double abc_10 = vec_splats(  a[i] * db[j] *  c[2]);
+	vector double abc_11 = vec_splats(  a[i] * db[j] *  c[3]);
+
+	vector double abc_12 = vec_splats(  a[i] *  b[j] * dc[0]);
+	vector double abc_13 = vec_splats(  a[i] *  b[j] * dc[1]);
+	vector double abc_14 = vec_splats(  a[i] *  b[j] * dc[2]);
+	vector double abc_15 = vec_splats(  a[i] *  b[j] * dc[3]);
+
+	vector double abc_16 = vec_splats(d2a[i] *  b[j] *  c[0]);
+	vector double abc_17 = vec_splats(d2a[i] *  b[j] *  c[1]);
+	vector double abc_18 = vec_splats(d2a[i] *  b[j] *  c[2]);
+	vector double abc_19 = vec_splats(d2a[i] *  b[j] *  c[3]);
+
+	vector double abc_20 = vec_splats( da[i] * db[j] *  c[0]);
+	vector double abc_21 = vec_splats( da[i] * db[j] *  c[1]);
+	vector double abc_22 = vec_splats( da[i] * db[j] *  c[2]);
+	vector double abc_23 = vec_splats( da[i] * db[j] *  c[3]);
+
+	vector double abc_24 = vec_splats( da[i] *  b[j] * dc[0]);
+	vector double abc_25 = vec_splats( da[i] *  b[j] * dc[1]);
+	vector double abc_26 = vec_splats( da[i] *  b[j] * dc[2]);
+	vector double abc_27 = vec_splats( da[i] *  b[j] * dc[3]);
+
+	vector double abc_28 = vec_splats(  a[i] *d2b[j] *  c[0]);
+	vector double abc_29 = vec_splats(  a[i] *d2b[j] *  c[1]);
+	vector double abc_30 = vec_splats(  a[i] *d2b[j] *  c[2]);
+	vector double abc_31 = vec_splats(  a[i] *d2b[j] *  c[3]);
+
+	vector double abc_32 = vec_splats(  a[i] * db[j] * dc[0]);
+	vector double abc_33 = vec_splats(  a[i] * db[j] * dc[1]);
+	vector double abc_34 = vec_splats(  a[i] * db[j] * dc[2]);
+	vector double abc_35 = vec_splats(  a[i] * db[j] * dc[3]);
+
+	vector double abc_36 = vec_splats(  a[i] *  b[j] *d2c[0]);
+	vector double abc_37 = vec_splats(  a[i] *  b[j] *d2c[1]);
+	vector double abc_38 = vec_splats(  a[i] *  b[j] *d2c[2]);
+	vector double abc_39 = vec_splats(  a[i] *  b[j] *d2c[3]);
+
+	double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz)*zs);
 	for (int n=0; n<spline->num_splines; n++) {
-	  vals[n]      +=   abc   *coefs[n];
-	  grads[3*n+0] +=  dabc[0]*coefs[n];
-	  grads[3*n+1] +=  dabc[1]*coefs[n];
-	  grads[3*n+2] +=  dabc[2]*coefs[n];
-	  hess [9*n+0] += d2abc[0]*coefs[n];
-	  hess [9*n+1] += d2abc[1]*coefs[n];
-	  hess [9*n+2] += d2abc[2]*coefs[n];
-	  hess [9*n+4] += d2abc[3]*coefs[n];
-	  hess [9*n+5] += d2abc[4]*coefs[n];
-	  hess [9*n+8] += d2abc[5]*coefs[n];
+	  vector double c0 = *(vector double*)&(coefs[n     ]);//vec_xld2 (n     ,coefs);
+	  vector double c1 = *(vector double*)&(coefs[n+  zs]);//vec_xld2 (n+  zs,coefs);
+	  vector double c2 = *(vector double*)&(coefs[n+2*zs]);//vec_xld2 (n+2*zs,coefs);
+	  vector double c3 = *(vector double*)&(coefs[n+3*zs]);//vec_xld2 (n+3*zs,coefs);
+
+	  vector double v = *(vector double*)&(vals[n]);
+	  v           = vec_madd (c0, abc_0, v);
+	  v           = vec_madd (c1, abc_1, v);
+	  v           = vec_madd (c2, abc_2, v);
+	  v           = vec_madd (c3, abc_3, v);
+	  *(vector double*)&(vals[n]) = v;
+	  vector double g0 = *(vector double*)&(grads[3*n+0]);
+	  vector double g1 = *(vector double*)&(grads[3*n+1]);
+	  vector double g2 = *(vector double*)&(grads[3*n+2]);
+	  g0 = vec_madd (c0, abc_4, g0);
+	  g0 = vec_madd (c1, abc_5, g0);
+	  g0 = vec_madd (c2, abc_6, g0);
+	  g0 = vec_madd (c3, abc_7, g0);
+	  g1 = vec_madd (c0, abc_8, g1);
+	  g1 = vec_madd (c1, abc_9, g1);
+	  g1 = vec_madd (c2, abc_10, g1);
+	  g1 = vec_madd (c3, abc_11, g1);
+	  g2 = vec_madd (c0, abc_12, g2);
+	  g2 = vec_madd (c1, abc_13, g2);
+	  g2 = vec_madd (c2, abc_14, g2);
+	  g2 = vec_madd (c3, abc_15, g2);
+	  *(vector double*)&(grads[3*n+0]) = g0;
+	  *(vector double*)&(grads[3*n+2]) = g1;
+	  *(vector double*)&(grads[3*n+4]) = g2;
+	  vector double h0 = *(vector double*)&(hess[9*n+0]);
+	  vector double h1 = *(vector double*)&(hess[9*n+1]);
+	  vector double h2 = *(vector double*)&(hess[9*n+2]);
+	  vector double h4 = *(vector double*)&(hess[9*n+4]);
+	  vector double h5 = *(vector double*)&(hess[9*n+5]);
+	  vector double h8 = *(vector double*)&(hess[9*n+8]);
+	  h0 = vec_madd (c0, abc_16, h0);
+	  h0 = vec_madd (c1, abc_17, h0);
+	  h0 = vec_madd (c2, abc_18, h0);
+	  h0 = vec_madd (c3, abc_19, h0);
+	  h1 = vec_madd (c0, abc_20, h1);
+	  h1 = vec_madd (c1, abc_21, h1);
+	  h1 = vec_madd (c2, abc_22, h1);
+	  h1 = vec_madd (c3, abc_23, h1);
+	  h2 = vec_madd (c0, abc_24, h2);
+	  h2 = vec_madd (c1, abc_25, h2);
+	  h2 = vec_madd (c2, abc_26, h2);
+	  h2 = vec_madd (c3, abc_27, h2);
+	  h4 = vec_madd (c0, abc_28, h4);
+	  h4 = vec_madd (c1, abc_29, h4);
+	  h4 = vec_madd (c2, abc_30, h4);
+	  h4 = vec_madd (c3, abc_31, h4);
+	  h5 = vec_madd (c0, abc_32, h5);
+	  h5 = vec_madd (c1, abc_33, h5);
+	  h5 = vec_madd (c2, abc_34, h5);
+	  h5 = vec_madd (c3, abc_35, h5);
+	  h8 = vec_madd (c0, abc_36, h8);
+	  h8 = vec_madd (c1, abc_37, h8);
+	  h8 = vec_madd (c2, abc_38, h8);
+	  h8 = vec_madd (c3, abc_39, h8);
+	  *(vector double*)&(hess[9*n+0]) = h0;
+	  *(vector double*)&(hess[9*n+1]) = h1;
+	  *(vector double*)&(hess[9*n+2]) = h2;
+	  *(vector double*)&(hess[9*n+4]) = h4;
+	  *(vector double*)&(hess[9*n+5]) = h5;
+	  *(vector double*)&(hess[9*n+8]) = h8;
 	}
-      }
+    }
+
+//       for (int k=0; k<4; k++) {
+// 	double abc = a[i]*b[j]*c[k];
+// 	double dabc[3], d2abc[6];
+// 	dabc[0] = da[i]* b[j]* c[k];
+// 	dabc[1] =  a[i]*db[j]* c[k];
+// 	dabc[2] =  a[i]* b[j]*dc[k];
+// 	d2abc[0] = d2a[i]*  b[j]*  c[k];
+// 	d2abc[1] =  da[i]* db[j]*  c[k];
+// 	d2abc[2] =  da[i]*  b[j]* dc[k];
+// 	d2abc[3] =   a[i]*d2b[j]*  c[k];
+// 	d2abc[4] =   a[i]* db[j]* dc[k];
+// 	d2abc[5] =   a[i]*  b[j]*d2c[k];
+
+// 	complex_double* restrict coefs = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+// 	for (int n=0; n<spline->num_splines; n+=2) {
+// 	  vals[n]      +=   abc   *coefs[n];
+// 	  grads[3*n+0] +=  dabc[0]*coefs[n];
+// 	  grads[3*n+1] +=  dabc[1]*coefs[n];
+// 	  grads[3*n+2] +=  dabc[2]*coefs[n];
+// 	  hess [9*n+0] += d2abc[0]*coefs[n];
+// 	  hess [9*n+1] += d2abc[1]*coefs[n];
+// 	  hess [9*n+2] += d2abc[2]*coefs[n];
+// 	  hess [9*n+4] += d2abc[3]*coefs[n];
+// 	  hess [9*n+5] += d2abc[4]*coefs[n];
+// 	  hess [9*n+8] += d2abc[5]*coefs[n];
+// 	  vals[n+1]    +=   abc   *coefs[n+1];
+// 	  grads[3*n+4] +=  dabc[0]*coefs[n+1];
+// 	  grads[3*n+5] +=  dabc[1]*coefs[n+1];
+// 	  grads[3*n+6] +=  dabc[2]*coefs[n+1];
+// 	  hess [9*n+9] += d2abc[0]*coefs[n+1];
+// 	  hess [9*n+10] += d2abc[1]*coefs[n+1];
+// 	  hess [9*n+11] += d2abc[2]*coefs[n+1];
+// 	  hess [9*n+13] += d2abc[3]*coefs[n+1];
+// 	  hess [9*n+14] += d2abc[4]*coefs[n+1];
+// 	  hess [9*n+17] += d2abc[5]*coefs[n+1];
+// 	}
+//       }
 
   double dxInv = spline->x_grid.delta_inv;
   double dyInv = spline->y_grid.delta_inv;
