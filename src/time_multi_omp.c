@@ -7,7 +7,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <omp.h>
+#ifdef _OPENMP
+  #include <omp.h>
+#endif _OPENMP
 
 double drand48();
 
@@ -24,14 +26,18 @@ void
 time_3d_real_double_omp()
 {
   // int avail = numa_available();
+#ifdef _OPENMP
   int nthr = omp_get_max_threads();
+#else
+  int nthr = 1;
+#endif
   // int nnodes = numa_max_node();
   // fprintf (stderr, "Performing test with %d NUMA nodes.\n",
   // 	   avail, nnodes);
   // if (!nnodes)
   //   nnodes++;
 
-  int nnodes = omp_get_max_threads();
+  int nnodes = nthr;
   fprintf (stderr, "Using %d threads.\n", nnodes);
 
   int Nx=63; int Ny=61; int Nz = 69;
@@ -88,13 +94,13 @@ time_3d_real_double_omp()
   double multi_lapl[nthr][num_splines], norm_lapl[nthr][num_splines];
   double multi_hess[nthr][9*num_splines], norm_hess[nthr][9*num_splines];
 
-  rand_start = omp_get_wtime();
+  rand_start = get_time();
   for (int i=0; i<num_vals; i++) {
     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
     double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
   }
-  rand_end = omp_get_wtime();
+  rand_end = get_time();
 
   ///////////////////////
   // Check value routine  //
@@ -108,19 +114,19 @@ time_3d_real_double_omp()
 #pragma omp parallel for
   for (int thr=0; thr<nthr; thr++) {
     int node = thr/thr_per_node;
-    multi_start[thr] = omp_get_wtime();
+    multi_start[thr] = get_time();
     for (int i=0; i<num_vals; i++) {
       double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end; 
       double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end; 
       double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end; 
       eval_multi_UBspline_3d_d (multi_spline[node], x, y, z, multi_vals[thr]);
     }
-    multi_end[thr] = omp_get_wtime();
+    multi_end[thr] = get_time();
   }
 
 // #pragma omp parallel for
 //   for (int thr=0; thr<nthr; thr++) {
-//     norm_start[thr] = omp_get_wtime();
+//     norm_start[thr] = get_time();
 //     for (int i=0; i<num_vals; i++) {
 //       double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
 //       double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
@@ -128,7 +134,7 @@ time_3d_real_double_omp()
 //       for (int j=0; j<num_splines; j++)
 // 	eval_UBspline_3d_d (norm_splines[j], x, y, z, &(norm_vals[thr][j]));
 //     }
-//     norm_end[thr] = omp_get_wtime();
+//     norm_end[thr] = get_time();
 //   }
   
   double norm_avg=0.0, multi_avg=0.0;
@@ -157,7 +163,7 @@ time_3d_real_double_omp()
   #pragma omp parallel for
   for (int thr=0; thr<nthr; thr++) {
     int node = thr/thr_per_node;
-    multi_start[thr] = omp_get_wtime();
+    multi_start[thr] = get_time();
     for (int i=0; i<num_vals; i++) {
       double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
       double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
@@ -166,12 +172,12 @@ time_3d_real_double_omp()
 	(multi_spline[node], x, y, z,  multi_vals[thr], 
 	 multi_grads[thr], multi_hess[thr]);
     }
-    multi_end[thr] = omp_get_wtime();
+    multi_end[thr] = get_time();
   }
 
 // #pragma omp parallel for
 //   for (int thr=0; thr<nthr; thr++) {
-//     norm_start[thr] = omp_get_wtime();
+//     norm_start[thr] = get_time();
 //     for (int i=0; i<num_vals; i++) {
 //       double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
 //       double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
@@ -180,7 +186,7 @@ time_3d_real_double_omp()
 // 	eval_UBspline_3d_d_vgh (norm_splines[j], x, y, z, &(norm_vals[thr][j]),
 // 				&(norm_grads[thr][3*j]), &(norm_hess[thr][9*j]));
 //     }
-//     norm_end[thr] = omp_get_wtime();
+//     norm_end[thr] = get_time();
 //   }
 
   norm_avg = multi_avg = 0.0;
@@ -212,8 +218,12 @@ time_3d_real_double_omp()
 void
 time_3d_complex_double_omp()
 {
-  int nthr   = omp_get_max_threads();
-  int nnodes = omp_get_max_threads();
+#ifdef _OPENMP
+  int nthr = omp_get_max_threads();
+#else
+  int nthr = 1;
+#endif
+  int nnodes = nthr;
   fprintf (stderr, "Using %d threads.\n", nthr);
 
   int Nx=32; int Ny=32; int Nz = 32;
@@ -270,13 +280,13 @@ time_3d_complex_double_omp()
   complex_double multi_lapl[nthr][num_splines], norm_lapl[nthr][num_splines];
   complex_double multi_hess[nthr][9*num_splines], norm_hess[nthr][9*num_splines];
 
-  rand_start = omp_get_wtime();
+  rand_start = get_time();
   for (int i=0; i<num_vals; i++) {
     double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
     double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
     double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end;
   }
-  rand_end = omp_get_wtime();
+  rand_end = get_time();
 
   ///////////////////////
   // Check value routine  //
@@ -290,19 +300,19 @@ time_3d_complex_double_omp()
 #pragma omp parallel for
   for (int thr=0; thr<nthr; thr++) {
     int node = thr/thr_per_node;
-    multi_start[thr] = omp_get_wtime();
+    multi_start[thr] = get_time();
     for (int i=0; i<num_vals; i++) {
       double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end; 
       double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end; 
       double rz = drand48();  double z = rz*z_grid.start + (1.0-rz)*z_grid.end; 
       eval_multi_UBspline_3d_z (multi_spline[node], x, y, z, multi_vals[thr]);
     }
-    multi_end[thr] = omp_get_wtime();
+    multi_end[thr] = get_time();
   }
 
 // #pragma omp parallel for
 //   for (int thr=0; thr<nthr; thr++) {
-//     norm_start[thr] = omp_get_wtime();
+//     norm_start[thr] = get_time();
 //     for (int i=0; i<num_vals; i++) {
 //       double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
 //       double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
@@ -310,7 +320,7 @@ time_3d_complex_double_omp()
 //       for (int j=0; j<num_splines; j++)
 // 	eval_UBspline_3d_z (norm_splines[j], x, y, z, &(norm_vals[thr][j]));
 //     }
-//     norm_end[thr] = omp_get_wtime();
+//     norm_end[thr] = get_time();
 //   }
   
   double norm_avg=0.0, multi_avg=0.0;
@@ -340,7 +350,7 @@ time_3d_complex_double_omp()
 #pragma omp parallel for
   for (int thr=0; thr<nthr; thr++) {
     int node = thr/thr_per_node;
-    multi_start[thr] = omp_get_wtime();
+    multi_start[thr] = get_time();
     for (int i=0; i<num_vals; i++) {
       double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
       double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
@@ -349,12 +359,12 @@ time_3d_complex_double_omp()
 	(multi_spline[node], x, y, z,  multi_vals[thr], 
 	 multi_grads[thr], multi_hess[thr]);
     }
-    multi_end[thr] = omp_get_wtime();
+    multi_end[thr] = get_time();
   }
 
 // #pragma omp parallel for
 //   for (int thr=0; thr<nthr; thr++) {
-//     norm_start[thr] = omp_get_wtime();
+//     norm_start[thr] = get_time();
 //     for (int i=0; i<num_vals; i++) {
 //       double rx = drand48();  double x = rx*x_grid.start + (1.0-rx)*x_grid.end;
 //       double ry = drand48();  double y = ry*y_grid.start + (1.0-ry)*y_grid.end;
@@ -363,7 +373,7 @@ time_3d_complex_double_omp()
 // 	eval_UBspline_3d_z_vgh (norm_splines[j], x, y, z, &(norm_vals[thr][j]),
 // 				&(norm_grads[thr][3*j]), &(norm_hess[thr][9*j]));
 //     }
-//     norm_end[thr] = omp_get_wtime();
+//     norm_end[thr] = get_time();
 //   }
 
   norm_avg = multi_avg = 0.0;

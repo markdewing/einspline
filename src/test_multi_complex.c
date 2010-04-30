@@ -26,18 +26,19 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <omp.h>
-
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
 double drand48();
 
 inline double get_time()
 {
-  //#ifdef _OPENMP
+  #ifdef _OPENMP
   fprintf(stderr, "Using omp_get_wtime().\n");
   return omp_get_wtime();
-// #else
-//   return (double)clock() / (double)CLOCKS_PER_SEC;
-// #endif
+ #else
+   return (double)clock() / (double)CLOCKS_PER_SEC;
+ #endif
 }
 
 

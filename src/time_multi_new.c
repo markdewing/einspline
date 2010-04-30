@@ -35,11 +35,11 @@ double drand48();
 
 inline double get_time()
 {
-  //#ifdef _OPENMP
+#ifdef _OPENMP
   return omp_get_wtime();
-// #else
-//   return (double)clock() / (double)CLOCKS_PER_SEC;
-// #endif
+#else
+  return (double)clock() / (double)CLOCKS_PER_SEC;
+#endif
 }
 
 inline double diff (double a, double b, double tol)
