@@ -216,7 +216,7 @@ time_3d_complex_double_omp()
   int nnodes = omp_get_max_threads();
   fprintf (stderr, "Using %d threads.\n", nthr);
 
-  int Nx=63; int Ny=61; int Nz = 69;
+  int Nx=32; int Ny=32; int Nz = 32;
   int num_splines = 256;
 
   Ugrid x_grid, y_grid, z_grid;

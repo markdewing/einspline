@@ -72,7 +72,7 @@ check_PROGRAMS =  TestBspline TestNUBspline test_fbspline \
                   test_bspline_s test_bspline_d test_multi \
                   test_fmulti_bspline test_multi_cpp $(CHECK_BLIPS) 
 
-bin_PROGRAMS = time_multi time_multi_omp test_multi_double $(CHECK_CUDA)
+bin_PROGRAMS = time_multi time_multi_omp test_multi_double test_multi_complex $(CHECK_CUDA)
 
 
 TestBspline_SOURCES         = TestBspline.c
@@ -82,13 +82,14 @@ test_fmulti_bspline_SOURCES = test_fmulti_bspline.f
 if WANT_BLIPS
    test_blip_SOURCES     = test_blip.c
 endif
-test_bspline_s_SOURCES    = test_bspline_s.c
-test_bspline_d_SOURCES    = test_bspline_d.c
-test_multi_SOURCES        = test_multi.c
-test_multi_double_SOURCES = test_multi_double.c
-test_multi_cpp_SOURCES    = test_multi_cpp.cc
-time_multi_SOURCES        = time_multi_new.c
-time_multi_omp_SOURCES    = time_multi_omp.c
+test_bspline_s_SOURCES     = test_bspline_s.c
+test_bspline_d_SOURCES     = test_bspline_d.c
+test_multi_SOURCES         = test_multi.c
+test_multi_double_SOURCES  = test_multi_double.c
+test_multi_complex_SOURCES = test_multi_complex.c
+test_multi_cpp_SOURCES     = test_multi_cpp.cc
+time_multi_SOURCES         = time_multi_new.c
+time_multi_omp_SOURCES     = time_multi_omp.c
 
 LDADD = 
 AM_CCFLAGS = -g 
@@ -103,6 +104,7 @@ test_bspline_d_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_multi_cpp_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 test_multi_double_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
+test_multi_complex_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 time_multi_LDADD     = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 time_multi_omp_LDADD = libeinspline.la $(FLIBS) $(FFTW3_LIBS) $(FFTW3F_LIBS)
 
