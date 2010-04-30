@@ -321,7 +321,7 @@ int
 test_3d_complex_double_all()
 {
   int Nx=73; int Ny=91; int Nz = 29;
-  int num_splines = 22;
+  int num_splines = 23;
 
   Ugrid x_grid, y_grid, z_grid;
   x_grid.start = 3.1; x_grid.end =  9.1; x_grid.num = Nx;

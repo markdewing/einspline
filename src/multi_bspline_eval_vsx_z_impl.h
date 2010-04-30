@@ -540,7 +540,7 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
       vector double* restrict coefs1 = (vector double*)(spline->coefs + ((ix+i)*xs +(iy+j)*ys +(iz+1)*zs));
       vector double* restrict coefs2 = (vector double*)(spline->coefs + ((ix+i)*xs +(iy+j)*ys +(iz+2)*zs));
       vector double* restrict coefs3 = (vector double*)(spline->coefs + ((ix+i)*xs +(iy+j)*ys +(iz+3)*zs));
-      for (int n=0; n<spline->num_splines; n+=2) {
+      for (int n=0; n<(spline->num_splines-1); n+=2) {
 	vector double v0 = *((vector double*)&(vals[n]));
 	vector double v1 = *((vector double*)&(vals[n+1]));
 
@@ -555,11 +555,16 @@ eval_multi_UBspline_3d_z (multi_UBspline_3d_z *spline,
 
 	*((vector double*)&(vals[n]))   = v0;  
 	*((vector double*)&(vals[n+1])) = v1;
-// 	vals[n]   += (abc0*coefs0[n] + abc1*coefs1[n] +
-// 		      abc2*coefs2[n] + abc3*coefs3[n] );
-// 	vals[n+1] += (abc0*coefs0[n+1] + abc1*coefs1[n+1] +
-// 		      abc2*coefs2[n+1] + abc3*coefs3[n+1] );
       }
+      if (spline->num_splines & 1) {
+	int n = spline->num_splines-1;
+	vector double v0 = *((vector double*)&(vals[n]));
+	v0 = vec_madd (coefs0[n  ], abc0, v0);
+	v0 = vec_madd (coefs1[n  ], abc1, v0);
+	v0 = vec_madd (coefs2[n  ], abc2, v0);
+	v0 = vec_madd (coefs3[n  ], abc3, v0);
+	*((vector double*)&(vals[n]))   = v0;  
+      }	
     }
 }
 
