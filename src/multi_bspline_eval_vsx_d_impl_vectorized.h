@@ -522,36 +522,50 @@ eval_multi_UBspline_3d_d (multi_UBspline_3d_d *spline,
   for (int n=0; n<spline->num_splines; n++)
     vals[n] = 0.0;
 
+  double *v = vals;
+
   for (int i=0; i<4; i++)
     for (int j=0; j<4; j++) {
-      double k0 = a[i]*b[j]*c[0];
-      double k1 = a[i]*b[j]*c[1];
-      double k2 = a[i]*b[j]*c[2];
-      double k3 = a[i]*b[j]*c[3];
-      double* restrict c0 = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+0)*zs);
-      double* restrict c1 = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+1)*zs);
-      double* restrict c2 = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+2)*zs);
-      double* restrict c3 = spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+3)*zs);
-      for (int n=0; n<spline->num_splines; n+=4) {
-	vals[n+0] += k0*c0[n];
-	vals[n+1] += k0*c0[n+1];
-	vals[n+2] += k0*c0[n+2];
-	vals[n+3] += k0*c0[n+3];
+      vector double k0 = vec_splats(a[i]*b[j]*c[0]);
+      vector double k1 = vec_splats(a[i]*b[j]*c[1]);
+      vector double k2 = vec_splats(a[i]*b[j]*c[2]);
+      vector double k3 = vec_splats(a[i]*b[j]*c[3]);
+      vector double* restrict c0 = (vector double*)(spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+0)*zs));
+      vector double* restrict c1 = (vector double*)(spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+1)*zs));
+      vector double* restrict c2 = (vector double*)(spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+2)*zs));
+      vector double* restrict c3 = (vector double*)(spline->coefs + ((ix+i)*xs + (iy+j)*ys + (iz+3)*zs));
+      for (int n=0; n<spline->num_splines/2; n+=2) {
+	vector double v01 = *(vector double*)&(vals[2*n]);
+	vector double v23 = *(vector double*)&(vals[2*n+1]);
+	v01 = vec_madd (c0[n],   k0, v01);
+	v23 = vec_madd (c0[n+1], k0, v23);
+	v01 = vec_madd (c1[n],   k1, v01);
+	v23 = vec_madd (c1[n+1], k1, v23);
+	v01 = vec_madd (c2[n],   k2, v01);
+	v23 = vec_madd (c2[n+1], k2, v23);
+	v01 = vec_madd (c3[n],   k3, v01);
+	v23 = vec_madd (c3[n+1], k3, v23);
+	*(vector double*)&(vals[2*n])   = v01 ;
+	*(vector double*)&(vals[2*n+2]) = v23 ;	
+	// vals[n+0] += k0*c0[n];
+	// vals[n+1] += k0*c0[n+1];
+	// vals[n+2] += k0*c0[n+2];
+	// vals[n+3] += k0*c0[n+3];
 
-	vals[n+0] += k1*c1[n];
-	vals[n+1] += k1*c1[n+1];
-	vals[n+2] += k1*c1[n+2];
-	vals[n+3] += k1*c1[n+3];
+	// vals[n+0] += k1*c1[n];
+	// vals[n+1] += k1*c1[n+1];
+	// vals[n+2] += k1*c1[n+2];
+	// vals[n+3] += k1*c1[n+3];
 
-	vals[n+0] += k2*c2[n];
-	vals[n+1] += k2*c2[n+1];
-	vals[n+2] += k2*c2[n+2];
-	vals[n+3] += k2*c2[n+3];
+	// vals[n+0] += k2*c2[n];
+	// vals[n+1] += k2*c2[n+1];
+	// vals[n+2] += k2*c2[n+2];
+	// vals[n+3] += k2*c2[n+3];
 
-	vals[n+0] += k3*c3[n];
-	vals[n+1] += k3*c3[n+1];
-	vals[n+2] += k3*c3[n+2];
-	vals[n+3] += k3*c3[n+3];
+	// vals[n+0] += k3*c3[n];
+	// vals[n+1] += k3*c3[n+1];
+	// vals[n+2] += k3*c3[n+2];
+	// vals[n+3] += k3*c3[n+3];
 	// vals[n+0] += k0*c0[n]   + k1*c1[n]   + k2*c2[n]   + k3*c3[n];
 	// vals[n+1] += k0*c0[n+1] + k1*c1[n+1] + k2*c2[n+1] + k3*c3[n+1];
 	// vals[n+2] += k0*c0[n+2] + k1*c1[n+2] + k2*c2[n+2] + k3*c3[n+2];
@@ -791,48 +805,44 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
   tpz[0] = tz*tz*tz;  tpz[1] = tz*tz;  tpz[2] = tz;  tpz[3] = 1.0;
   double* restrict coefs = spline->coefs;
 
-  double dxInv = spline->x_grid.delta_inv;
-  double dyInv = spline->y_grid.delta_inv;
-  double dzInv = spline->z_grid.delta_inv; 
-
   a[0]  = (Ad[ 0]*tpx[0] + Ad[ 1]*tpx[1] + Ad[ 2]*tpx[2] + Ad[ 3]*tpx[3]);
   a[1]  = (Ad[ 4]*tpx[0] + Ad[ 5]*tpx[1] + Ad[ 6]*tpx[2] + Ad[ 7]*tpx[3]);
   a[2]  = (Ad[ 8]*tpx[0] + Ad[ 9]*tpx[1] + Ad[10]*tpx[2] + Ad[11]*tpx[3]);
   a[3]  = (Ad[12]*tpx[0] + Ad[13]*tpx[1] + Ad[14]*tpx[2] + Ad[15]*tpx[3]);
-  da[0] = dxInv*(dAd[ 0]*tpx[0] + dAd[ 1]*tpx[1] + dAd[ 2]*tpx[2] + dAd[ 3]*tpx[3]);
-  da[1] = dxInv*(dAd[ 4]*tpx[0] + dAd[ 5]*tpx[1] + dAd[ 6]*tpx[2] + dAd[ 7]*tpx[3]);
-  da[2] = dxInv*(dAd[ 8]*tpx[0] + dAd[ 9]*tpx[1] + dAd[10]*tpx[2] + dAd[11]*tpx[3]);
-  da[3] = dxInv*(dAd[12]*tpx[0] + dAd[13]*tpx[1] + dAd[14]*tpx[2] + dAd[15]*tpx[3]);
-  d2a[0] = dxInv*dxInv*(d2Ad[ 0]*tpx[0] + d2Ad[ 1]*tpx[1] + d2Ad[ 2]*tpx[2] + d2Ad[ 3]*tpx[3]);
-  d2a[1] = dxInv*dxInv*(d2Ad[ 4]*tpx[0] + d2Ad[ 5]*tpx[1] + d2Ad[ 6]*tpx[2] + d2Ad[ 7]*tpx[3]);
-  d2a[2] = dxInv*dxInv*(d2Ad[ 8]*tpx[0] + d2Ad[ 9]*tpx[1] + d2Ad[10]*tpx[2] + d2Ad[11]*tpx[3]);
-  d2a[3] = dxInv*dxInv*(d2Ad[12]*tpx[0] + d2Ad[13]*tpx[1] + d2Ad[14]*tpx[2] + d2Ad[15]*tpx[3]);
+  da[0] = (dAd[ 0]*tpx[0] + dAd[ 1]*tpx[1] + dAd[ 2]*tpx[2] + dAd[ 3]*tpx[3]);
+  da[1] = (dAd[ 4]*tpx[0] + dAd[ 5]*tpx[1] + dAd[ 6]*tpx[2] + dAd[ 7]*tpx[3]);
+  da[2] = (dAd[ 8]*tpx[0] + dAd[ 9]*tpx[1] + dAd[10]*tpx[2] + dAd[11]*tpx[3]);
+  da[3] = (dAd[12]*tpx[0] + dAd[13]*tpx[1] + dAd[14]*tpx[2] + dAd[15]*tpx[3]);
+  d2a[0] = (d2Ad[ 0]*tpx[0] + d2Ad[ 1]*tpx[1] + d2Ad[ 2]*tpx[2] + d2Ad[ 3]*tpx[3]);
+  d2a[1] = (d2Ad[ 4]*tpx[0] + d2Ad[ 5]*tpx[1] + d2Ad[ 6]*tpx[2] + d2Ad[ 7]*tpx[3]);
+  d2a[2] = (d2Ad[ 8]*tpx[0] + d2Ad[ 9]*tpx[1] + d2Ad[10]*tpx[2] + d2Ad[11]*tpx[3]);
+  d2a[3] = (d2Ad[12]*tpx[0] + d2Ad[13]*tpx[1] + d2Ad[14]*tpx[2] + d2Ad[15]*tpx[3]);
 
   b[0] = (Ad[ 0]*tpy[0] + Ad[ 1]*tpy[1] + Ad[ 2]*tpy[2] + Ad[ 3]*tpy[3]);
   b[1] = (Ad[ 4]*tpy[0] + Ad[ 5]*tpy[1] + Ad[ 6]*tpy[2] + Ad[ 7]*tpy[3]);
   b[2] = (Ad[ 8]*tpy[0] + Ad[ 9]*tpy[1] + Ad[10]*tpy[2] + Ad[11]*tpy[3]);
   b[3] = (Ad[12]*tpy[0] + Ad[13]*tpy[1] + Ad[14]*tpy[2] + Ad[15]*tpy[3]);
-  db[0] = dyInv*(dAd[ 0]*tpy[0] + dAd[ 1]*tpy[1] + dAd[ 2]*tpy[2] + dAd[ 3]*tpy[3]);
-  db[1] = dyInv*(dAd[ 4]*tpy[0] + dAd[ 5]*tpy[1] + dAd[ 6]*tpy[2] + dAd[ 7]*tpy[3]);
-  db[2] = dyInv*(dAd[ 8]*tpy[0] + dAd[ 9]*tpy[1] + dAd[10]*tpy[2] + dAd[11]*tpy[3]);
-  db[3] = dyInv*(dAd[12]*tpy[0] + dAd[13]*tpy[1] + dAd[14]*tpy[2] + dAd[15]*tpy[3]);
-  d2b[0] = dyInv*dyInv*(d2Ad[ 0]*tpy[0] + d2Ad[ 1]*tpy[1] + d2Ad[ 2]*tpy[2] + d2Ad[ 3]*tpy[3]);
-  d2b[1] = dyInv*dyInv*(d2Ad[ 4]*tpy[0] + d2Ad[ 5]*tpy[1] + d2Ad[ 6]*tpy[2] + d2Ad[ 7]*tpy[3]);
-  d2b[2] = dyInv*dyInv*(d2Ad[ 8]*tpy[0] + d2Ad[ 9]*tpy[1] + d2Ad[10]*tpy[2] + d2Ad[11]*tpy[3]);
-  d2b[3] = dyInv*dyInv*(d2Ad[12]*tpy[0] + d2Ad[13]*tpy[1] + d2Ad[14]*tpy[2] + d2Ad[15]*tpy[3]);
+  db[0] = (dAd[ 0]*tpy[0] + dAd[ 1]*tpy[1] + dAd[ 2]*tpy[2] + dAd[ 3]*tpy[3]);
+  db[1] = (dAd[ 4]*tpy[0] + dAd[ 5]*tpy[1] + dAd[ 6]*tpy[2] + dAd[ 7]*tpy[3]);
+  db[2] = (dAd[ 8]*tpy[0] + dAd[ 9]*tpy[1] + dAd[10]*tpy[2] + dAd[11]*tpy[3]);
+  db[3] = (dAd[12]*tpy[0] + dAd[13]*tpy[1] + dAd[14]*tpy[2] + dAd[15]*tpy[3]);
+  d2b[0] = (d2Ad[ 0]*tpy[0] + d2Ad[ 1]*tpy[1] + d2Ad[ 2]*tpy[2] + d2Ad[ 3]*tpy[3]);
+  d2b[1] = (d2Ad[ 4]*tpy[0] + d2Ad[ 5]*tpy[1] + d2Ad[ 6]*tpy[2] + d2Ad[ 7]*tpy[3]);
+  d2b[2] = (d2Ad[ 8]*tpy[0] + d2Ad[ 9]*tpy[1] + d2Ad[10]*tpy[2] + d2Ad[11]*tpy[3]);
+  d2b[3] = (d2Ad[12]*tpy[0] + d2Ad[13]*tpy[1] + d2Ad[14]*tpy[2] + d2Ad[15]*tpy[3]);
 
   c[0] = (Ad[ 0]*tpz[0] + Ad[ 1]*tpz[1] + Ad[ 2]*tpz[2] + Ad[ 3]*tpz[3]);
   c[1] = (Ad[ 4]*tpz[0] + Ad[ 5]*tpz[1] + Ad[ 6]*tpz[2] + Ad[ 7]*tpz[3]);
   c[2] = (Ad[ 8]*tpz[0] + Ad[ 9]*tpz[1] + Ad[10]*tpz[2] + Ad[11]*tpz[3]);
   c[3] = (Ad[12]*tpz[0] + Ad[13]*tpz[1] + Ad[14]*tpz[2] + Ad[15]*tpz[3]);
-  dc[0] = dzInv*(dAd[ 0]*tpz[0] + dAd[ 1]*tpz[1] + dAd[ 2]*tpz[2] + dAd[ 3]*tpz[3]);
-  dc[1] = dzInv*(dAd[ 4]*tpz[0] + dAd[ 5]*tpz[1] + dAd[ 6]*tpz[2] + dAd[ 7]*tpz[3]);
-  dc[2] = dzInv*(dAd[ 8]*tpz[0] + dAd[ 9]*tpz[1] + dAd[10]*tpz[2] + dAd[11]*tpz[3]);
-  dc[3] = dzInv*(dAd[12]*tpz[0] + dAd[13]*tpz[1] + dAd[14]*tpz[2] + dAd[15]*tpz[3]);
-  d2c[0] = dzInv*dzInv*(d2Ad[ 0]*tpz[0] + d2Ad[ 1]*tpz[1] + d2Ad[ 2]*tpz[2] + d2Ad[ 3]*tpz[3]);
-  d2c[1] = dzInv*dzInv*(d2Ad[ 4]*tpz[0] + d2Ad[ 5]*tpz[1] + d2Ad[ 6]*tpz[2] + d2Ad[ 7]*tpz[3]);
-  d2c[2] = dzInv*dzInv*(d2Ad[ 8]*tpz[0] + d2Ad[ 9]*tpz[1] + d2Ad[10]*tpz[2] + d2Ad[11]*tpz[3]);
-  d2c[3] = dzInv*dzInv*(d2Ad[12]*tpz[0] + d2Ad[13]*tpz[1] + d2Ad[14]*tpz[2] + d2Ad[15]*tpz[3]);
+  dc[0] = (dAd[ 0]*tpz[0] + dAd[ 1]*tpz[1] + dAd[ 2]*tpz[2] + dAd[ 3]*tpz[3]);
+  dc[1] = (dAd[ 4]*tpz[0] + dAd[ 5]*tpz[1] + dAd[ 6]*tpz[2] + dAd[ 7]*tpz[3]);
+  dc[2] = (dAd[ 8]*tpz[0] + dAd[ 9]*tpz[1] + dAd[10]*tpz[2] + dAd[11]*tpz[3]);
+  dc[3] = (dAd[12]*tpz[0] + dAd[13]*tpz[1] + dAd[14]*tpz[2] + dAd[15]*tpz[3]);
+  d2c[0] = (d2Ad[ 0]*tpz[0] + d2Ad[ 1]*tpz[1] + d2Ad[ 2]*tpz[2] + d2Ad[ 3]*tpz[3]);
+  d2c[1] = (d2Ad[ 4]*tpz[0] + d2Ad[ 5]*tpz[1] + d2Ad[ 6]*tpz[2] + d2Ad[ 7]*tpz[3]);
+  d2c[2] = (d2Ad[ 8]*tpz[0] + d2Ad[ 9]*tpz[1] + d2Ad[10]*tpz[2] + d2Ad[11]*tpz[3]);
+  d2c[3] = (d2Ad[12]*tpz[0] + d2Ad[13]*tpz[1] + d2Ad[14]*tpz[2] + d2Ad[15]*tpz[3]);
 
   intptr_t xs = spline->x_stride;
   intptr_t ys = spline->y_stride;
@@ -1032,21 +1042,24 @@ eval_multi_UBspline_3d_d_vgh (multi_UBspline_3d_d *spline,
 	}
       }
 
-  // for (int n=0; n<spline->num_splines; n++) {
-  //   grads[3*n+0] *= dxInv;
-  //   grads[3*n+1] *= dyInv;
-  //   grads[3*n+2] *= dzInv;
-  //   hess [9*n+0] *= dxInv*dxInv;
-  //   hess [9*n+4] *= dyInv*dyInv;
-  //   hess [9*n+8] *= dzInv*dzInv;
-  //   hess [9*n+1] *= dxInv*dyInv;
-  //   hess [9*n+2] *= dxInv*dzInv;
-  //   hess [9*n+5] *= dyInv*dzInv;
-  //   // Copy hessian elements into lower half of 3x3 matrix
-  //   hess [9*n+3] = hess[9*n+1];
-  //   hess [9*n+6] = hess[9*n+2];
-  //   hess [9*n+7] = hess[9*n+5];
-  // }
+  double dxInv = spline->x_grid.delta_inv;
+  double dyInv = spline->y_grid.delta_inv;
+  double dzInv = spline->z_grid.delta_inv; 
+  for (int n=0; n<spline->num_splines; n++) {
+    grads[3*n+0] *= dxInv;
+    grads[3*n+1] *= dyInv;
+    grads[3*n+2] *= dzInv;
+    hess [9*n+0] *= dxInv*dxInv;
+    hess [9*n+4] *= dyInv*dyInv;
+    hess [9*n+8] *= dzInv*dzInv;
+    hess [9*n+1] *= dxInv*dyInv;
+    hess [9*n+2] *= dxInv*dzInv;
+    hess [9*n+5] *= dyInv*dzInv;
+    // Copy hessian elements into lower half of 3x3 matrix
+    hess [9*n+3] = hess[9*n+1];
+    hess [9*n+6] = hess[9*n+2];
+    hess [9*n+7] = hess[9*n+5];
+  }
 }
 
 #endif
