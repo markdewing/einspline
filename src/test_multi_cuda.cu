@@ -9,7 +9,7 @@ test_float_1d()
 {
   int numWalkers = 1000;
   float *vals[numWalkers], *grads[numWalkers], *hess[numWalkers];
-  float *coefs, __device__ **vals_d, **grads_d, **hess_d;
+  float *coefs,  **vals_d, **grads_d, **hess_d;
   float *r_d, *r_h;
   int xs, N;
   int Nx;
@@ -114,9 +114,9 @@ test_float_1d()
 void
 test_float()
 {
-  int numWalkers = 512;
+  int numWalkers = 1024;
   float *vals[numWalkers], *grads[numWalkers], *hess[numWalkers];
-  float *coefs, __device__ **vals_d, **grads_d, **hess_d;
+  float *coefs,  **vals_d, **grads_d, **hess_d;
   float *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
@@ -238,7 +238,7 @@ test_complex_float()
 {
   int numWalkers = 1000;
   complex_float *vals[numWalkers], *grads[numWalkers], *hess[numWalkers];
-  complex_float *coefs, __device__ **vals_d, **grads_d, **hess_d;
+  complex_float *coefs,  **vals_d, **grads_d, **hess_d;
   float *Linv_d;
   float *r_d, *r_h;
   int xs, ys, zs, N;
@@ -370,7 +370,7 @@ test_double()
 {
   int numWalkers = 1000;
   double *vals[numWalkers], *grads[numWalkers], *hess[numWalkers];
-  double *coefs, __device__ **vals_d, **grads_d, **hess_d;
+  double *coefs,  **vals_d, **grads_d, **hess_d;
   double *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
@@ -492,7 +492,7 @@ test_complex_double()
 {
   int numWalkers = 1000;
   complex_double *vals[numWalkers], *grads[numWalkers], *hess[numWalkers];
-  complex_double *coefs, __device__ **vals_d, **grads_d, **hess_d;
+  complex_double *coefs, **vals_d, **grads_d, **hess_d;
   double *r_d, *r_h;
   int xs, ys, zs, N;
   int Nx, Ny, Nz;
@@ -611,7 +611,18 @@ test_complex_double()
 
 
 
-main() {
+main() 
+{
+//   int deviceCount;
+//   cudaGetDeviceCount(&deviceCount);
+//   int num_appropriate=0;
+//   for (int device=0; device < deviceCount; ++device) {
+//     cudaDeviceProp deviceProp;
+//     cudaGetDeviceProperties(&deviceProp, device);
+//     fprintf (stderr, "Device %d has architecture %d.%d\n",
+// 	     device, deviceProp.major, deviceProp.minor);
+//   }
+//   cudaSetDevice(0);	
   // fprintf(stderr, "Testing 1D single-precision real routines:\n");
   // test_float_1d();
   fprintf(stderr, "Testing 3D single-precision real routines:\n");
