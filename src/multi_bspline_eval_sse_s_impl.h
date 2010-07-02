@@ -34,6 +34,7 @@ extern __m128 *restrict A_s;
 extern const float* restrict   Af;
 extern const float* restrict  dAf;
 extern const float* restrict d2Af;
+extern const float* restrict d3Af;
 
 
 // Use plain-old SSE instructions
@@ -1280,4 +1281,215 @@ eval_multi_UBspline_3d_s_vgh (multi_UBspline_3d_s *spline,
 
 }
 
+inline void
+eval_multi_UBspline_3d_s_vghgh (multi_UBspline_3d_s *spline,
+               double x, double y, double z,
+               float* restrict vals,
+               float* restrict grads,
+               float* restrict hess,
+               float* restrict gradhess)
+{
+  _mm_prefetch ((const char*)  &A_s[ 0],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 1],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 2],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 3],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_s[ 4],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 5],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[ 6],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 7],_MM_HINT_T0);
+  _mm_prefetch ((const char*)  &A_s[ 8],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[ 9],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[10],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[11],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[12],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[13],_MM_HINT_T0);  
+  _mm_prefetch ((const char*)  &A_s[14],_MM_HINT_T0);  _mm_prefetch ((const char*)  &A_s[15],_MM_HINT_T0);  
+
+  /// SSE mesh point determination
+  __m128 xyz       = _mm_set_ps (x, y, z, 0.0);
+  __m128 x0y0z0    = _mm_set_ps (spline->x_grid.start,  spline->y_grid.start, 
+             spline->z_grid.start, 0.0);
+  __m128 delta_inv = _mm_set_ps (spline->x_grid.delta_inv,spline->y_grid.delta_inv, 
+             spline->z_grid.delta_inv, 0.0);
+  xyz = _mm_sub_ps (xyz, x0y0z0);
+  // ux = (x - x0)/delta_x and same for y and z
+  __m128 uxuyuz    = _mm_mul_ps (xyz, delta_inv);
+  // intpart = trunc (ux, uy, uz)
+  __m128i intpart  = _mm_cvttps_epi32(uxuyuz);
+  __m128i ixiyiz;
+  _mm_storeu_si128 (&ixiyiz, intpart);
+  // Store to memory for use in C expressions
+  // xmm registers are stored to memory in reverse order
+  int ix = ((int *)&ixiyiz)[3];
+  int iy = ((int *)&ixiyiz)[2];
+  int iz = ((int *)&ixiyiz)[1];
+
+  intptr_t xs = spline->x_stride;
+  intptr_t ys = spline->y_stride;
+  intptr_t zs = spline->z_stride;
+
+
+  // Now compute the vectors:
+  // tpx = [t_x^3 t_x^2 t_x 1]
+  // tpy = [t_y^3 t_y^2 t_y 1]
+  // tpz = [t_z^3 t_z^2 t_z 1]
+  __m128 ipart  = _mm_cvtepi32_ps (intpart);
+  __m128 txtytz = _mm_sub_ps (uxuyuz, ipart);
+  __m128 one    = _mm_set_ps (1.0, 1.0, 1.0, 1.0);
+  __m128 t2     = _mm_mul_ps (txtytz, txtytz);
+  __m128 t3     = _mm_mul_ps (t2, txtytz);
+  __m128 tpx    = t3;
+  __m128 tpy    = t2;
+  __m128 tpz    = txtytz;
+  __m128 zero   = one;
+  _MM_TRANSPOSE4_PS(zero, tpz, tpy, tpx);
+  
+  __m128 a4, b4, c4, da4, db4, dc4, d2a4, d2b4, d2c4, d3a4, d3b4, d3c4;  
+  // x-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpx,   a4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpx,  da4);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpx, d2a4);
+  _MM_MATVEC4_PS (A_s[12], A_s[13], A_s[14], A_s[15], tpx, d3a4);
+  // y-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpy,   b4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpy,  db4);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpy, d2a4);
+  _MM_MATVEC4_PS (A_s[12], A_s[13], A_s[14], A_s[15], tpy, d3a4);
+  // z-dependent vectors
+  _MM_MATVEC4_PS (A_s[ 0], A_s[ 1], A_s[ 2], A_s[ 3], tpz,   c4);
+  _MM_MATVEC4_PS (A_s[ 4], A_s[ 5], A_s[ 6], A_s[ 7], tpz,  dc4);
+  _MM_MATVEC4_PS (A_s[ 8], A_s[ 9], A_s[10], A_s[11], tpz, d2a4);
+  _MM_MATVEC4_PS (A_s[12], A_s[13], A_s[14], A_s[15], tpz, d3a4);
+
+  __m128 a[4], b[4], c[4], da[4], db[4], dc[4], d2a[4], d2b[4], d2c[4], d3a[4], d3b[4], d3c[4];
+  __m128 tmp;
+
+  // Unpack a values
+  tmp=_mm_unpacklo_ps(  a4,   a4);   a[0]=_mm_unpacklo_ps(tmp, tmp);   a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  a4,   a4);   a[2]=_mm_unpacklo_ps(tmp, tmp);   a[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( da4,  da4);  da[0]=_mm_unpacklo_ps(tmp, tmp);  da[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( da4,  da4);  da[2]=_mm_unpacklo_ps(tmp, tmp);  da[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d2a4, d2a4); d2a[0]=_mm_unpacklo_ps(tmp, tmp); d2a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d2a4, d2a4); d2a[2]=_mm_unpacklo_ps(tmp, tmp); d2a[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d3a4, d3a4); d3a[0]=_mm_unpacklo_ps(tmp, tmp); d3a[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d3a4, d3a4); d3a[2]=_mm_unpacklo_ps(tmp, tmp); d3a[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack b values
+  tmp=_mm_unpacklo_ps(  b4,   b4);   b[0]=_mm_unpacklo_ps(tmp, tmp);   b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  b4,   b4);   b[2]=_mm_unpacklo_ps(tmp, tmp);   b[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( db4,  db4);  db[0]=_mm_unpacklo_ps(tmp, tmp);  db[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( db4,  db4);  db[2]=_mm_unpacklo_ps(tmp, tmp);  db[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d2b4, d2b4); d2b[0]=_mm_unpacklo_ps(tmp, tmp); d2b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d2b4, d2b4); d2b[2]=_mm_unpacklo_ps(tmp, tmp); d2b[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d3b4, d3b4); d3b[0]=_mm_unpacklo_ps(tmp, tmp); d3b[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d3b4, d3b4); d3b[2]=_mm_unpacklo_ps(tmp, tmp); d3b[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  // Unpack c values
+  tmp=_mm_unpacklo_ps(  c4,   c4);   c[0]=_mm_unpacklo_ps(tmp, tmp);   c[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(  c4,   c4);   c[2]=_mm_unpacklo_ps(tmp, tmp);   c[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps( dc4,  dc4);  dc[0]=_mm_unpacklo_ps(tmp, tmp);  dc[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps( dc4,  dc4);  dc[2]=_mm_unpacklo_ps(tmp, tmp);  dc[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d2c4, d2c4); d2c[0]=_mm_unpacklo_ps(tmp, tmp); d2c[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d2c4, d2c4); d2c[2]=_mm_unpacklo_ps(tmp, tmp); d2c[3]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpacklo_ps(d3c4, d3c4); d3c[0]=_mm_unpacklo_ps(tmp, tmp); d3c[1]=_mm_unpackhi_ps(tmp, tmp);
+  tmp=_mm_unpackhi_ps(d3c4, d3c4); d3c[2]=_mm_unpacklo_ps(tmp, tmp); d3c[3]=_mm_unpackhi_ps(tmp, tmp);
+
+  int N = spline->num_splines;
+  int Nm = (N+3)/4;
+
+  __m128 mvals[Nm], mgrad[3*Nm], mhess[6*Nm], mgradhess[10*Nm];
+
+  // Zero out values;
+  __m128 mzero = _mm_set_ps(0.0, 0.0, 0.0, 0.0);
+  for (int n=0; n<Nm; n++)     mvals[n] = _mm_setzero_ps();
+  for (int n=0; n<3*Nm; n++)   mgrad[n] = _mm_setzero_ps();
+  for (int n=0; n<6*Nm; n++)   mhess[n] = _mm_setzero_ps();
+  for (int n=0; n<10*Nm; n++)  mgradhess[n] = _mm_setzero_ps();
+
+  // Main compute loop
+  __m128 abc, dabc[3], d2abc[6],  d3abc[10];
+  for (int i=0; i<4; i++)
+    for (int j=0; j<4; j++)
+      for (int k=0; k<4; k++) {
+   abc      = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j],  c[k]));
+   dabc[0]  = _mm_mul_ps ( da[i], _mm_mul_ps(  b[j],  c[k]));
+   dabc[1]  = _mm_mul_ps (  a[i], _mm_mul_ps( db[j],  c[k]));
+   dabc[2]  = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j],  dc[k]));
+   d2abc[0] = _mm_mul_ps (d2a[i], _mm_mul_ps(  b[j],  c[k]));
+   d2abc[1] = _mm_mul_ps ( da[i], _mm_mul_ps( db[j],  c[k]));
+   d2abc[2] = _mm_mul_ps ( da[i], _mm_mul_ps(  b[j],  dc[k]));
+   d2abc[3] = _mm_mul_ps (  a[i], _mm_mul_ps(d2b[j],  c[k]));
+   d2abc[4] = _mm_mul_ps (  a[i], _mm_mul_ps( db[j], dc[k]));
+   d2abc[5] = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j], d2c[k]));
+   
+   d3abc[0] = _mm_mul_ps (d3a[i], _mm_mul_ps(  b[j],  c[k]));
+   d3abc[1] = _mm_mul_ps (d2a[i], _mm_mul_ps( db[j],  c[k]));
+   d3abc[2] = _mm_mul_ps (d2a[i], _mm_mul_ps(  b[j],  dc[k]));
+   d3abc[3] = _mm_mul_ps ( da[i], _mm_mul_ps(d2b[j],  c[k]));
+   d3abc[4] = _mm_mul_ps ( da[i], _mm_mul_ps( db[j], dc[k]));
+   d3abc[5] = _mm_mul_ps ( da[i], _mm_mul_ps(  b[j],d2c[k]));
+   d3abc[6] = _mm_mul_ps (  a[i], _mm_mul_ps(d3b[j],  c[k]));
+   d3abc[7] = _mm_mul_ps (  a[i], _mm_mul_ps(d2b[j], dc[k]));
+   d3abc[8] = _mm_mul_ps (  a[i], _mm_mul_ps( db[j],d2c[k]));
+   d3abc[9] = _mm_mul_ps (  a[i], _mm_mul_ps(  b[j],d3c[k]));
+
+
+   __m128* restrict coefs = (__m128*)(spline->coefs + (ix+i)*xs + (iy+j)*ys + (iz+k)*zs);
+   for (int n=0; n<Nm; n++) {
+     mvals[n]     = _mm_add_ps (mvals[n], _mm_mul_ps(  abc   , coefs[n]));
+     mgrad[3*n+0] = _mm_add_ps (mgrad[3*n+0], _mm_mul_ps( dabc[0], coefs[n]));
+     mgrad[3*n+1] = _mm_add_ps (mgrad[3*n+1], _mm_mul_ps( dabc[1], coefs[n]));
+     mgrad[3*n+2] = _mm_add_ps (mgrad[3*n+2], _mm_mul_ps( dabc[2], coefs[n]));
+     mhess[6*n+0] = _mm_add_ps (mhess[6*n+0], _mm_mul_ps(d2abc[0], coefs[n]));
+     mhess[6*n+1] = _mm_add_ps (mhess[6*n+1], _mm_mul_ps(d2abc[1], coefs[n]));
+     mhess[6*n+2] = _mm_add_ps (mhess[6*n+2], _mm_mul_ps(d2abc[2], coefs[n]));
+     mhess[6*n+3] = _mm_add_ps (mhess[6*n+3], _mm_mul_ps(d2abc[3], coefs[n]));
+     mhess[6*n+4] = _mm_add_ps (mhess[6*n+4], _mm_mul_ps(d2abc[4], coefs[n]));
+     mhess[6*n+5] = _mm_add_ps (mhess[6*n+5], _mm_mul_ps(d2abc[5], coefs[n]));
+     
+     mgradhess[10*n+0] = _mm_add_ps (mgradhess[10*n+0], _mm_mul_ps(d3abc[0], coefs[n]));
+     mgradhess[10*n+1] = _mm_add_ps (mgradhess[10*n+1], _mm_mul_ps(d3abc[1], coefs[n]));
+     mgradhess[10*n+2] = _mm_add_ps (mgradhess[10*n+2], _mm_mul_ps(d3abc[2], coefs[n]));
+     mgradhess[10*n+3] = _mm_add_ps (mgradhess[10*n+3], _mm_mul_ps(d3abc[3], coefs[n]));
+     mgradhess[10*n+4] = _mm_add_ps (mgradhess[10*n+4], _mm_mul_ps(d3abc[4], coefs[n]));
+     mgradhess[10*n+5] = _mm_add_ps (mgradhess[10*n+5], _mm_mul_ps(d3abc[5], coefs[n]));
+     mgradhess[10*n+6] = _mm_add_ps (mgradhess[10*n+6], _mm_mul_ps(d3abc[6], coefs[n]));
+     mgradhess[10*n+7] = _mm_add_ps (mgradhess[10*n+7], _mm_mul_ps(d3abc[7], coefs[n]));
+     mgradhess[10*n+8] = _mm_add_ps (mgradhess[10*n+8], _mm_mul_ps(d3abc[8], coefs[n]));
+     mgradhess[10*n+9] = _mm_add_ps (mgradhess[10*n+9], _mm_mul_ps(d3abc[9], coefs[n]));
+   }
+  }
+  
+  // Now, store results back
+  float dxInv = spline->x_grid.delta_inv;
+  float dyInv = spline->y_grid.delta_inv;
+  float dzInv = spline->z_grid.delta_inv;
+  for (int n=0; n<N; n++) {
+    int nd4 = n>>2;
+    int nm4 = n & 3;
+    vals[n] = ((float*)mvals)[n];
+    grads[3*n+0] = ((float*)mgrad)[nd4*12 + 4*0 + nm4] * dxInv;
+    grads[3*n+1] = ((float*)mgrad)[nd4*12 + 4*1 + nm4] * dyInv;
+    grads[3*n+2] = ((float*)mgrad)[nd4*12 + 4*2 + nm4] * dzInv;
+    hess [9*n+0]               = ((float*)mhess)[nd4*24 + 4*0 + nm4] * dxInv*dxInv;
+    hess [9*n+1] = hess[9*n+3] = ((float*)mhess)[nd4*24 + 4*1 + nm4] * dxInv*dyInv;
+    hess [9*n+2] = hess[9*n+6] = ((float*)mhess)[nd4*24 + 4*2 + nm4] * dxInv*dzInv;
+    hess [9*n+4]               = ((float*)mhess)[nd4*24 + 4*3 + nm4] * dyInv*dyInv;
+    hess [9*n+5] = hess[9*n+7] = ((float*)mhess)[nd4*24 + 4*4 + nm4] * dyInv*dzInv;
+    hess [9*n+8]               = ((float*)mhess)[nd4*24 + 4*5 + nm4] * dzInv*dzInv;
+    
+    gradhess [27*n+0 ] =   ((float*)mgradhess)[nd4*40 + 4*0 + nm4] * dxInv*dxInv*dxInv;
+    gradhess [27*n+1 ] =   ((float*)mgradhess)[nd4*40 + 4*1 + nm4] * dxInv*dxInv*dyInv;
+    gradhess [27*n+2 ] =   ((float*)mgradhess)[nd4*40 + 4*2 + nm4] * dxInv*dxInv*dzInv;
+    gradhess [27*n+4 ] =   ((float*)mgradhess)[nd4*40 + 4*3 + nm4] * dxInv*dyInv*dyInv;
+    gradhess [27*n+5 ] =   ((float*)mgradhess)[nd4*40 + 4*4 + nm4] * dxInv*dyInv*dzInv;
+    gradhess [27*n+8 ] =   ((float*)mgradhess)[nd4*40 + 4*5 + nm4] * dxInv*dzInv*dzInv;
+    gradhess [27*n+13] =   ((float*)mgradhess)[nd4*40 + 4*6 + nm4] * dyInv*dyInv*dyInv;
+    gradhess [27*n+14] =   ((float*)mgradhess)[nd4*40 + 4*7 + nm4] * dyInv*dyInv*dzInv;
+    gradhess [27*n+17] =   ((float*)mgradhess)[nd4*40 + 4*8 + nm4] * dyInv*dzInv*dzInv;
+    gradhess [27*n+26] =   ((float*)mgradhess)[nd4*40 + 4*9 + nm4] * dzInv*dzInv*dzInv;     
+        // Copy gradhess elements into rest of tensor
+    gradhess [27*n+9  ] = gradhess [27*n+3  ] = gradhess [27*n+1 ];
+    gradhess [27*n+18 ] = gradhess [27*n+6  ] = gradhess [27*n+2 ];
+    gradhess [27*n+22 ] = gradhess [27*n+16 ] = gradhess [27*n+14];
+    gradhess [27*n+12 ] = gradhess [27*n+10 ] = gradhess [27*n+4 ];
+    gradhess [27*n+24 ] = gradhess [27*n+20 ] = gradhess [27*n+8 ];
+    gradhess [27*n+25 ] = gradhess [27*n+23 ] = gradhess [27*n+17];
+    gradhess [27*n+21 ] = gradhess [27*n+19 ] = gradhess [27*n+15] = gradhess [27*n+11 ] = gradhess [27*n+7 ] = gradhess [27*n+5];
+    
+  }
+}
 #endif
