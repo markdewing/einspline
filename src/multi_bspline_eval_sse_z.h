@@ -108,5 +108,12 @@ eval_multi_UBspline_3d_z_vgh (multi_UBspline_3d_z *spline,
 			      complex_double* restrict grads,
 			      complex_double* restrict hess);
 
+void
+eval_multi_UBspline_3d_z_vghgh (multi_UBspline_3d_z *spline,
+               double x, double y, double z,
+               complex_double* restrict vals,
+               complex_double* restrict grads,
+               complex_double* restrict hess,
+               complex_double* restrict gradhess);               
 
 #endif
