@@ -161,6 +161,12 @@ const float d2A44f[16] =
      0.0, 0.0,  1.0,  0.0 };
 const float* restrict d2Af = d2A44f;
 
+const float d3A44f[16] =
+  {  0.0, 0.0,  0.0, -1.0,
+     0.0, 0.0,  0.0,  3.0,
+     0.0, 0.0,  0.0, -3.0,
+     0.0, 0.0,  0.0,  1.0};
+const float* restrict d3Af = d3A44f;
 
 //////////////////////
 // Double precision //
@@ -186,3 +192,9 @@ const double d2A44d[16] =
      0.0, 0.0,  1.0,  0.0 };
 const double* restrict d2Ad = d2A44d;
 
+const double d3A44d[16] =
+  {  0.0, 0.0,  0.0, -1.0,
+     0.0, 0.0,  0.0,  3.0,
+     0.0, 0.0,  0.0, -3.0,
+     0.0, 0.0,  0.0,  1.0};
+const double* restrict d3Ad = d3A44d;
