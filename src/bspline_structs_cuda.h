@@ -9,15 +9,17 @@
 // 2D //
 ////////
 
-// typedef struct
-// {
-//   double x,y,z;
-// } double3;
+#if CUDA_VERSION < 3000
+typedef struct
+{
+  double x,y,z;
+} double3;
 
-// typedef struct
-// {
-//   double x,y,z,w;
-// } double4;
+typedef struct
+{
+  double x,y,z,w;
+} double4;
+#endif
 
 typedef struct
 {
