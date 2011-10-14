@@ -89,6 +89,10 @@ create_multi_UBspline_1d_s (Ugrid x_grid, BCtype_s xBC, int num_splines)
 {
   // Create new spline
   multi_UBspline_1d_s* restrict spline = malloc (sizeof(multi_UBspline_1d_s));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_1d_s.\n");
+    abort();
+  }
   spline->spcode = MULTI_U1D;
   spline->tcode  = SINGLE_REAL;
   spline->xBC = xBC; spline->x_grid = x_grid;
@@ -124,6 +128,11 @@ create_multi_UBspline_1d_s (Ugrid x_grid, BCtype_s xBC, int num_splines)
 #ifdef HAVE_SSE
   init_sse_data();    
 #endif
+  if (!spline->coefs) {
+    fprintf (stderr, "Out of memory allocating spline coefficient in create_multi_UBspline_1d_s.\n");
+    abort();
+  }
+
 
   return spline;
 }
@@ -145,6 +154,10 @@ create_multi_UBspline_2d_s (Ugrid x_grid, Ugrid y_grid,
 {
   // Create new spline
   multi_UBspline_2d_s* restrict spline = malloc (sizeof(multi_UBspline_2d_s));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_2d_s.\n");
+    abort();
+  }
   spline->spcode = MULTI_U2D;
   spline->tcode  = SINGLE_REAL;
   spline->xBC = xBC; 
@@ -191,6 +204,10 @@ create_multi_UBspline_2d_s (Ugrid x_grid, Ugrid y_grid,
 #ifdef HAVE_SSE
   init_sse_data();
 #endif
+  if (!spline->coefs) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_2d_s.\n");
+    abort();
+  }
 
   return spline;
 }
@@ -238,6 +255,10 @@ create_multi_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 {
   // Create new spline
   multi_UBspline_3d_s* restrict spline = malloc (sizeof(multi_UBspline_3d_s));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_3d_s.\n");
+    abort();
+  }
   spline->spcode = MULTI_U3D;
   spline->tcode  = SINGLE_REAL;
   spline->xBC = xBC; 
@@ -291,6 +312,10 @@ create_multi_UBspline_3d_s (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #ifdef HAVE_SSE
   init_sse_data();
 #endif
+  if (!spline->coefs) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_3d_s.\n");
+    abort();
+  }
 
   return spline;
 }
@@ -365,6 +390,10 @@ create_multi_UBspline_1d_c (Ugrid x_grid, BCtype_c xBC, int num_splines)
 {
   // Create new spline
   multi_UBspline_1d_c* restrict spline = malloc (sizeof(multi_UBspline_1d_c));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_1d_c.\n");
+    abort();
+  }
   spline->spcode = MULTI_U1D;
   spline->tcode  = SINGLE_COMPLEX;
   spline->xBC = xBC; 
@@ -393,6 +422,10 @@ create_multi_UBspline_1d_c (Ugrid x_grid, BCtype_c xBC, int num_splines)
 #ifdef HAVE_SSE
   init_sse_data();    
 #endif
+  if (!spline->coefs) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_1d_c.\n");
+    abort();
+  }
 
   return spline;
 }
@@ -425,6 +458,10 @@ create_multi_UBspline_2d_c (Ugrid x_grid, Ugrid y_grid,
 {
   // Create new spline
   multi_UBspline_2d_c* restrict spline = malloc (sizeof(multi_UBspline_2d_c));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_2d_c.\n");
+    abort();
+  }
   spline->spcode = MULTI_U2D;
   spline->tcode  = SINGLE_COMPLEX;
   spline->xBC = xBC; 
@@ -473,6 +510,10 @@ create_multi_UBspline_2d_c (Ugrid x_grid, Ugrid y_grid,
 #ifdef HAVE_SSE
   init_sse_data();
 #endif
+  if (!spline->coefs || !spline->lapl2) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_2d_c.\n");
+    abort();
+  }
   return spline;
 }
 
@@ -539,6 +580,10 @@ create_multi_UBspline_3d_c (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 {
   // Create new spline
   multi_UBspline_3d_c* restrict spline = malloc (sizeof(multi_UBspline_3d_c));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_3d_c.\n");
+    abort();
+  }
   spline->spcode = MULTI_U3D;
   spline->tcode  = SINGLE_COMPLEX;
   spline->xBC = xBC; 
@@ -594,6 +639,10 @@ create_multi_UBspline_3d_c (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #ifdef HAVE_SSE
   init_sse_data();
 #endif
+  if (!spline->coefs || !spline->lapl3) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_3d_c.\n");
+    abort();
+  }
 
   return spline;
 }
@@ -719,6 +768,10 @@ create_multi_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, int num_splines)
 {
   // Create new spline
   multi_UBspline_1d_d* restrict spline = malloc (sizeof(multi_UBspline_1d_d));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_1d_d.\n");
+    abort();
+  }
   spline->spcode = MULTI_U1D;
   spline->tcode  = DOUBLE_REAL;
   spline->xBC = xBC; 
@@ -750,13 +803,18 @@ create_multi_UBspline_1d_d (Ugrid x_grid, BCtype_d xBC, int num_splines)
 
 #ifndef HAVE_POSIX_MEMALIGN
   spline->coefs = malloc (sizeof(double)*Nx*N);
+
 #else
   posix_memalign ((void**)&spline->coefs, 64, sizeof(double)*Nx*N);
 #endif
 #ifdef HAVE_SSE2
   init_sse_data();
 #endif
-    
+  if (!spline->coefs) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_1d_d.\n");
+    abort();
+  }
+
   return spline;
 }
 
@@ -784,6 +842,10 @@ create_multi_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,
 {
   // Create new spline
   multi_UBspline_2d_d* restrict spline = malloc (sizeof(multi_UBspline_2d_d));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_2d_d.\n");
+    abort();
+  }
   spline->spcode = MULTI_U2D;
   spline->tcode  = DOUBLE_REAL;
   spline->xBC = xBC; 
@@ -829,6 +891,10 @@ create_multi_UBspline_2d_d (Ugrid x_grid, Ugrid y_grid,
 #ifdef HAVE_SSE2
   init_sse_data();
 #endif
+  if (!spline->coefs) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_2d_d.\n");
+    abort();
+  }
 
   return spline;
 }
@@ -884,6 +950,10 @@ create_multi_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #else
   spline = malloc (sizeof(multi_UBspline_3d_d));
 #endif
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_3d_d.\n");
+    abort();
+  }
   spline->spcode = MULTI_U3D;
   spline->tcode  = DOUBLE_REAL;
   spline->xBC = xBC; 
@@ -939,6 +1009,10 @@ create_multi_UBspline_3d_d (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #ifdef HAVE_SSE2
   init_sse_data();
 #endif
+  if (!spline->coefs) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_3d_d.\n");
+    abort();
+  }
 
   return spline;
 }
@@ -1018,6 +1092,10 @@ create_multi_UBspline_1d_z (Ugrid x_grid, BCtype_z xBC, int num_splines)
 {
   // Create new spline
   multi_UBspline_1d_z* restrict spline = malloc (sizeof(multi_UBspline_1d_z));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_1d_z.\n");
+    abort();
+  }
   spline->spcode = MULTI_U1D;
   spline->tcode  = DOUBLE_COMPLEX;
   spline->xBC = xBC; 
@@ -1048,7 +1126,11 @@ create_multi_UBspline_1d_z (Ugrid x_grid, BCtype_z xBC, int num_splines)
 #ifdef HAVE_SSE2
   init_sse_data();   
 #endif
- 
+   if (!spline->coefs) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_1d_z.\n");
+    abort();
+  }
+
   return spline;
 }
 
@@ -1119,6 +1201,10 @@ create_multi_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
 {
   // Create new spline
   multi_UBspline_2d_z* restrict spline = malloc (sizeof(multi_UBspline_2d_z));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_2d_z.\n");
+    abort();
+  }
   spline->spcode = MULTI_U2D;
   spline->tcode  = DOUBLE_COMPLEX;
   spline->xBC = xBC; 
@@ -1158,6 +1244,10 @@ create_multi_UBspline_2d_z (Ugrid x_grid, Ugrid y_grid,
 #ifdef HAVE_SSE2
   init_sse_data();
 #endif
+  if (!spline->coefs || !spline->lapl2) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_2d_z.\n");
+    abort();
+  }
 
   return spline;
 }
@@ -1231,6 +1321,10 @@ create_multi_UBspline_3d_z (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 {
   // Create new spline
   multi_UBspline_3d_z* restrict spline = malloc (sizeof(multi_UBspline_3d_z));
+  if (!spline) {
+    fprintf (stderr, "Out of memory allocating spline in create_multi_UBspline_3d_z.\n");
+    abort();
+  }
   spline->spcode = MULTI_U3D;
   spline->tcode  = DOUBLE_COMPLEX;
   spline->xBC = xBC; 
@@ -1287,6 +1381,10 @@ create_multi_UBspline_3d_z (Ugrid x_grid, Ugrid y_grid, Ugrid z_grid,
 #ifdef HAVE_SSE2
   init_sse_data();
 #endif
+  if (!spline->coefs || !spline->lapl3) {
+    fprintf (stderr, "Out of memory allocating spline coefficients in create_multi_UBspline_3d_z.\n");
+    abort();
+  }
 
   return spline;
 }
