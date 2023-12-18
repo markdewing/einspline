@@ -30,7 +30,7 @@
 /************************************************************/
 
 /* Value only */
-inline void
+extern inline void
 eval_NUBspline_1d_c (NUBspline_1d_c * restrict spline, 
 		     double x, complex_float* restrict val)
 {
@@ -42,7 +42,7 @@ eval_NUBspline_1d_c (NUBspline_1d_c * restrict spline,
 }
 
 /* Value and first derivative */
-inline void
+extern inline void
 eval_NUBspline_1d_c_vg (NUBspline_1d_c * restrict spline, double x, 
 			complex_float* restrict val, complex_float* restrict grad)
 {
@@ -56,7 +56,7 @@ eval_NUBspline_1d_c_vg (NUBspline_1d_c * restrict spline, double x,
 }
 
 /* Value, first derivative, and second derivative */
-inline void
+extern inline void
 eval_NUBspline_1d_c_vgl (NUBspline_1d_c * restrict spline, double x, 
 			complex_float* restrict val, complex_float* restrict grad,
 			complex_float* restrict lapl)
@@ -73,7 +73,7 @@ eval_NUBspline_1d_c_vgl (NUBspline_1d_c * restrict spline, double x,
 
 }
 
-inline void
+extern inline void
 eval_NUBspline_1d_c_vgh (NUBspline_1d_c * restrict spline, double x, 
 			complex_float* restrict val, complex_float* restrict grad,
 			complex_float* restrict hess)
@@ -86,7 +86,7 @@ eval_NUBspline_1d_c_vgh (NUBspline_1d_c * restrict spline, double x,
 /************************************************************/
 
 /* Value only */
-inline void
+extern inline void
 eval_NUBspline_2d_c (NUBspline_2d_c * restrict spline, 
 		    double x, double y, complex_float* restrict val)
 {
@@ -108,7 +108,7 @@ eval_NUBspline_2d_c (NUBspline_2d_c * restrict spline,
 
 
 /* Value and gradient */
-inline void
+extern inline void
 eval_NUBspline_2d_c_vg (NUBspline_2d_c * restrict spline, 
 		       double x, double y, 
 		       complex_float* restrict val, complex_float* restrict grad)
@@ -137,7 +137,7 @@ eval_NUBspline_2d_c_vg (NUBspline_2d_c * restrict spline,
 }
 
 /* Value, gradient, and laplacian */
-inline void
+extern inline void
 eval_NUBspline_2d_c_vgl (NUBspline_2d_c * restrict spline, 
 			double x, double y, complex_float* restrict val, 
 			complex_float* restrict grad, complex_float* restrict lapl)
@@ -171,7 +171,7 @@ eval_NUBspline_2d_c_vgl (NUBspline_2d_c * restrict spline,
 }
 
 /* Value, gradient, and Hessian */
-inline void
+extern inline void
 eval_NUBspline_2d_c_vgh (NUBspline_2d_c * restrict spline, 
 			double x, double y, complex_float* restrict val, 
 			complex_float* restrict grad, complex_float* restrict hess)
@@ -215,7 +215,7 @@ eval_NUBspline_2d_c_vgh (NUBspline_2d_c * restrict spline,
 /************************************************************/
 
 /* Value only */
-inline void
+extern inline void
 eval_NUBspline_3d_c (NUBspline_3d_c * restrict spline, 
 		    double x, double y, double z,
 		    complex_float* restrict val)
@@ -251,7 +251,7 @@ eval_NUBspline_3d_c (NUBspline_3d_c * restrict spline,
 }
 
 /* Value and gradient */
-inline void
+extern inline void
 eval_NUBspline_3d_c_vg (NUBspline_3d_c * restrict spline, 
 			double x, double y, double z,
 			complex_float* restrict val, complex_float* restrict grad)
@@ -320,7 +320,7 @@ eval_NUBspline_3d_c_vg (NUBspline_3d_c * restrict spline,
 
 
 /* Value, gradient, and laplacian */
-inline void
+extern inline void
 eval_NUBspline_3d_c_vgl (NUBspline_3d_c * restrict spline, 
 			 double x, double y, double z,
 			 complex_float* restrict val, complex_float* restrict grad, 
@@ -430,7 +430,7 @@ eval_NUBspline_3d_c_vgl (NUBspline_3d_c * restrict spline,
 
 
 /* Value, gradient, and Hessian */
-inline void
+extern inline void
 eval_NUBspline_3d_c_vgh (NUBspline_3d_c * restrict spline, 
 			 double x, double y, double z,
 			 complex_float* restrict val, complex_float* restrict grad, complex_float* restrict hess)
