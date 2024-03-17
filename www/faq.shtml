@@ -28,7 +28,7 @@
     There are currently Fortran bindings.  I would like to C++ and (possibly)
     Python bindings when time permits.</li><br/>
 <li><u> What are the licensing terms of einspline?</u><br/>
-    einspline is licensed under the <a href="http://www.gnu.org/copyleft/gpl.html">GNU Public License</a>. </li><br/>
+    einspline is licensed under the <a href="https://opensource.org/licenses/BSD-3-Clause">3-clause BSD license</a>. </li><br/>
 <li><u> How do I compile the library on Windows?</u><br/>
     I have no idea.  I almost never use Windows and have no compilers
     for that platform.  One user has reported that he was able to get

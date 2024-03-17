@@ -7,7 +7,9 @@
 
 <body bgcolor=#FFFFD0>
 <!--#include virtual="header.shtml" -->
-<h2> 1/28/90 </h2>
+<h2> 2/20/18 </h2>
+Einspline is now licensed under the <a href="https://opensource.org/licenses/BSD-3-Clause">3-clause BSD license</a>.
+<h2> 1/28/09 </h2>
 For the past few releases, einspline has included optional routines which
 run on NVIDIA GPUs via CUDA.  Because of the high memory bandwidth available
 on graphics cards, these routines may run 10x - 20x faster than on CPUs.
