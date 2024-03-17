@@ -33,7 +33,7 @@ extern const double* restrict d2Ad;
 /************************************************************/
 
 /* Value only */
-inline void
+extern inline void
 eval_UBspline_1d_z (UBspline_1d_z * restrict spline, 
 		    double x, complex_double* restrict val)
 {
@@ -55,7 +55,7 @@ eval_UBspline_1d_z (UBspline_1d_z * restrict spline,
 }
 
 /* Value and first derivative */
-inline void
+extern inline void
 eval_UBspline_1d_z_vg (UBspline_1d_z * restrict spline, double x, 
 		       complex_double* restrict val, 
 		       complex_double* restrict grad)
@@ -82,7 +82,7 @@ eval_UBspline_1d_z_vg (UBspline_1d_z * restrict spline, double x,
      coefs[i+3]*(dAd[13]*tp[1] + dAd[14]*tp[2] + dAd[15]*tp[3]));
 }
 /* Value, first derivative, and second derivative */
-inline void
+extern inline void
 eval_UBspline_1d_z_vgl (UBspline_1d_z * restrict spline, double x, 
 			complex_double* restrict val, complex_double* restrict grad,
 			complex_double* restrict lapl)
@@ -114,7 +114,7 @@ eval_UBspline_1d_z_vgl (UBspline_1d_z * restrict spline, double x,
      coefs[i+3]*(d2Ad[14]*tp[2] + d2Ad[15]*tp[3]));
 }
 
-inline void
+extern inline void
 eval_UBspline_1d_z_vgh (UBspline_1d_z * restrict spline, double x, 
 			complex_double* restrict val, 
 			complex_double* restrict grad,
@@ -127,7 +127,7 @@ eval_UBspline_1d_z_vgh (UBspline_1d_z * restrict spline, double x,
 /************************************************************/
 
 /* Value only */
-inline void
+extern inline void
 eval_UBspline_2d_z (UBspline_2d_z * restrict spline, 
 		    double x, double y, complex_double* restrict val)
 {
@@ -168,7 +168,7 @@ eval_UBspline_2d_z (UBspline_2d_z * restrict spline,
 
 
 /* Value and gradient */
-inline void
+extern inline void
 eval_UBspline_2d_z_vg (UBspline_2d_z * restrict spline, 
 		       double x, double y, 
 		       complex_double* restrict val, 
@@ -229,7 +229,7 @@ eval_UBspline_2d_z_vg (UBspline_2d_z * restrict spline,
 }
 
 /* Value, gradient, and laplacian */
-inline void
+extern inline void
 eval_UBspline_2d_z_vgl (UBspline_2d_z * restrict spline, 
 			double x, double y, complex_double* restrict val, 
 			complex_double* restrict grad, 
@@ -310,7 +310,7 @@ eval_UBspline_2d_z_vgl (UBspline_2d_z * restrict spline,
 }
 
 /* Value, gradient, and Hessian */
-inline void
+extern inline void
 eval_UBspline_2d_z_vgh (UBspline_2d_z * restrict spline, 
 			double x, double y, complex_double* restrict val, 
 			complex_double* restrict grad, 
@@ -401,7 +401,7 @@ eval_UBspline_2d_z_vgh (UBspline_2d_z * restrict spline,
 /************************************************************/
 
 /* Value only */
-inline void
+extern inline void
 eval_UBspline_3d_z (UBspline_3d_z * restrict spline, 
 		    double x, double y, double z,
 		    complex_double* restrict val)
@@ -462,7 +462,7 @@ eval_UBspline_3d_z (UBspline_3d_z * restrict spline,
 }
 
 /* Value and gradient */
-inline void
+extern inline void
 eval_UBspline_3d_z_vg (UBspline_3d_z * restrict spline, 
 		       double x, double y, double z,
 		       complex_double* restrict val, 
@@ -572,7 +572,7 @@ eval_UBspline_3d_z_vg (UBspline_3d_z * restrict spline,
 
 
 /* Value, gradient, and laplacian */
-inline void
+extern inline void
 eval_UBspline_3d_z_vgl (UBspline_3d_z * restrict spline, 
 			double x, double y, double z,
 			complex_double* restrict val, 
@@ -738,7 +738,7 @@ eval_UBspline_3d_z_vgl (UBspline_3d_z * restrict spline,
 
 
 /* Value, gradient, and Hessian */
-inline void
+extern inline void
 eval_UBspline_3d_z_vgh (UBspline_3d_z * restrict spline, 
 			double x, double y, double z,
 			complex_double* restrict val, 
